@@ -1,0 +1,14 @@
+openapi: 3.0.3
+info:
+  title: SMS Service API
+  version: 1.0.0
+  license:
+    name: unlicensed
+    url: "www.example.com"
+servers:
+  - url: localhost:8080
+paths:
+  $ref: './resources/_index.yml'
+components:
+  schemas: 
+    $ref: './schemas/_index.yml'

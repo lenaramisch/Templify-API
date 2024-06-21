@@ -1,0 +1,2 @@
+/sender:
+  $ref: './SMS/Sender.yml'

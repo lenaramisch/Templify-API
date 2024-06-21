@@ -1,0 +1,19 @@
+post:
+  summary: Send a SMS with custom text
+  operationId: sendSMS
+  tags:
+    - SMS
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema: 
+          $ref: '../../schemas/_index.yml#/SMSSendRequest'
+  responses:
+    '201':
+      description: SMS send
+    '400':
+      description: Invalid receiver phone number supplied
+
+  # This API has no security
+  security: []

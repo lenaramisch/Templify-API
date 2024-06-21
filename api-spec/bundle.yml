@@ -1,0 +1,42 @@
+openapi: 3.0.3
+info:
+  title: SMS Service API
+  version: 1.0.0
+  license:
+    name: unlicensed
+    url: www.example.com
+servers:
+  - url: localhost:8080
+paths:
+  /sender:
+    post:
+      summary: Send a SMS with custom text
+      operationId: sendSMS
+      tags:
+        - SMS
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SMSSendRequest'
+      responses:
+        '201':
+          description: SMS send
+        '400':
+          description: Invalid receiver phone number supplied
+      security: []
+components:
+  schemas:
+    SMSSendRequest:
+      type: object
+      properties:
+        receiverPhoneNumber:
+          type: string
+          example: '+49123456789'
+        message:
+          type: string
+          example: Don't forget to buy some milk!
+      required:
+        - receiverPhoneNumber
+        - message

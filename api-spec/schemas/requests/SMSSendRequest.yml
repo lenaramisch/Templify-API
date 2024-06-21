@@ -1,0 +1,11 @@
+type: object
+properties:
+  receiverPhoneNumber:
+    type: string
+    example: "+49123456789"
+  message:
+    type: string
+    example: "Don't forget to buy some milk!"
+required:
+  - receiverPhoneNumber
+  - message
