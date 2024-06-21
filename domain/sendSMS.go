@@ -7,13 +7,19 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
+
+	"github.com/joho/godotenv"
 )
 
 func SendSMS() {
+	godotenv.Load()
 	//TODO accountSID from env file
+	accountSID := os.Getenv("ACCOUNT_SID")
 	URL := "https://api.twilio.com/2010-04-01/Accounts/" + accountSID + "/Messages.json"
 	//TODO authToken from env file
+	authToken := os.Getenv("AUTH_TOKEN")
 
 	// Define phone numbers and message body
 	toNumber := "+4915170640522"
