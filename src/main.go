@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"example.SMSService.com/router"
+	"example.SMSService.com/pkg/router"
 )
 
 func main() {

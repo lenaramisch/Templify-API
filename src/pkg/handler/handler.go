@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"example.SMSService.com/domain"
+	"example.SMSService.com/pkg/domain"
 )
 
 func SenderPostRequest(res http.ResponseWriter, req *http.Request) {
@@ -21,7 +21,7 @@ func SenderPostRequest(res http.ResponseWriter, req *http.Request) {
 	}
 	err = domain.SendSMS(senderReq.ToNumber, senderReq.MessageBody)
 	if err != nil {
-		http.Error(res, err.Error(), http.StatusBadRequest)
+		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 	res.WriteHeader(http.StatusOK)
 	res.Write([]byte("Message sent successfully"))

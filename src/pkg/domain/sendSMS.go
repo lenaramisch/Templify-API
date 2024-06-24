@@ -14,8 +14,7 @@ import (
 )
 
 const (
-	DEFAULT_FROM_NUMBER = "+14042366595"
-	TWILIO_BASE_URL     = "https://api.twilio.com/"
+	TWILIO_BASE_URL = "https://api.twilio.com/"
 
 	TWILIO_ACCOUNTS_URL = "2010-04-01/Accounts/"
 )
@@ -24,11 +23,12 @@ func SendSMS(toNumber string, messageBody string) error {
 	godotenv.Load()
 	accountSID := os.Getenv("ACCOUNT_SID")
 	authToken := os.Getenv("AUTH_TOKEN")
+	fromNumber := os.Getenv("FROM_NUMBER")
 
 	// Create SMS data
 	SMSData := url.Values{
 		"To":   {toNumber},
-		"From": {DEFAULT_FROM_NUMBER},
+		"From": {fromNumber},
 		"Body": {messageBody},
 	}
 

@@ -1,7 +1,7 @@
 package router
 
 import (
-	"example.SMSService.com/handler"
+	"example.SMSService.com/pkg/handler"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
