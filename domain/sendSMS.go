@@ -3,6 +3,7 @@ package domain
 import (
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -12,29 +13,34 @@ import (
 	"github.com/joho/godotenv"
 )
 
+const (
+	DEFAULT_FROM_NUMBER = "+14042366595"
+	TWILIO_BASE_URL     = "https://api.twilio.com/"
+
+	TWILIO_ACCOUNTS_URL = "2010-04-01/Accounts/"
+)
+
 func SendSMS(toNumber string, messageBody string) error {
 	godotenv.Load()
 	accountSID := os.Getenv("ACCOUNT_SID")
-	URL := "https://api.twilio.com/2010-04-01/Accounts/" + accountSID + "/Messages.json"
 	authToken := os.Getenv("AUTH_TOKEN")
-
-	fromNumber := "+14042366595"
 
 	// Create SMS data
 	SMSData := url.Values{
 		"To":   {toNumber},
-		"From": {fromNumber},
+		"From": {DEFAULT_FROM_NUMBER},
 		"Body": {messageBody},
 	}
 
 	// Create a new POST request
+	URL := fmt.Sprintf(TWILIO_BASE_URL+TWILIO_ACCOUNTS_URL+"%s/Messages.json", accountSID)
 	req, err := http.NewRequest("POST", URL, strings.NewReader(SMSData.Encode()))
 	if err != nil {
 		panic(err)
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	// Set the Authorization header with Basic Auth
+	// Set the Authorization header with Basic Auth base64 encoded
 	auth := base64.StdEncoding.EncodeToString([]byte(accountSID + ":" + authToken))
 	req.Header.Set("Authorization", "Basic "+auth)
 

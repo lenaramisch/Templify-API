@@ -1,21 +1,28 @@
 package handler
 
 import (
-	"errors"
+	"encoding/json"
+	"net/http"
 
 	"example.SMSService.com/domain"
 )
 
-func SenderPostRequest(toNumber string, messageBody string) error {
-	if toNumber == "" || messageBody == "" {
-		return errors.New("toNumber or messageBody is empty")
-	}
-	domainError := domain.SendSMS(toNumber, messageBody)
-	if domainError != nil {
-		return domainError
-	}
-	return nil
-}
+func SenderPostRequest(res http.ResponseWriter, req *http.Request) {
+	var senderReq SenderRequest
 
-//toNumber := "+4915170640522"
-//messageBody := "Hello from Go Code!"
+	err := json.NewDecoder(req.Body).Decode(&senderReq)
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if senderReq.ToNumber == "" || senderReq.MessageBody == "" {
+		http.Error(res, "Empty string content in either ToNumber or MessageBody", http.StatusBadRequest)
+	}
+	err = domain.SendSMS(senderReq.ToNumber, senderReq.MessageBody)
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusBadRequest)
+	}
+	res.WriteHeader(http.StatusOK)
+	res.Write([]byte("Message sent successfully"))
+}
