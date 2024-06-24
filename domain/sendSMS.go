@@ -1,9 +1,8 @@
-package main
+package domain
 
 import (
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -13,18 +12,13 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func SendSMS() {
+func SendSMS(toNumber string, messageBody string) error {
 	godotenv.Load()
-	//TODO accountSID from env file
 	accountSID := os.Getenv("ACCOUNT_SID")
 	URL := "https://api.twilio.com/2010-04-01/Accounts/" + accountSID + "/Messages.json"
-	//TODO authToken from env file
 	authToken := os.Getenv("AUTH_TOKEN")
 
-	// Define phone numbers and message body
-	toNumber := "+4915170640522"
 	fromNumber := "+14042366595"
-	messageBody := "Hello from Go Code!"
 
 	// Create SMS data
 	SMSData := url.Values{
@@ -48,18 +42,17 @@ func SendSMS() {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		panic(err)
+		return err
 	}
-	defer resp.Body.Close()
 
 	// Read the response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	var result map[string]interface{}
 	json.Unmarshal(body, &result)
 
-	fmt.Println(result)
+	return nil
 }
