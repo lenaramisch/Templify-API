@@ -1,0 +1,38 @@
+---
+version: 3
+
+tasks:
+  setup:
+  desc: 'Quickstart the project for running'
+  cmds:
+    - cp .env.example .env
+    - echo "Please fill the .env file with the required values"
+  silent: true
+
+  start:
+    desc: "Run the docker-compose file"
+    cmds:
+      - echo "Starting the application with docker"
+      - docker-compose up --build
+    silent: true
+  
+  gen-api-types:
+    desc: "Generate the types for the api using opai-codegen"
+    cmds:
+      - echo "Generating the types for the api using oapi-codegen"
+      - opai-codegen - generate types -package server ./api-spec/bundle.yml > ./types.gen.go
+    silent: true
+
+  lint-api:
+    desc: 'Lint the api-spec using redocly'
+    cmds:
+      - echo "Linting the api-spec"
+      - docker run --rm -v ./api-spec/:/spec redocly/cli lint openapi.yml
+    silent: true
+
+  bundle-api:
+    desc: 'Bundle the api-spec using redocly'
+    cmds:
+      - echo "Bundling the api-spec using redocly/redoc"
+      - docker run --rm -v ./api-spec/:/spec redocly/cli bundle openapi.yml -o bundle.yml
+    silent: true

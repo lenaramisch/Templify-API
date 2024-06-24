@@ -6,7 +6,8 @@ info:
     name: unlicensed
     url: "www.example.com"
 servers:
-  - url: localhost:8080
+  - url: /
+    description: This server
 paths:
   $ref: './resources/_index.yml'
 components:
