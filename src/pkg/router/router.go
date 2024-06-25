@@ -10,6 +10,7 @@ func CreateRouter() *chi.Mux {
 	router := chi.NewRouter()
 	router.Use(middleware.Logger)
 
-	router.Post("/sender", handler.SenderPostRequest)
+	router.Post("/sms", handler.SMSPostRequest)
+	router.Post("/email", handler.EmailPostRequest)
 	return router
 }
