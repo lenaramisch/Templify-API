@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -76,16 +77,11 @@ func SendEmail(toEmail string, toName string, subject string, message string) er
 		return err
 	}
 
-	//Read the response body
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	var result map[string]interface{}
-	err = json.Unmarshal(body, &result)
-	if err != nil {
-		return err
+	// Check HTTP status code
+	if resp.StatusCode >= 400 {
+		body, _ := io.ReadAll(resp.Body)
+		fmt.Println("Error response from SendGrid:", string(body))
+		return fmt.Errorf(fmt.Sprintf("SendGrid returned status code %d", resp.StatusCode))
 	}
 
 	return nil

@@ -29,7 +29,6 @@ func SMSPostRequest(res http.ResponseWriter, req *http.Request) {
 	}
 	render.Status(req, http.StatusOK)
 	render.PlainText(res, req, "SMS sent successfully")
-	return
 }
 
 func EmailPostRequest(res http.ResponseWriter, req *http.Request) {
@@ -52,5 +51,4 @@ func EmailPostRequest(res http.ResponseWriter, req *http.Request) {
 	}
 	render.Status(req, http.StatusOK)
 	render.PlainText(res, req, "Email sent successfully")
-	return
 }
