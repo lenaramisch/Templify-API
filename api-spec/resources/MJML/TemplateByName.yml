@@ -1,0 +1,58 @@
+get:
+  summary: Get Template by Name
+  operationId: getTemplateByName
+  tags:
+    - template
+  parameters:
+    - name: name
+      in: path
+      description: Name of template to return
+      required: true
+      schema:
+        type: integer
+        format: int64
+  responses:
+    '200':
+      description: successful operation
+      content:
+        application/json:
+          schema:
+            $ref: '../../schemas/_index.yml#/Template'
+    '400':
+      description: Invalid name supplied
+    '404':
+      description: Can not find template (template name)
+
+  # This API has no security
+  security: []
+
+post:
+  summary: Fill placeholders of template
+  operationId: fillTemplate
+  tags:
+    - template
+  parameters:
+    - name: name
+      in: path
+      description: Name of template to fill
+      required: true
+      schema:
+        type: integer
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema: 
+          $ref: '../../schemas/_index.yml#/TemplateFillRequest'
+  responses:
+    '200':
+      description: successful operation
+      content:
+        application/json:
+          schema:
+            $ref: '../../schemas/_index.yml#/FilledTemplateResponse'
+    '400':
+      description: Invalid name or data supplied
+
+  # This API has no security
+  security: []

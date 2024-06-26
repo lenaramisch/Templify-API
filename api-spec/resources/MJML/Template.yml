@@ -1,0 +1,19 @@
+post:
+  summary: Add new template
+  operationId: addNewTemplate
+  tags:
+    - template
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema: 
+          $ref: '../../schemas/_index.yml#/TemplatePostRequest'
+  responses:
+    '201':
+      description: Added template (name)
+    '400':
+      description: Invalid name supplied
+
+  # This API has no security
+  security: []

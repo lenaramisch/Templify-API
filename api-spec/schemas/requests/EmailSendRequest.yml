@@ -1,0 +1,19 @@
+type: object
+properties:
+  toEmail:
+    type: string
+    example: "holmes@detective.com"
+  toName:
+    type: string
+    example: "Sherlock Holmes"
+  subject:
+    type: string
+    example: "New Case"
+  message:
+    type: string
+    example: "Find the thief!"
+required:
+  - toEmail
+  - toName
+  - subject
+  - message

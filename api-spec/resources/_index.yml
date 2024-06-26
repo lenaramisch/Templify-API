@@ -1,2 +1,11 @@
-/sender:
+/sms:
   $ref: './SMS/Sender.yml'
+
+/email:
+  $ref: './Email/Sender.yml'
+
+/templates:
+  $ref: './MJML/Template.yml'
+
+/templates/{name}:
+  $ref: './MJML/TemplateByName.yml'
