@@ -1,4 +1,4 @@
-package domain
+package smsservice
 
 import (
 	"encoding/base64"
@@ -7,10 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
-
-	"github.com/joho/godotenv"
 )
 
 const (
@@ -19,21 +16,32 @@ const (
 	TWILIO_ACCOUNTS_URL = "2010-04-01/Accounts/"
 )
 
-func SendSMS(toNumber string, messageBody string) error {
-	godotenv.Load()
-	accountSID := os.Getenv("ACCOUNT_SID")
-	authToken := os.Getenv("AUTH_TOKEN")
-	fromNumber := os.Getenv("FROM_NUMBER")
+type TwilioSMSSenderConfig struct {
+	AccountSID string
+	AuthToken  string
+	FromNumber string
+}
 
+type TwilioSMSSender struct {
+	config TwilioSMSSenderConfig
+}
+
+func NewTwilioSMSSender(config TwilioSMSSenderConfig) *TwilioSMSSender {
+	return &TwilioSMSSender{
+		config: config,
+	}
+}
+
+func (s *TwilioSMSSender) SendSMS(toNumber string, messageBody string) error {
 	// Create SMS data
 	SMSData := url.Values{
 		"To":   {toNumber},
-		"From": {fromNumber},
+		"From": {s.config.FromNumber},
 		"Body": {messageBody},
 	}
 
 	// Create a new POST request
-	URL := fmt.Sprintf(TWILIO_BASE_URL+TWILIO_ACCOUNTS_URL+"%s/Messages.json", accountSID)
+	URL := fmt.Sprintf(TWILIO_BASE_URL+TWILIO_ACCOUNTS_URL+"%s/Messages.json", s.config.AccountSID)
 	req, err := http.NewRequest("POST", URL, strings.NewReader(SMSData.Encode()))
 	if err != nil {
 		return err
@@ -41,7 +49,7 @@ func SendSMS(toNumber string, messageBody string) error {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	// Set the Authorization header with Basic Auth base64 encoded
-	auth := base64.StdEncoding.EncodeToString([]byte(accountSID + ":" + authToken))
+	auth := base64.StdEncoding.EncodeToString([]byte(s.config.AccountSID + ":" + s.config.AuthToken))
 	req.Header.Set("Authorization", "Basic "+auth)
 
 	// Perform the request

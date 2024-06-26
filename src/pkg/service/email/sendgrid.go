@@ -1,4 +1,4 @@
-package domain
+package emailservice
 
 import (
 	"bytes"
@@ -7,24 +7,36 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 
 	"github.com/joho/godotenv"
 )
+
+type SendgridConfig struct {
+	ApiKey       string
+	FromEmail    string
+	FromName     string
+	ReplyToEmail string
+	ReplyToName  string
+}
+
+type SendGridService struct {
+	config SendgridConfig
+}
+
+func NewSendGridService(config SendgridConfig) *SendGridService {
+	return &SendGridService{
+		config: config,
+	}
+}
 
 const (
 	SENDGRID_URL = "https://api.sendgrid.com/v3/mail/send"
 )
 
-func SendEmail(toEmail string, toName string, subject string, message string) error {
+func (es *SendGridService) SendEmail(toEmail string, toName string, subject string, message string) error {
 	godotenv.Load()
-	apiKey := os.Getenv("API_KEY")
-	fromEmail := os.Getenv("FROM_EMAIL")
-	fromName := os.Getenv("FROM_NAME")
-	replyToEmail := os.Getenv("REPLY_TO_EMAIL")
-	replyToName := os.Getenv("REPLY_TO_NAME")
 
-	if apiKey == "" || fromEmail == "" || fromName == "" || replyToEmail == "" || replyToName == "" {
+	if es.config.ApiKey == "" || es.config.FromEmail == "" || es.config.FromName == "" || es.config.ReplyToEmail == "" || es.config.ReplyToName == "" {
 		return errors.New("missing environment variables")
 	}
 
@@ -48,12 +60,12 @@ func SendEmail(toEmail string, toName string, subject string, message string) er
 			},
 		},
 		"from": map[string]string{
-			"email": fromEmail,
-			"name":  fromName,
+			"email": es.config.FromEmail,
+			"name":  es.config.FromName,
 		},
 		"reply_to": map[string]string{
-			"email": replyToEmail,
-			"name":  replyToName,
+			"email": es.config.ReplyToEmail,
+			"name":  es.config.ReplyToName,
 		},
 	}
 
@@ -68,7 +80,7 @@ func SendEmail(toEmail string, toName string, subject string, message string) er
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+apiKey)
+	req.Header.Set("Authorization", "Bearer "+es.config.ApiKey)
 
 	//Perform the request
 	client := &http.Client{}
