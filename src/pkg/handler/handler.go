@@ -63,4 +63,6 @@ func (ah *APIHandler) EmailPostRequest(res http.ResponseWriter, req *http.Reques
 	render.PlainText(res, req, "Email sent successfully")
 }
 
-//TODO add MJML functions
+// TODO add MJML functions
+func (ah *APIHandler) TemplatePostRequest(res http.ResponseWriter, req *http.Request)            {}
+func (ah *APIHandler) GetTemplatePlaceholdersRequest(res http.ResponseWriter, req *http.Request) {}

@@ -9,7 +9,8 @@ type SMSSender interface {
 }
 
 type MJMLService interface {
-	//TODO add MJMLService functions
+	GetTemplatePlaceholders(MJMLTemplate string) (string, error)
+	TemplatePostRequest(MJMLTemplate string) error
 }
 
 type Usecase struct {
@@ -38,4 +39,6 @@ func (u *Usecase) SendSMS(toNumber string, messageBody string) error {
 	return u.smsSender.SendSMS(toNumber, messageBody)
 }
 
-//TODO add MJMLService functions
+func (u *Usecase) GetTemplatePlaceholders(MJMLTemplate string) (string, error) {
+	return u.mjmlService.GetTemplatePlaceholders(MJMLTemplate)
+}
