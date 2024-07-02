@@ -2,9 +2,11 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"example.SMSService.com/pkg/domain"
+	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 )
 
@@ -64,5 +66,40 @@ func (ah *APIHandler) EmailPostRequest(res http.ResponseWriter, req *http.Reques
 }
 
 // TODO add MJML functions
-func (ah *APIHandler) TemplatePostRequest(res http.ResponseWriter, req *http.Request)            {}
-func (ah *APIHandler) GetTemplatePlaceholdersRequest(res http.ResponseWriter, req *http.Request) {}
+func (ah *APIHandler) TemplatePostRequest(res http.ResponseWriter, req *http.Request) {
+	return
+}
+func (ah *APIHandler) GetTemplatePlaceholdersRequest(res http.ResponseWriter, req *http.Request) {
+	templateName := chi.URLParam(req, "templateName")
+	if templateName == "" {
+		http.Error(res, "URL Param templateName empty", http.StatusBadRequest)
+		return
+	}
+	templatePlaceholders, err := ah.usecase.GetTemplatePlaceholders(templateName)
+	if err != nil {
+		http.Error(res, fmt.Sprintf("Getting placeholders for template %v failed", templateName), http.StatusInternalServerError)
+		return
+	}
+	render.Status(req, http.StatusOK)
+	render.JSON(res, req, templatePlaceholders)
+}
+
+func (ah *APIHandler) PostTemplatePlacehholdersRequest(res http.ResponseWriter, req *http.Request) {
+	//get templateName from Request Params
+	templateName := chi.URLParam(req, "templateName")
+	if templateName == "" {
+		http.Error(res, "URL Param templateName empty", http.StatusBadRequest)
+		return
+	}
+
+	//TODO read values for placeholders (req body)
+	values := map[string]any{}
+
+	filledTemplate, err := ah.usecase.FillTemplatePlaceholders(templateName, values)
+	if err != nil {
+		http.Error(res, "Error filling template", http.StatusInternalServerError)
+		return
+	}
+	render.Status(req, http.StatusOK)
+	render.PlainText(res, req, filledTemplate)
+}

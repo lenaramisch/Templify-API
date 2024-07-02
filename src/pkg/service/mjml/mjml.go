@@ -1,7 +1,6 @@
 package mjmlservice
 
 import (
-	"encoding/json"
 	"fmt"
 	"regexp"
 )
@@ -29,7 +28,7 @@ func NewMJMLService(config MJMLConfig) *MJMLService {
 
 // TODO get template with template-name from DB
 func extractPlaceholders(template string) []string {
-	reg := regexp.MustCompile(`{{data:([a-zA-Z]+):""}}`)
+	reg := regexp.MustCompile(`{{\s*\.([a-zA-Z]+)\s*}}`)
 	matches := reg.FindAllStringSubmatch(template, -1)
 
 	var placeholders []string
@@ -40,27 +39,20 @@ func extractPlaceholders(template string) []string {
 	return placeholders
 }
 
-func createJSON(placeholders []string) (string, error) {
-	data := make(map[string]string)
-	for _, placeholder := range placeholders {
-		data[placeholder] = ""
+// GET /templates/{template-name}
+func (m *MJMLService) GetTemplatePlaceholders(template string) ([]string, error) {
+	placeholders := extractPlaceholders(template)
+	if len(placeholders) == 0 {
+		fmt.Printf("No placeholders found")
+		return []string{}, nil
 	}
 
-	jsonData, err := json.Marshal(data)
-	if err != nil {
-		return "", err
-	}
-
-	return string(jsonData), nil
+	return placeholders, nil
 }
 
-// GET /templates/{template-name}
-func (m *MJMLService) GetTemplatePlaceholders(template string) (string, error) {
-	placeholders := extractPlaceholders(template)
-	jsonPlaceholders, err := createJSON(placeholders)
-	if err != nil {
-		return "", fmt.Errorf("error creating JSON: %w", err)
-	}
-
-	return jsonPlaceholders, err
+func (m *MJMLService) FillTemplatePlaceholders(templateName string, values map[string]interface{}) (string, error) {
+	//TODO Get template by name from DB
+	//TODO use go template execute to fill template with values
+	//TODO return filled mjml template as string or error
+	return "", nil
 }

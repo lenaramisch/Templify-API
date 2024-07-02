@@ -1,5 +1,12 @@
 package domain
 
+import (
+	_ "embed"
+)
+
+//go:embed template_test.mjml
+var embeddedTemplate string
+
 type EmailSender interface {
 	SendEmail(toEmail string, toName string, subject string, message string) error
 }
@@ -9,8 +16,9 @@ type SMSSender interface {
 }
 
 type MJMLService interface {
-	GetTemplatePlaceholders(MJMLTemplate string) (string, error)
-	TemplatePostRequest(MJMLTemplate string) error
+	GetTemplatePlaceholders(templateName string) ([]string, error)
+	TemplatePostRequest(templateName string) error
+	FillTemplatePlaceholders(templateName string, values map[string]interface{}) (string, error)
 }
 
 type Usecase struct {
@@ -39,6 +47,11 @@ func (u *Usecase) SendSMS(toNumber string, messageBody string) error {
 	return u.smsSender.SendSMS(toNumber, messageBody)
 }
 
-func (u *Usecase) GetTemplatePlaceholders(MJMLTemplate string) (string, error) {
-	return u.mjmlService.GetTemplatePlaceholders(MJMLTemplate)
+func (u *Usecase) GetTemplatePlaceholders(templateName string) ([]string, error) {
+	// return u.mjmlService.GetTemplatePlaceholders(templateName) // TODO THIS IS CORRECT
+	return u.mjmlService.GetTemplatePlaceholders(embeddedTemplate)
+}
+
+func (u *Usecase) FillTemplatePlaceholders(templateName string, values map[string]any) (string, error) {
+	return u.mjmlService.FillTemplatePlaceholders(templateName, values)
 }
