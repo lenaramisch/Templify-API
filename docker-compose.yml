@@ -18,6 +18,47 @@ services:
     #   timeout: 10s
     #   retries: 5
 
+  db:
+    container_name: sms_service_db
+    image: postgres:alpine3.18
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      PGDATA: /data/postgres
+      TZ: Europe/Berlin
+    volumes:
+      - ./postgres-data:/data/postgres
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'pg_isready',
+          '-U',
+          '${POSTGRES_USER:-postgres}',
+          '-d',
+          'postgres',
+        ]
+      interval: 3s
+      timeout: 5s
+      retries: 5
+
+  dbmigration:
+    container_name: sms_service_migration
+    build:
+      context: .
+      dockerfile: ./database/build/migrate.dockerfile
+    restart: on-failure
+    environment:
+      APP_DATABASE_HOST: db
+      APP_DATABASE_PORT: 5432
+      APP_DATABASE_NAME: postgres
+      APP_DATABASE_USER: ${POSTGRES_USER:-postgres}
+      APP_DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    depends_on:
+      - db
+
   mjml:
     image: adrianrudnik/mjml-server
     ports:
