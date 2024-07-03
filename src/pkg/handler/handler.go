@@ -67,23 +67,26 @@ func (ah *APIHandler) EmailPostRequest(res http.ResponseWriter, req *http.Reques
 }
 
 func (ah *APIHandler) TemplatePostRequest(res http.ResponseWriter, req *http.Request) {
+
 	body, err := io.ReadAll(req.Body)
 	if err != nil {
-		http.Error(res, "Reading request body failed", http.StatusInternalServerError)
-	}
-
-	templateAPI := Template{}
-
-	if err := json.Unmarshal(body, &templateAPI); err != nil {
-		http.Error(res, "Invalid JSON format", http.StatusBadRequest)
+		http.Error(res, "Reading Request Body failed", http.StatusBadRequest)
 		return
 	}
-	addTemplateResult, err := ah.usecase.AddTemplate(templateAPI.Name, templateAPI.MJMLString)
+	MJMLString := string(body)
+
+	templateName := chi.URLParam(req, "templateName")
+	if templateName == "" {
+		http.Error(res, "URL Param templateName empty", http.StatusBadRequest)
+		return
+	}
+
+	err = ah.usecase.AddTemplate(templateName, MJMLString)
 	if err != nil {
-		http.Error(res, fmt.Sprintf("Adding template with name %v failed", templateAPI.Name), http.StatusInternalServerError)
+		http.Error(res, fmt.Sprintf("Adding template with name %v failed", templateName), http.StatusInternalServerError)
 		return
 	}
-	resultString := fmt.Sprintf("Added template with name %v and id %v", templateAPI.Name, addTemplateResult)
+	resultString := fmt.Sprintf("Added template with name %v", templateName)
 	render.Status(req, http.StatusOK)
 	render.PlainText(res, req, resultString)
 }

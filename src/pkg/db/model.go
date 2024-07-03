@@ -1,8 +1,8 @@
 package db
 
 type Template struct {
-	ID         int    `json:"id"`
-	Name       string `json:"name"`
-	MJMLString string `json:"mjml_string"`
-	CreatedAt  string `json:"created_at"`
+	ID         int    `db:"id"`
+	Name       string `db:"name"`
+	MJMLString string `db:"mjml_string"`
+	CreatedAt  string `db:"created_at"`
 }

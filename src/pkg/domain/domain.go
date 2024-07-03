@@ -2,6 +2,7 @@ package domain
 
 import (
 	_ "embed"
+	"fmt"
 )
 
 type EmailSender interface {
@@ -19,7 +20,7 @@ type MJMLService interface {
 
 type Repository interface {
 	GetTemplateByName(name string) (*Template, error)
-	AddTemplate(name string, mjmlString string) (int64, error)
+	AddTemplate(name string, mjmlString string) error
 }
 
 type Usecase struct {
@@ -66,13 +67,21 @@ func (u *Usecase) FillTemplatePlaceholders(templateName string, values map[strin
 	return u.mjmlService.FillTemplatePlaceholders(*domainTemplate, values)
 }
 
-func (u *Usecase) AddTemplate(templateName string, MJMLString string) (int64, error) {
-	return u.repository.AddTemplate(templateName, MJMLString)
+func (u *Usecase) AddTemplate(templateName string, MJMLString string) error {
+	err := u.repository.AddTemplate(templateName, MJMLString)
+	if err != nil {
+		fmt.Println("=== Error ===")
+		fmt.Println(err.Error())
+		return err
+	}
+	return nil
 }
 
 func (u *Usecase) GetTemplateByName(templateName string) (*Template, error) {
 	templateDomain, err := u.repository.GetTemplateByName(templateName)
 	if err != nil {
+		fmt.Println("=== Error ===")
+		fmt.Println(err.Error())
 		return nil, err
 	}
 	return templateDomain, nil

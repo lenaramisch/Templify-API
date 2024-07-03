@@ -12,9 +12,9 @@ func CreateRouter(apiHandler *handler.APIHandler) *chi.Mux {
 
 	router.Post("/sms", apiHandler.SMSPostRequest)
 	router.Post("/email", apiHandler.EmailPostRequest)
-	router.Post("/templates", apiHandler.TemplatePostRequest)
+	router.Post("/templates/{templateName}", apiHandler.TemplatePostRequest)
 	router.Get("/templates/{templateName}/placeholders", apiHandler.GetTemplatePlaceholdersRequest)
 	router.Get("/templates/{templateName}", apiHandler.GetTemplateByName)
-	router.Post("/templates/{templateName}", apiHandler.PostTemplatePlacehholdersRequest)
+	router.Post("/templates/{templateName}/placeholders", apiHandler.PostTemplatePlacehholdersRequest)
 	return router
 }

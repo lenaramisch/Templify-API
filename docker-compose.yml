@@ -12,6 +12,8 @@ services:
     env_file:
       - .env
     restart: on-failure
+    depends_on:
+      - db
     # healthcheck:
     #   test: curl --fail -s localhost:8080/info/status || exit 1
     #   interval: 30s

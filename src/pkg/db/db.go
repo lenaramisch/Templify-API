@@ -5,8 +5,8 @@ import (
 	"log"
 
 	"example.SMSService.com/pkg/domain"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
 )
 
 type Repository struct {
@@ -23,14 +23,20 @@ type RepositoryConfig struct {
 }
 
 func NewRepository(config RepositoryConfig) *Repository {
-	return &Repository{
+	repo := &Repository{
 		config: config,
 	}
+	repo.ConnectToDB()
+	return repo
 }
 
 func (r *Repository) ConnectToDB() {
-	connectionString := fmt.Sprintf("user=%s dbname=%s sslmode=disable", r.config.User, r.config.DBName)
-	db, err := sqlx.Connect("postgres", connectionString)
+	connectionString := fmt.Sprintf(
+		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		r.config.Host, r.config.Port, r.config.User, r.config.Password, r.config.DBName,
+	)
+	fmt.Println("Using connection string: ", connectionString)
+	db, err := sqlx.Connect("pgx", connectionString)
 	if err != nil {
 		log.Fatal("Connecting to DB failed", err)
 	}
@@ -39,13 +45,19 @@ func (r *Repository) ConnectToDB() {
 }
 
 func (r *Repository) GetTemplateByName(name string) (*domain.Template, error) {
-	db := r.dbConnection.MustBegin()
+	tx := r.dbConnection.MustBegin()
 	getTemplateByNameQuery := "SELECT * FROM templates WHERE name=$1"
 	templateDB := Template{}
-	err := db.Get(&templateDB, getTemplateByNameQuery, name)
+	err := tx.Get(&templateDB, getTemplateByNameQuery, name)
 	if err != nil {
 		return nil, err
 	}
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+
+	// map to domain model
 	templateDomain := domain.Template{
 		Name:       templateDB.Name,
 		MJMLString: templateDB.MJMLString,
@@ -53,9 +65,10 @@ func (r *Repository) GetTemplateByName(name string) (*domain.Template, error) {
 	return &templateDomain, nil
 }
 
-func (r *Repository) AddTemplate(name string, mjmlString string) (int64, error) {
-	db := r.dbConnection.MustBegin()
+func (r *Repository) AddTemplate(name string, mjmlString string) error {
+	tx := r.dbConnection.MustBegin()
 	addTemplateQuery := "INSERT INTO templates (name, mjml_string) VALUES ($1, $2)"
-	sqlResult := db.MustExec(addTemplateQuery, name, mjmlString)
-	return sqlResult.LastInsertId()
+	tx.MustExec(addTemplateQuery, name, mjmlString)
+	return tx.Commit()
+
 }
