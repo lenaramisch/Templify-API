@@ -2,11 +2,7 @@
   <mj-body>
     <mj-section>
       <mj-column>
-        <mj-text font-size="20px" color="black" font-family="helvetica">{{ .Message }}</mj-text>
-        <mj-text font-size="20px" color="black" font-family="helvetica">{{ .Banana }}</mj-text>
-        <mj-text font-size="20px" color="black" font-family="helvetica">{{ .Apple }}</mj-text>
-        <mj-text font-size="20px" color="black" font-family="helvetica">{{ .Juice }}</mj-text>
-
+        <mj-text font-size="20px" color="black" font-family="helvetica">Your name: {{ .FirstName }} {{ .LastName }}. Age: {{ .Age }}</mj-text>
       </mj-column>
     </mj-section>
   </mj-body>

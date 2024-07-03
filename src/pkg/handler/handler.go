@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	"example.SMSService.com/pkg/domain"
@@ -65,9 +66,8 @@ func (ah *APIHandler) EmailPostRequest(res http.ResponseWriter, req *http.Reques
 	render.PlainText(res, req, "Email sent successfully")
 }
 
-// TODO add MJML functions
 func (ah *APIHandler) TemplatePostRequest(res http.ResponseWriter, req *http.Request) {
-	return
+	//TODO implement enpoint for posting templates to DB
 }
 func (ah *APIHandler) GetTemplatePlaceholdersRequest(res http.ResponseWriter, req *http.Request) {
 	templateName := chi.URLParam(req, "templateName")
@@ -85,21 +85,30 @@ func (ah *APIHandler) GetTemplatePlaceholdersRequest(res http.ResponseWriter, re
 }
 
 func (ah *APIHandler) PostTemplatePlacehholdersRequest(res http.ResponseWriter, req *http.Request) {
-	//get templateName from Request Params
 	templateName := chi.URLParam(req, "templateName")
 	if templateName == "" {
 		http.Error(res, "URL Param templateName empty", http.StatusBadRequest)
 		return
 	}
 
-	//TODO read values for placeholders (req body)
+	body, err := io.ReadAll(req.Body)
+	if err != nil {
+		http.Error(res, "Reading request body failed", http.StatusInternalServerError)
+	}
+
 	values := map[string]any{}
+
+	if err := json.Unmarshal(body, &values); err != nil {
+		http.Error(res, "Invalid JSON format", http.StatusBadRequest)
+		return
+	}
 
 	filledTemplate, err := ah.usecase.FillTemplatePlaceholders(templateName, values)
 	if err != nil {
 		http.Error(res, "Error filling template", http.StatusInternalServerError)
 		return
 	}
+
 	render.Status(req, http.StatusOK)
 	render.PlainText(res, req, filledTemplate)
 }

@@ -1,9 +1,15 @@
 package mjmlservice
 
 import (
+	"bytes"
+	_ "embed"
 	"fmt"
 	"regexp"
+	"text/template"
 )
+
+//go:embed template_test.mjml
+var hardCodedTemplate string
 
 type MJMLConfig struct {
 	//no config variables for now
@@ -13,17 +19,17 @@ type MJMLService struct {
 	config MJMLConfig
 }
 
-// TODO add template post request functionality
-// POST /templates
-// read MJML template given from user and save it
-func (m *MJMLService) TemplatePostRequest(MJMLTemplate string) error {
-	panic("unimplemented")
-}
-
 func NewMJMLService(config MJMLConfig) *MJMLService {
 	return &MJMLService{
 		config: config,
 	}
+}
+
+// TODO add template post to DB request functionality
+// POST /templates
+// read MJML template given from user and save it to DB
+func (m *MJMLService) TemplatePostRequest(MJMLTemplate string) error {
+	panic("unimplemented")
 }
 
 // TODO get template with template-name from DB
@@ -51,8 +57,31 @@ func (m *MJMLService) GetTemplatePlaceholders(template string) ([]string, error)
 }
 
 func (m *MJMLService) FillTemplatePlaceholders(templateName string, values map[string]interface{}) (string, error) {
+	fmt.Print("Got values in MJML Service: ", values)
+	placeholders, err := m.GetTemplatePlaceholders(hardCodedTemplate)
+	if err != nil {
+		fmt.Print("Getting placeholders for template failed")
+		return "Getting placeholders for template failed", err
+	}
+	for _, placeholder := range placeholders {
+		if _, ok := values[placeholder]; !ok {
+			return "", fmt.Errorf("missing placeholder: %s", placeholder)
+		}
+	}
 	//TODO Get template by name from DB
-	//TODO use go template execute to fill template with values
-	//TODO return filled mjml template as string or error
-	return "", nil
+	//For now use hard coded template
+	templ, err := template.New("someName").Parse(hardCodedTemplate)
+	if err != nil {
+		fmt.Print("Error at template.New.Parse")
+		return "", err
+	}
+	buf := &bytes.Buffer{}
+	err = templ.Execute(buf, values)
+	if err != nil {
+		fmt.Print("Error at execute")
+		return "", err
+	}
+	filledTemplate := buf.String()
+
+	return filledTemplate, nil
 }
