@@ -16,5 +16,7 @@ require (
 
 require (
 	github.com/ajg/form v1.5.1 // indirect
+	github.com/jmoiron/sqlx v1.4.0
+	github.com/lib/pq v1.10.9
 	github.com/stretchr/testify v1.9.0
 )

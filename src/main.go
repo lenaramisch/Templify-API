@@ -2,9 +2,12 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
+	"strconv"
 
+	"example.SMSService.com/pkg/db"
 	"example.SMSService.com/pkg/domain"
 	"example.SMSService.com/pkg/handler"
 	"example.SMSService.com/pkg/router"
@@ -18,10 +21,16 @@ type AppConfig struct {
 	SendgridConfig  emailservice.SendgridConfig
 	SMSTwilioConfig smsservice.TwilioSMSSenderConfig
 	MJMLConfig      mjmlservice.MJMLConfig
+	DBConfig        db.RepositoryConfig
 }
 
 func loadConfig() AppConfig {
 	godotenv.Load()
+	dbPortString := os.Getenv("DB_PORT")
+	dbPortInt, err := strconv.Atoi(dbPortString)
+	if err != nil {
+		log.Fatal("Converting db port to int failed")
+	}
 
 	return AppConfig{
 		SendgridConfig: emailservice.SendgridConfig{
@@ -35,6 +44,13 @@ func loadConfig() AppConfig {
 			AccountSID: os.Getenv("ACCOUNT_SID"),
 			AuthToken:  os.Getenv("AUTH_TOKEN"),
 			FromNumber: os.Getenv("FROM_NUMBER"),
+		},
+		DBConfig: db.RepositoryConfig{
+			Host:     os.Getenv("DB_HOST"),
+			Port:     dbPortInt,
+			User:     os.Getenv("DB_USER"),
+			Password: os.Getenv("DB_PASSWORD"),
+			DBName:   os.Getenv("DB_NAME"),
 		},
 		MJMLConfig: mjmlservice.MJMLConfig{},
 	}
