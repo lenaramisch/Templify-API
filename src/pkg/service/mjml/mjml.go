@@ -4,12 +4,11 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
+	"html/template"
 	"regexp"
-	"text/template"
-)
 
-//go:embed template_test.mjml
-var hardCodedTemplate string
+	"example.SMSService.com/pkg/domain"
+)
 
 type MJMLConfig struct {
 	//no config variables for now
@@ -25,17 +24,9 @@ func NewMJMLService(config MJMLConfig) *MJMLService {
 	}
 }
 
-// TODO add template post to DB request functionality
-// POST /templates
-// read MJML template given from user and save it to DB
-func (m *MJMLService) TemplatePostRequest(MJMLTemplate string) error {
-	panic("unimplemented")
-}
-
-// TODO get template with template-name from DB
-func extractPlaceholders(template string) []string {
+func extractPlaceholders(MJMLTemplateString string) []string {
 	reg := regexp.MustCompile(`{{\s*\.([a-zA-Z]+)\s*}}`)
-	matches := reg.FindAllStringSubmatch(template, -1)
+	matches := reg.FindAllStringSubmatch(MJMLTemplateString, -1)
 
 	var placeholders []string
 	for _, match := range matches {
@@ -46,8 +37,9 @@ func extractPlaceholders(template string) []string {
 }
 
 // GET /templates/{template-name}
-func (m *MJMLService) GetTemplatePlaceholders(template string) ([]string, error) {
-	placeholders := extractPlaceholders(template)
+func (m *MJMLService) GetTemplatePlaceholders(domainTemplate domain.Template) ([]string, error) {
+	MJMLTemplateString := domainTemplate.MJMLString
+	placeholders := extractPlaceholders(MJMLTemplateString)
 	if len(placeholders) == 0 {
 		fmt.Printf("No placeholders found")
 		return []string{}, nil
@@ -56,9 +48,9 @@ func (m *MJMLService) GetTemplatePlaceholders(template string) ([]string, error)
 	return placeholders, nil
 }
 
-func (m *MJMLService) FillTemplatePlaceholders(templateName string, values map[string]interface{}) (string, error) {
-	fmt.Print("Got values in MJML Service: ", values)
-	placeholders, err := m.GetTemplatePlaceholders(hardCodedTemplate)
+func (m *MJMLService) FillTemplatePlaceholders(domainTemplate domain.Template, values map[string]interface{}) (string, error) {
+	MJMLTemplateString := domainTemplate.MJMLString
+	placeholders, err := m.GetTemplatePlaceholders(domainTemplate)
 	if err != nil {
 		fmt.Print("Getting placeholders for template failed")
 		return "Getting placeholders for template failed", err
@@ -68,9 +60,7 @@ func (m *MJMLService) FillTemplatePlaceholders(templateName string, values map[s
 			return "", fmt.Errorf("missing placeholder: %s", placeholder)
 		}
 	}
-	//TODO Get template by name from DB
-	//For now use hard coded template
-	templ, err := template.New("someName").Parse(hardCodedTemplate)
+	templ, err := template.New("someName").Parse(MJMLTemplateString)
 	if err != nil {
 		fmt.Print("Error at template.New.Parse")
 		return "", err

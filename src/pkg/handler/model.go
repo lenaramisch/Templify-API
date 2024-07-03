@@ -11,3 +11,8 @@ type EmailRequest struct {
 	Subject     string `json:"subject"`
 	MessageBody string `json:"message"`
 }
+
+type Template struct {
+	Name       string `json:"name"`
+	MJMLString string `json:"mjml_string"`
+}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"example.SMSService.com/pkg/domain"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
@@ -37,10 +38,24 @@ func (r *Repository) ConnectToDB() {
 	r.dbConnection = db
 }
 
-// functions to get template by name etc
-//tx := r.dbConnection.MustBegin()
-// tx.MustExec("INSERT INTO person (first_name, last_name, email) VALUES ($1, $2, $3)", "Jason", "Moiron", "jmoiron@jmoiron.net")
+func (r *Repository) GetTemplateByName(name string) (*domain.Template, error) {
+	db := r.dbConnection.MustBegin()
+	getTemplateByNameQuery := "SELECT * FROM templates WHERE name=$1"
+	templateDB := Template{}
+	err := db.Get(&templateDB, getTemplateByNameQuery, name)
+	if err != nil {
+		return nil, err
+	}
+	templateDomain := domain.Template{
+		Name:       templateDB.Name,
+		MJMLString: templateDB.MJMLString,
+	}
+	return &templateDomain, nil
+}
 
-func (r *Repository) GetTemplateByName(name string) string {
-	return ""
+func (r *Repository) AddTemplate(name string, mjmlString string) (int64, error) {
+	db := r.dbConnection.MustBegin()
+	addTemplateQuery := "INSERT INTO templates (name, mjml_string) VALUES ($1, $2)"
+	sqlResult := db.MustExec(addTemplateQuery, name, mjmlString)
+	return sqlResult.LastInsertId()
 }

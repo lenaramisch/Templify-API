@@ -67,7 +67,25 @@ func (ah *APIHandler) EmailPostRequest(res http.ResponseWriter, req *http.Reques
 }
 
 func (ah *APIHandler) TemplatePostRequest(res http.ResponseWriter, req *http.Request) {
-	//TODO implement enpoint for posting templates to DB
+	body, err := io.ReadAll(req.Body)
+	if err != nil {
+		http.Error(res, "Reading request body failed", http.StatusInternalServerError)
+	}
+
+	templateAPI := Template{}
+
+	if err := json.Unmarshal(body, &templateAPI); err != nil {
+		http.Error(res, "Invalid JSON format", http.StatusBadRequest)
+		return
+	}
+	addTemplateResult, err := ah.usecase.AddTemplate(templateAPI.Name, templateAPI.MJMLString)
+	if err != nil {
+		http.Error(res, fmt.Sprintf("Adding template with name %v failed", templateAPI.Name), http.StatusInternalServerError)
+		return
+	}
+	resultString := fmt.Sprintf("Added template with name %v and id %v", templateAPI.Name, addTemplateResult)
+	render.Status(req, http.StatusOK)
+	render.PlainText(res, req, resultString)
 }
 func (ah *APIHandler) GetTemplatePlaceholdersRequest(res http.ResponseWriter, req *http.Request) {
 	templateName := chi.URLParam(req, "templateName")
@@ -82,6 +100,24 @@ func (ah *APIHandler) GetTemplatePlaceholdersRequest(res http.ResponseWriter, re
 	}
 	render.Status(req, http.StatusOK)
 	render.JSON(res, req, templatePlaceholders)
+}
+
+func (ah *APIHandler) GetTemplateByName(res http.ResponseWriter, req *http.Request) {
+	templateName := chi.URLParam(req, "templateName")
+	if templateName == "" {
+		http.Error(res, "URL Param templateName empty", http.StatusBadRequest)
+		return
+	}
+	templateDomain := &domain.Template{}
+	var err error
+	templateDomain, err = ah.usecase.GetTemplateByName(templateName)
+	if err != nil {
+		http.Error(res, "Error getting template", http.StatusInternalServerError)
+		return
+	}
+	render.Status(req, http.StatusOK)
+	render.JSON(res, req, templateDomain)
+
 }
 
 func (ah *APIHandler) PostTemplatePlacehholdersRequest(res http.ResponseWriter, req *http.Request) {

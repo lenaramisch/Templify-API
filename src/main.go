@@ -62,9 +62,10 @@ func main() {
 	sendgridEmailService := emailservice.NewSendGridService(appConfig.SendgridConfig)
 	smsTwilioService := smsservice.NewTwilioSMSSender(appConfig.SMSTwilioConfig)
 	mjmlService := mjmlservice.NewMJMLService(appConfig.MJMLConfig)
+	repository := db.NewRepository(appConfig.DBConfig)
 
 	// create usecase
-	usecase := domain.NewUsecase(sendgridEmailService, smsTwilioService, mjmlService)
+	usecase := domain.NewUsecase(sendgridEmailService, smsTwilioService, mjmlService, repository)
 
 	//prepare handler
 	handler := handler.NewAPIHandler(usecase)
