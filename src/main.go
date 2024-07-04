@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"strconv"
@@ -31,6 +32,11 @@ func loadConfig() AppConfig {
 	if err != nil {
 		log.Fatal("Converting db port to int failed")
 	}
+	mjmlPortString := os.Getenv("MJML_PORT")
+	mjmlPortInt, err := strconv.Atoi(mjmlPortString)
+	if err != nil {
+		log.Fatal("Converting mjml port to int failed")
+	}
 
 	return AppConfig{
 		SendgridConfig: emailservice.SendgridConfig{
@@ -52,11 +58,15 @@ func loadConfig() AppConfig {
 			Password: os.Getenv("DB_PASSWORD"),
 			DBName:   os.Getenv("DB_NAME"),
 		},
-		MJMLConfig: mjmlservice.MJMLConfig{},
+		MJMLConfig: mjmlservice.MJMLConfig{
+			Host: os.Getenv("MJML_HOST"),
+			Port: mjmlPortInt,
+		},
 	}
 }
 
 func main() {
+	slog.SetLogLoggerLevel(slog.LevelDebug)
 	// prepare required services for usecase
 	appConfig := loadConfig()
 	sendgridEmailService := emailservice.NewSendGridService(appConfig.SendgridConfig)

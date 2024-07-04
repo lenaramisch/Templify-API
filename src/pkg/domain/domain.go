@@ -3,6 +3,7 @@ package domain
 import (
 	_ "embed"
 	"fmt"
+	"log/slog"
 )
 
 type EmailSender interface {
@@ -15,7 +16,8 @@ type SMSSender interface {
 
 type MJMLService interface {
 	GetTemplatePlaceholders(template Template) ([]string, error)
-	FillTemplatePlaceholders(domainTemplate Template, values map[string]interface{}) (string, error)
+	FillTemplatePlaceholders(domainTemplate Template, values map[string]any) (string, error)
+	RenderMJML(MJMLString string) (string, error)
 }
 
 type Repository interface {
@@ -59,12 +61,33 @@ func (u *Usecase) GetTemplatePlaceholders(templateName string) ([]string, error)
 	return u.mjmlService.GetTemplatePlaceholders(*domainTemplate)
 }
 
-func (u *Usecase) FillTemplatePlaceholders(templateName string, values map[string]any) (string, error) {
+func (u *Usecase) FillTemplatePlaceholders(templateName string, shouldBeSent bool, toEmail string, toName string, subject string, values map[string]any) (string, error) {
 	domainTemplate, err := u.repository.GetTemplateByName(templateName)
 	if err != nil {
+		slog.Debug("Error getting template by name")
 		return "", err
 	}
-	return u.mjmlService.FillTemplatePlaceholders(*domainTemplate, values)
+	filledTemplate, err := u.mjmlService.FillTemplatePlaceholders(*domainTemplate, values)
+	if err != nil {
+		slog.Debug("Error filling template placeholders")
+		return "", err
+	}
+	if !shouldBeSent {
+		return filledTemplate, nil
+	}
+	//TODO send MJMLString to MJML Service to get html string
+	htmlString, err := u.mjmlService.RenderMJML(filledTemplate)
+	if err != nil {
+		slog.Debug("Error rendering mjml template")
+		return "", err
+	}
+	//TODO send html string as email with sendgrid
+	err = u.emailSender.SendEmail(toEmail, toName, subject, htmlString)
+	if err != nil {
+		slog.Debug("Error sending email")
+		return "", err
+	}
+	return htmlString, nil
 }
 
 func (u *Usecase) AddTemplate(templateName string, MJMLString string) error {

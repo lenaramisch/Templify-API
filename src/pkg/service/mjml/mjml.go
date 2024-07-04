@@ -5,13 +5,17 @@ import (
 	_ "embed"
 	"fmt"
 	"html/template"
+	"io"
+	"log/slog"
+	"net/http"
 	"regexp"
 
 	"example.SMSService.com/pkg/domain"
 )
 
 type MJMLConfig struct {
-	//no config variables for now
+	Host string
+	Port int
 }
 
 type MJMLService struct {
@@ -48,7 +52,7 @@ func (m *MJMLService) GetTemplatePlaceholders(domainTemplate domain.Template) ([
 	return placeholders, nil
 }
 
-func (m *MJMLService) FillTemplatePlaceholders(domainTemplate domain.Template, values map[string]interface{}) (string, error) {
+func (m *MJMLService) FillTemplatePlaceholders(domainTemplate domain.Template, values map[string]any) (string, error) {
 	MJMLTemplateString := domainTemplate.MJMLString
 	placeholders, err := m.GetTemplatePlaceholders(domainTemplate)
 	if err != nil {
@@ -74,4 +78,35 @@ func (m *MJMLService) FillTemplatePlaceholders(domainTemplate domain.Template, v
 	filledTemplate := buf.String()
 
 	return filledTemplate, nil
+}
+
+func (m *MJMLService) RenderMJML(MJMLString string) (string, error) {
+	//call MJML Service on Port 5000
+	// Create a new POST request
+	url := fmt.Sprintf("%s:%d", m.config.Host, m.config.Port)
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte(MJMLString)))
+	if err != nil {
+		slog.Debug("Error creating request")
+		return "", err
+	}
+
+	req.Header.Set("Content-Type", "text/plain")
+
+	//Perform the request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		slog.With("err", err.Error()).Debug("Error sending request")
+		return "", err
+	}
+
+	body, _ := io.ReadAll(resp.Body)
+
+	if resp.StatusCode >= 400 {
+		fmt.Println("Error response from MJML Service:", string(body))
+		return "", fmt.Errorf(fmt.Sprintf("MJML Service returned status code %d", resp.StatusCode))
+	}
+
+	htmlString := string(body)
+	return htmlString, nil
 }

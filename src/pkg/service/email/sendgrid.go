@@ -55,7 +55,7 @@ func (es *SendGridService) SendEmail(toEmail string, toName string, subject stri
 		},
 		"content": []map[string]string{
 			{
-				"type":  "text/plain",
+				"type":  "text/html",
 				"value": message,
 			},
 		},

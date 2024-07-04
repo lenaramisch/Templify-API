@@ -20,3 +20,8 @@ func TestExtractPlaceholders(t *testing.T) {
 	// assert
 	assert.Equal(t, expected, placeholders, "Expected %v is not the same as we got from the extractPlaceholders function: %v", expected, placeholders)
 }
+
+// func TestRenderMJML(t *testing.T) {
+// 	//prepare
+// 	expected:= ""
+// }

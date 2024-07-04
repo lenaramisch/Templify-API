@@ -16,3 +16,11 @@ type Template struct {
 	Name       string `json:"name"`
 	MJMLString string `json:"mjml_string"`
 }
+
+type TemplateFillRequest struct {
+	ShouldBeSent bool           `json:"shouldBeSent"`
+	Subject      string         `json:"subject"`
+	ToEmail      string         `json:"toEmail"`
+	ToName       string         `json:"toName"`
+	Placeholders map[string]any `json:"placeholders"`
+}

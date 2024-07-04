@@ -135,14 +135,14 @@ func (ah *APIHandler) PostTemplatePlacehholdersRequest(res http.ResponseWriter, 
 		http.Error(res, "Reading request body failed", http.StatusInternalServerError)
 	}
 
-	values := map[string]any{}
+	templateFillRequest := TemplateFillRequest{}
 
-	if err := json.Unmarshal(body, &values); err != nil {
+	if err := json.Unmarshal(body, &templateFillRequest); err != nil {
 		http.Error(res, "Invalid JSON format", http.StatusBadRequest)
 		return
 	}
 
-	filledTemplate, err := ah.usecase.FillTemplatePlaceholders(templateName, values)
+	filledTemplate, err := ah.usecase.FillTemplatePlaceholders(templateName, templateFillRequest.ShouldBeSent, templateFillRequest.ToEmail, templateFillRequest.ToName, templateFillRequest.Subject, templateFillRequest.Placeholders)
 	if err != nil {
 		http.Error(res, "Error filling template", http.StatusInternalServerError)
 		return
