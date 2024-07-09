@@ -5,9 +5,6 @@ SMSSendRequest:
 EmailSendRequest:
   $ref: './requests/EmailSendRequest.yml'
 
-Template:
-  $ref: './responses/Template.yml'
-
 TemplatePostRequest:
   $ref: './requests/TemplatePostRequest.yml'
 
@@ -15,6 +12,11 @@ TemplateFillRequest:
   $ref: './requests/TemplateFillRequest.yml'
 
 #Responses
-
 FilledTemplateResponse:
   $ref: './responses/FilledTemplateResponse.yml'
+
+Template:
+  $ref: './responses/Template.yml'
+
+Placeholders:
+  $ref: './responses/Placeholders.yml'

@@ -87,9 +87,10 @@ func (ah *APIHandler) TemplatePostRequest(res http.ResponseWriter, req *http.Req
 		return
 	}
 	resultString := fmt.Sprintf("Added template with name %v", templateName)
-	render.Status(req, http.StatusOK)
+	render.Status(req, http.StatusCreated)
 	render.PlainText(res, req, resultString)
 }
+
 func (ah *APIHandler) GetTemplatePlaceholdersRequest(res http.ResponseWriter, req *http.Request) {
 	templateName := chi.URLParam(req, "templateName")
 	if templateName == "" {
@@ -101,6 +102,7 @@ func (ah *APIHandler) GetTemplatePlaceholdersRequest(res http.ResponseWriter, re
 		http.Error(res, fmt.Sprintf("Getting placeholders for template %v failed", templateName), http.StatusInternalServerError)
 		return
 	}
+	//TODO add check for 404
 	render.Status(req, http.StatusOK)
 	render.JSON(res, req, templatePlaceholders)
 }
@@ -118,6 +120,7 @@ func (ah *APIHandler) GetTemplateByName(res http.ResponseWriter, req *http.Reque
 		http.Error(res, "Error getting template", http.StatusInternalServerError)
 		return
 	}
+	//TODO add check for 404
 	render.Status(req, http.StatusOK)
 	render.JSON(res, req, templateDomain)
 

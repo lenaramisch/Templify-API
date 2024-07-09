@@ -1,26 +1,36 @@
 type: object
 properties:
-  data:
-    type: array
-    items:
-      type: object
-      required:
-        - data
-      properties:
-        data:
-          type: array
-          items:
-            type: object
-            required:
-              - key
-              - value
-            properties:
-              key:
-                type: string
-              value:
-                type: string
-            example: 
-              - key: "firstName"
-                value: "Sherlock"
-              - key: "lastName"
-                value: "Holmes"
+  shouldBeSent:
+    type: boolean
+    example: true
+  toEmail:
+    type: string
+    example: "holmes.sherlock@example.com"
+  toName:
+    type: string
+    example: "Sherlock Holmes"
+  subject:
+    type: string
+    example: "TestSubject"
+  placeholders:
+    type: object
+    properties:
+      FirstName:
+        type: string
+        example: "Sherlock"
+      LastName:
+        type: string
+        example: "Holmes"
+      Age:
+        type: string
+        example: "45"
+    required:
+      - FirstName
+      - LastName
+      - Age
+required:
+  - shouldBeSent
+  - toEmail
+  - toName
+  - subject
+  - placeholders

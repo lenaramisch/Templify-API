@@ -1,0 +1,27 @@
+type: object
+properties:
+  placeholders:
+    type: array
+    items:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            required:
+              - key
+              - value
+            properties:
+              key:
+                type: string
+              value:
+                type: string
+            example: 
+              - key: "firstName"
+                value: ""
+              - key: "lastName"
+                value: ""
+
+required:
+  - placeholders

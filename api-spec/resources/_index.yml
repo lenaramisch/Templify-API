@@ -4,8 +4,8 @@
 /email:
   $ref: './Email/Sender.yml'
 
-/templates:
-  $ref: './MJML/Template.yml'
-
-/templates/{name}:
+/templates/{templateName}:
   $ref: './MJML/TemplateByName.yml'
+
+/templates/{templateName}/placeholders:
+  $ref: './MJML/Placeholders.yml'
