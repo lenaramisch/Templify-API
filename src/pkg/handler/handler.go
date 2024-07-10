@@ -99,10 +99,12 @@ func (ah *APIHandler) GetTemplatePlaceholdersRequest(res http.ResponseWriter, re
 	}
 	templatePlaceholders, err := ah.usecase.GetTemplatePlaceholders(templateName)
 	if err != nil {
-		http.Error(res, fmt.Sprintf("Getting placeholders for template %v failed", templateName), http.StatusInternalServerError)
+		http.Error(res, fmt.Sprintf("Getting placeholders for template %s failed", templateName), http.StatusInternalServerError)
 		return
 	}
-	//TODO add check for 404
+	if len(templatePlaceholders) == 0 {
+		http.Error(res, fmt.Sprintf("No placeholders for template %s found", templateName), http.StatusNotFound)
+	}
 	render.Status(req, http.StatusOK)
 	render.JSON(res, req, templatePlaceholders)
 }
@@ -120,7 +122,9 @@ func (ah *APIHandler) GetTemplateByName(res http.ResponseWriter, req *http.Reque
 		http.Error(res, "Error getting template", http.StatusInternalServerError)
 		return
 	}
-	//TODO add check for 404
+	if templateDomain.MJMLString == "" {
+		http.Error(res, fmt.Sprintf("Template with name %s not found", templateName), http.StatusNotFound)
+	}
 	render.Status(req, http.StatusOK)
 	render.JSON(res, req, templateDomain)
 
