@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -157,4 +158,62 @@ func (ah *APIHandler) PostTemplatePlacehholdersRequest(res http.ResponseWriter, 
 
 	render.Status(req, http.StatusOK)
 	render.PlainText(res, req, filledTemplate)
+}
+
+func (ah *APIHandler) EmailPostRequestAttachment(res http.ResponseWriter, req *http.Request) {
+	var emailRequest EmailAttachmentRequest
+
+	// Parse the multipart form, with a maximum memory of 32 MB for storing file parts in memory
+	err := req.ParseMultipartForm(32 << 20) // 32MB
+	if err != nil {
+		fmt.Print("Error trying to parse multipart form")
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	emailRequest.ToEmail = req.FormValue("toEmail")
+	emailRequest.ToName = req.FormValue("toName")
+	emailRequest.Subject = req.FormValue("subject")
+	emailRequest.MessageBody = req.FormValue("message")
+
+	if emailRequest.ToEmail == "" || emailRequest.ToName == "" || emailRequest.Subject == "" || emailRequest.MessageBody == "" {
+		http.Error(res, "Empty string content in either ToEmail, ToName, Subject or MessageBody", http.StatusBadRequest)
+		return
+	}
+
+	// Get the uploaded file
+	file, handler, err := req.FormFile("file")
+	if err != nil {
+		fmt.Print("Error getting uploaded file")
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer file.Close()
+
+	// Read the file content into a byte slice
+	fileBytes, err := io.ReadAll(file)
+	if err != nil {
+		fmt.Print("Error reading file content into byte slice")
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Encode the byte slice to a base64 string
+	base64Str := base64.StdEncoding.EncodeToString(fileBytes)
+
+	emailRequest.AttachmentContent = base64Str
+	emailRequest.FileName = handler.Filename
+
+	//TODO emailRequest.FileType = ?
+
+	// Print the base64 encoded string
+	fmt.Fprintf(res, "Base64 Encoded File: %s\n", base64Str)
+
+	err = ah.usecase.SendEmailWithAttachment(emailRequest.ToEmail, emailRequest.ToName, emailRequest.Subject, emailRequest.MessageBody, emailRequest.AttachmentContent, emailRequest.FileName, emailRequest.FileType)
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	render.Status(req, http.StatusOK)
+	render.PlainText(res, req, "Email sent successfully")
 }

@@ -8,6 +8,7 @@ import (
 
 type EmailSender interface {
 	SendEmail(toEmail string, toName string, subject string, message string) error
+	SendEmailWithAttachment(toEmail string, toName string, subject string, message string, attachmentContent string, fileName string, fileType string) error
 }
 
 type SMSSender interface {
@@ -47,6 +48,10 @@ func NewUsecase(emailsender EmailSender, smsSender SMSSender, mjmlService MJMLSe
 
 func (u *Usecase) SendEmail(toEmail string, toName string, subject string, message string) error {
 	return u.emailSender.SendEmail(toEmail, toName, subject, message)
+}
+
+func (u *Usecase) SendEmailWithAttachment(toEmail string, toName string, subject string, message string, attachmentContent string, fileName string, fileType string) error {
+	return u.emailSender.SendEmailWithAttachment(toEmail, toName, subject, message, attachmentContent, fileName, fileType)
 }
 
 func (u *Usecase) SendSMS(toNumber string, messageBody string) error {

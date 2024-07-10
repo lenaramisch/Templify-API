@@ -24,3 +24,13 @@ type TemplateFillRequest struct {
 	ToName       string         `json:"toName"`
 	Placeholders map[string]any `json:"placeholders"`
 }
+
+type EmailAttachmentRequest struct {
+	ToEmail           string
+	ToName            string
+	Subject           string
+	MessageBody       string
+	AttachmentContent string
+	FileName          string
+	FileType          string
+}
