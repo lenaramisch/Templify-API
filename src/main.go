@@ -67,6 +67,11 @@ func loadConfig() AppConfig {
 
 func main() {
 	slog.SetLogLoggerLevel(slog.LevelDebug)
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		AddSource: false,
+		Level:     slog.LevelDebug,
+	}))
+	slog.SetDefault(logger)
 	// prepare required services for usecase
 	appConfig := loadConfig()
 	sendgridEmailService := emailservice.NewSendGridService(appConfig.SendgridConfig)

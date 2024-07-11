@@ -10,10 +10,10 @@ post:
         schema: 
           $ref: '../../schemas/_index.yml#/EmailSendRequest'
   responses:
-    '201':
-      description: SMS send
+    '200':
+      description: Email sent
     '400':
-      description: Invalid receiver phone number supplied
+      description: Bad request
 
   # This API has no security
   security: []

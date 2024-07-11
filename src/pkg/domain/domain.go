@@ -80,13 +80,13 @@ func (u *Usecase) FillTemplatePlaceholders(templateName string, shouldBeSent boo
 	if !shouldBeSent {
 		return filledTemplate, nil
 	}
-	//TODO send MJMLString to MJML Service to get html string
+
 	htmlString, err := u.mjmlService.RenderMJML(filledTemplate)
 	if err != nil {
 		slog.Debug("Error rendering mjml template")
 		return "", err
 	}
-	//TODO send html string as email with sendgrid
+
 	err = u.emailSender.SendEmail(toEmail, toName, subject, htmlString)
 	if err != nil {
 		slog.Debug("Error sending email")

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"example.SMSService.com/pkg/domain"
 	"github.com/go-chi/chi/v5"
@@ -162,6 +163,7 @@ func (ah *APIHandler) PostTemplatePlacehholdersRequest(res http.ResponseWriter, 
 
 func (ah *APIHandler) EmailPostRequestAttachment(res http.ResponseWriter, req *http.Request) {
 	var emailRequest EmailAttachmentRequest
+	fmt.Println("---- IN HANDLER FUNCTION ----")
 
 	// Parse the multipart form, with a maximum memory of 32 MB for storing file parts in memory
 	err := req.ParseMultipartForm(32 << 20) // 32MB
@@ -204,11 +206,19 @@ func (ah *APIHandler) EmailPostRequestAttachment(res http.ResponseWriter, req *h
 	emailRequest.AttachmentContent = base64Str
 	emailRequest.FileName = handler.Filename
 
-	//TODO emailRequest.FileType = ?
+	lastDotIndex := strings.LastIndex(handler.Filename, ".")
+	if lastDotIndex == -1 {
+		http.Error(res, "File name has to end with file extension, i.e. '.txt'", http.StatusBadRequest)
+		return
+	}
+
+	fileTypeString := handler.Filename[lastDotIndex+1:]
+
+	emailRequest.FileType = fileTypeString
 
 	// Print the base64 encoded string
 	fmt.Fprintf(res, "Base64 Encoded File: %s\n", base64Str)
-
+	fmt.Println("---- CALLING USECASE FUNC NOW... ----")
 	err = ah.usecase.SendEmailWithAttachment(emailRequest.ToEmail, emailRequest.ToName, emailRequest.Subject, emailRequest.MessageBody, emailRequest.AttachmentContent, emailRequest.FileName, emailRequest.FileType)
 	if err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)

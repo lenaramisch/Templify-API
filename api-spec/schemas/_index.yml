@@ -5,6 +5,9 @@ SMSSendRequest:
 EmailSendRequest:
   $ref: './requests/EmailSendRequest.yml'
 
+EmailSendRequestAttachment:
+  $ref: './requests/EmailSendRequestAttachment.yml'
+
 TemplatePostRequest:
   $ref: './requests/TemplatePostRequest.yml'
 

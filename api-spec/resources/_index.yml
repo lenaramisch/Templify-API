@@ -4,6 +4,9 @@
 /email:
   $ref: './Email/Sender.yml'
 
+/email/attachment:
+  $ref: './Email/Attachment.yml'
+
 /templates/{templateName}:
   $ref: './MJML/TemplateByName.yml'
 
