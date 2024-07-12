@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"unicode"
 
 	"example.SMSService.com/pkg/domain"
 	"github.com/go-chi/chi/v5"
@@ -132,7 +133,7 @@ func (ah *APIHandler) GetTemplateByName(res http.ResponseWriter, req *http.Reque
 
 }
 
-func (ah *APIHandler) PostTemplatePlacehholdersRequest(res http.ResponseWriter, req *http.Request) {
+func (ah *APIHandler) PostTemplatePlaceholdersRequest(res http.ResponseWriter, req *http.Request) {
 	templateName := chi.URLParam(req, "templateName")
 	if templateName == "" {
 		http.Error(res, "URL Param templateName empty", http.StatusBadRequest)
@@ -161,7 +162,7 @@ func (ah *APIHandler) PostTemplatePlacehholdersRequest(res http.ResponseWriter, 
 	render.PlainText(res, req, filledTemplate)
 }
 
-func (ah *APIHandler) EmailPostRequestAttachment(res http.ResponseWriter, req *http.Request) {
+func (ah *APIHandler) EmailPostRequestAttm(res http.ResponseWriter, req *http.Request) {
 	var emailRequest EmailAttachmentRequest
 
 	// Parse the multipart form, with a maximum memory of 32 MB for storing file parts in memory
@@ -224,4 +225,114 @@ func (ah *APIHandler) EmailPostRequestAttachment(res http.ResponseWriter, req *h
 	}
 	render.Status(req, http.StatusOK)
 	render.PlainText(res, req, "Email sent successfully")
+}
+
+func (ah *APIHandler) PostTmplPlaceholdersAttm(res http.ResponseWriter, req *http.Request) {
+	templateName := chi.URLParam(req, "templateName")
+	if templateName == "" {
+		http.Error(res, "URL Param templateName empty", http.StatusBadRequest)
+		return
+	}
+
+	var emailRequest TemplateFillRequestAttm
+
+	// Parse the multipart form, with a maximum memory of 32 MB for storing file parts in memory
+	err := req.ParseMultipartForm(32 << 20) // 32MB
+	if err != nil {
+		fmt.Print("Error trying to parse multipart form")
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Get all keys from multipart form
+	keys := []string{}
+
+	form := req.MultipartForm
+	if form != nil {
+		// Iterate over the form values
+		for key := range form.Value {
+			keys = append(keys, key)
+		}
+	} else {
+		fmt.Println("No multipart form data found")
+	}
+
+	// Initiate empty map for emailRequest.Placeholders
+	emailRequest.Placeholders = make(map[string]string)
+
+	for _, key := range keys {
+		if len(key) > 0 && unicode.IsUpper(rune(key[0])) {
+			// Get the value for the placeholder
+			value := req.FormValue(key)
+			// Map the placeholder key with its value
+			emailRequest.Placeholders[key] = value
+		}
+	}
+
+	// Get the uploaded file
+	file, handler, err := req.FormFile("file")
+	if err != nil {
+		fmt.Print("Error getting uploaded file")
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer file.Close()
+
+	// Read the file content into a byte slice
+	fileBytes, err := io.ReadAll(file)
+	if err != nil {
+		fmt.Print("Error reading file content into byte slice")
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Encode the byte slice to a base64 string
+	base64Str := base64.StdEncoding.EncodeToString(fileBytes)
+
+	// Get file type string
+	lastDotIndex := strings.LastIndex(handler.Filename, ".")
+	if lastDotIndex == -1 {
+		http.Error(res, "File name has to end with file extension, i.e. '.txt'", http.StatusBadRequest)
+		return
+	}
+
+	fileTypeString := handler.Filename[lastDotIndex+1:]
+
+	shouldBeSentString := req.FormValue("shouldBeSent")
+	shouldBeSentBool := false
+	if shouldBeSentString == "true" {
+		shouldBeSentBool = true
+	}
+
+	// Fill emailRequest data
+	emailRequest.FileType = fileTypeString
+	emailRequest.AttmContent = base64Str
+	emailRequest.FileName = handler.Filename
+	emailRequest.ToEmail = req.FormValue("toEmail")
+	emailRequest.ToName = req.FormValue("toName")
+	emailRequest.Subject = req.FormValue("subject")
+	emailRequest.ShouldBeSent = shouldBeSentBool
+
+	if emailRequest.ToEmail == "" || emailRequest.ToName == "" || emailRequest.Subject == "" {
+		http.Error(res, "Empty string content in either ToEmail, ToName, Subject", http.StatusBadRequest)
+		return
+	}
+	//TODO use domain model instead of each value itself!
+	filledTemplate, err := ah.usecase.FillTemplatePlaceholdersAttm(
+		templateName,
+		emailRequest.ShouldBeSent,
+		emailRequest.ToEmail,
+		emailRequest.ToName,
+		emailRequest.Subject,
+		emailRequest.Placeholders,
+		emailRequest.FileName,
+		emailRequest.FileType,
+		emailRequest.AttmContent)
+	if err != nil {
+		http.Error(res, "Error filling template", http.StatusInternalServerError)
+		return
+	}
+
+	render.Status(req, http.StatusOK)
+	render.PlainText(res, req, filledTemplate)
 }

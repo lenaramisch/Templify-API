@@ -17,7 +17,7 @@ type SMSSender interface {
 
 type MJMLService interface {
 	GetTemplatePlaceholders(template Template) ([]string, error)
-	FillTemplatePlaceholders(domainTemplate Template, values map[string]any) (string, error)
+	FillTemplatePlaceholders(domainTemplate Template, values map[string]string) (string, error)
 	RenderMJML(MJMLString string) (string, error)
 }
 
@@ -66,7 +66,7 @@ func (u *Usecase) GetTemplatePlaceholders(templateName string) ([]string, error)
 	return u.mjmlService.GetTemplatePlaceholders(*domainTemplate)
 }
 
-func (u *Usecase) FillTemplatePlaceholders(templateName string, shouldBeSent bool, toEmail string, toName string, subject string, values map[string]any) (string, error) {
+func (u *Usecase) FillTemplatePlaceholders(templateName string, shouldBeSent bool, toEmail string, toName string, subject string, values map[string]string) (string, error) {
 	domainTemplate, err := u.repository.GetTemplateByName(templateName)
 	if err != nil {
 		slog.Debug("Error getting template by name")
@@ -113,4 +113,45 @@ func (u *Usecase) GetTemplateByName(templateName string) (*Template, error) {
 		return nil, err
 	}
 	return templateDomain, nil
+}
+
+func (u *Usecase) FillTemplatePlaceholdersAttm(
+	templateName string,
+	shouldBeSent bool,
+	toEmail string,
+	toName string,
+	subject string,
+	placeholders map[string]string,
+	fileName string,
+	fileType string,
+	attmContent string) (string, error) {
+	// Get domainTempl
+	domainTemplate, err := u.repository.GetTemplateByName(templateName)
+	if err != nil {
+		slog.Debug("Error getting template by name")
+		return "", err
+	}
+	// Fill templ
+	filledTemplate, err := u.mjmlService.FillTemplatePlaceholders(*domainTemplate, placeholders)
+	if err != nil {
+		slog.Debug("Error filling template placeholders")
+		return "", err
+	}
+	if !shouldBeSent {
+		return filledTemplate, nil
+	}
+
+	// Render MJML string to get html
+	htmlString, err := u.mjmlService.RenderMJML(filledTemplate)
+	if err != nil {
+		slog.Debug("Error rendering mjml template")
+		return "", err
+	}
+
+	err = u.emailSender.SendEmailWithAttachment(toEmail, toName, subject, htmlString, attmContent, fileName, fileType)
+	if err != nil {
+		slog.Debug("Error sending email")
+		return "", err
+	}
+	return htmlString, nil
 }

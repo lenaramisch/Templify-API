@@ -52,7 +52,7 @@ func (m *MJMLService) GetTemplatePlaceholders(domainTemplate domain.Template) ([
 	return placeholders, nil
 }
 
-func (m *MJMLService) FillTemplatePlaceholders(domainTemplate domain.Template, values map[string]any) (string, error) {
+func (m *MJMLService) FillTemplatePlaceholders(domainTemplate domain.Template, values map[string]string) (string, error) {
 	MJMLTemplateString := domainTemplate.MJMLString
 	placeholders, err := m.GetTemplatePlaceholders(domainTemplate)
 	if err != nil {

@@ -18,11 +18,22 @@ type Template struct {
 }
 
 type TemplateFillRequest struct {
-	ShouldBeSent bool           `json:"shouldBeSent"`
-	Subject      string         `json:"subject"`
-	ToEmail      string         `json:"toEmail"`
-	ToName       string         `json:"toName"`
-	Placeholders map[string]any `json:"placeholders"`
+	ShouldBeSent bool              `json:"shouldBeSent"`
+	Subject      string            `json:"subject"`
+	ToEmail      string            `json:"toEmail"`
+	ToName       string            `json:"toName"`
+	Placeholders map[string]string `json:"placeholders"`
+}
+
+type TemplateFillRequestAttm struct {
+	ShouldBeSent bool
+	Subject      string
+	ToEmail      string
+	ToName       string
+	Placeholders map[string]string
+	AttmContent  string
+	FileName     string
+	FileType     string
 }
 
 type EmailAttachmentRequest struct {
