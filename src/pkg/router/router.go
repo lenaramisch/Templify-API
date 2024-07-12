@@ -16,7 +16,7 @@ func CreateRouter(apiHandler *handler.APIHandler) *chi.Mux {
 	router.Get("/templates/{templateName}", apiHandler.GetTemplateByName)
 	router.Get("/templates/{templateName}/placeholders", apiHandler.GetTemplatePlaceholdersRequest)
 	router.Post("/templates/{templateName}/placeholders", apiHandler.PostTemplatePlaceholdersRequest)
-	router.Post("/email/attachment", apiHandler.EmailPostRequestAttm)
+	router.Post("/email/attachments", apiHandler.EmailPostRequestAttm)
 	router.Post("/templates/{templateName}/placeholders/attachments", apiHandler.PostTmplPlaceholdersAttm)
 	return router
 }

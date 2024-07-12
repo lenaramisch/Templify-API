@@ -1,0 +1,30 @@
+type: object
+properties:
+  file:
+    type: string
+    description: The file that should be send as attachment
+  toEmail:
+    type: string
+    example: holmes@detective.com
+  toName:
+    type: string
+    example: Sherlock Holmes
+  subject:
+    type: string
+    example: New Case
+  PlaceHolder:
+    type: string
+    description: Each placeholder key-value pair should be in its own form field
+    example: placeholder value
+  shouldBeSent:
+    type: string
+    description: Determines if the email will be sent (true/false)
+    example: true
+required:
+  - file
+  - toEmail
+  - toName
+  - subject
+  - message
+  - PlaceHolder
+  - shouldBeSent

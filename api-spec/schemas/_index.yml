@@ -14,6 +14,9 @@ TemplatePostRequest:
 TemplateFillRequest:
   $ref: './requests/TemplateFillRequest.yml'
 
+MJMLSendRequestAttachment:
+  $ref: './requests/MJMLSendRequestAttachment.yml'
+
 #Responses
 FilledTemplateResponse:
   $ref: './responses/FilledTemplateResponse.yml'

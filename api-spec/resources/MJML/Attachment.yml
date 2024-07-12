@@ -1,0 +1,26 @@
+post:
+  summary: Send an MJML templated Email with attachment
+  operationId: sendMJMLEmailWithAttachment
+  tags:
+    - placeholders
+  parameters:
+    - name: templateName
+      in: path
+      description: Name of template to fill
+      required: true
+      schema:
+        type: integer
+  requestBody:
+    required: true
+    content:
+      multipart/form-data:
+        schema: 
+          $ref: '../../schemas/_index.yml#/MJMLSendRequestAttachment'
+  responses:
+    '200':
+      description: Email send
+    '400':
+      description: Bad request
+
+  # This API has no security
+  security: []
