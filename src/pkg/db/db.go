@@ -35,7 +35,6 @@ func (r *Repository) ConnectToDB() {
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		r.config.Host, r.config.Port, r.config.User, r.config.Password, r.config.DBName,
 	)
-	fmt.Println("Using connection string: ", connectionString)
 	db, err := sqlx.Connect("pgx", connectionString)
 	if err != nil {
 		log.Fatal("Connecting to DB failed", err)

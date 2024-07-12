@@ -163,7 +163,6 @@ func (ah *APIHandler) PostTemplatePlacehholdersRequest(res http.ResponseWriter, 
 
 func (ah *APIHandler) EmailPostRequestAttachment(res http.ResponseWriter, req *http.Request) {
 	var emailRequest EmailAttachmentRequest
-	fmt.Println("---- IN HANDLER FUNCTION ----")
 
 	// Parse the multipart form, with a maximum memory of 32 MB for storing file parts in memory
 	err := req.ParseMultipartForm(32 << 20) // 32MB
@@ -218,7 +217,6 @@ func (ah *APIHandler) EmailPostRequestAttachment(res http.ResponseWriter, req *h
 
 	// Print the base64 encoded string
 	fmt.Fprintf(res, "Base64 Encoded File: %s\n", base64Str)
-	fmt.Println("---- CALLING USECASE FUNC NOW... ----")
 	err = ah.usecase.SendEmailWithAttachment(emailRequest.ToEmail, emailRequest.ToName, emailRequest.Subject, emailRequest.MessageBody, emailRequest.AttachmentContent, emailRequest.FileName, emailRequest.FileType)
 	if err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
