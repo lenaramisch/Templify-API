@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 
+	"example.SMSService.com/pkg/domain"
 	"github.com/joho/godotenv"
 )
 
@@ -33,7 +34,7 @@ const (
 	SENDGRID_URL = "https://api.sendgrid.com/v3/mail/send"
 )
 
-func (es *SendGridService) SendEmail(toEmail string, toName string, subject string, message string) error {
+func (es *SendGridService) SendEmail(emailRequest *domain.EmailRequest) error {
 	godotenv.Load()
 
 	if es.config.ApiKey == "" || es.config.FromEmail == "" || es.config.FromName == "" || es.config.ReplyToEmail == "" || es.config.ReplyToName == "" {
@@ -46,17 +47,17 @@ func (es *SendGridService) SendEmail(toEmail string, toName string, subject stri
 			{
 				"to": []map[string]string{
 					{
-						"email": toEmail,
-						"name":  toName,
+						"email": emailRequest.ToEmail,
+						"name":  emailRequest.ToName,
 					},
 				},
-				"subject": subject,
+				"subject": emailRequest.Subject,
 			},
 		},
 		"content": []map[string]string{
 			{
 				"type":  "text/html",
-				"value": message,
+				"value": emailRequest.MessageBody,
 			},
 		},
 		"from": map[string]string{
@@ -99,7 +100,7 @@ func (es *SendGridService) SendEmail(toEmail string, toName string, subject stri
 	return nil
 }
 
-func (es *SendGridService) SendEmailWithAttachment(toEmail string, toName string, subject string, message string, attachmentContent string, fileName string, fileType string) error {
+func (es *SendGridService) SendEmailWithAttachment(message string, domainEmailReq *domain.EmailRequestAttm) error {
 	godotenv.Load()
 	if es.config.ApiKey == "" || es.config.FromEmail == "" || es.config.FromName == "" || es.config.ReplyToEmail == "" || es.config.ReplyToName == "" {
 		return errors.New("missing environment variables")
@@ -111,11 +112,11 @@ func (es *SendGridService) SendEmailWithAttachment(toEmail string, toName string
 			{
 				"to": []map[string]string{
 					{
-						"email": toEmail,
-						"name":  toName,
+						"email": domainEmailReq.ToEmail,
+						"name":  domainEmailReq.ToName,
 					},
 				},
-				"subject": subject,
+				"subject": domainEmailReq.Subject,
 			},
 		},
 		"content": []map[string]string{
@@ -126,10 +127,10 @@ func (es *SendGridService) SendEmailWithAttachment(toEmail string, toName string
 		},
 		"attachments": []map[string]any{
 			{
-				"content":     attachmentContent,
+				"content":     domainEmailReq.AttmContent,
 				"disposition": "attachment",
-				"filename":    fileName,
-				"type":        fileType,
+				"filename":    domainEmailReq.FileName,
+				"type":        domainEmailReq.FileType,
 			},
 		},
 		"from": map[string]string{

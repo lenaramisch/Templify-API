@@ -7,8 +7,8 @@ import (
 )
 
 type EmailSender interface {
-	SendEmail(toEmail string, toName string, subject string, message string) error
-	SendEmailWithAttachment(toEmail string, toName string, subject string, message string, attachmentContent string, fileName string, fileType string) error
+	SendEmail(emailRequest *EmailRequest) error
+	SendEmailWithAttachment(message string, domainEmailReq *EmailRequestAttm) error
 }
 
 type SMSSender interface {
@@ -42,16 +42,12 @@ func NewUsecase(emailsender EmailSender, smsSender SMSSender, mjmlService MJMLSe
 	}
 }
 
-// domain layer functions (usecases with actual business logic)
-// Here we currently don't have any logic and forward to our services
-// Later we may have sequential service calls or mapping, some logic etc.
-
-func (u *Usecase) SendEmail(toEmail string, toName string, subject string, message string) error {
-	return u.emailSender.SendEmail(toEmail, toName, subject, message)
+func (u *Usecase) SendEmail(emailRequest *EmailRequest) error {
+	return u.emailSender.SendEmail(emailRequest)
 }
 
-func (u *Usecase) SendEmailWithAttachment(toEmail string, toName string, subject string, message string, attachmentContent string, fileName string, fileType string) error {
-	return u.emailSender.SendEmailWithAttachment(toEmail, toName, subject, message, attachmentContent, fileName, fileType)
+func (u *Usecase) SendEmailWithAttachment(message string, domainEmailReq *EmailRequestAttm) error {
+	return u.emailSender.SendEmailWithAttachment(message, domainEmailReq)
 }
 
 func (u *Usecase) SendSMS(toNumber string, messageBody string) error {
@@ -66,18 +62,18 @@ func (u *Usecase) GetTemplatePlaceholders(templateName string) ([]string, error)
 	return u.mjmlService.GetTemplatePlaceholders(*domainTemplate)
 }
 
-func (u *Usecase) FillTemplatePlaceholders(templateName string, shouldBeSent bool, toEmail string, toName string, subject string, values map[string]string) (string, error) {
+func (u *Usecase) FillTemplatePlaceholders(templateName string, domainFillTempl *TemplateFillRequest) (string, error) {
 	domainTemplate, err := u.repository.GetTemplateByName(templateName)
 	if err != nil {
 		slog.Debug("Error getting template by name")
 		return "", err
 	}
-	filledTemplate, err := u.mjmlService.FillTemplatePlaceholders(*domainTemplate, values)
+	filledTemplate, err := u.mjmlService.FillTemplatePlaceholders(*domainTemplate, domainFillTempl.Placeholders)
 	if err != nil {
 		slog.Debug("Error filling template placeholders")
 		return "", err
 	}
-	if !shouldBeSent {
+	if !domainFillTempl.ShouldBeSent {
 		return filledTemplate, nil
 	}
 
@@ -86,8 +82,12 @@ func (u *Usecase) FillTemplatePlaceholders(templateName string, shouldBeSent boo
 		slog.Debug("Error rendering mjml template")
 		return "", err
 	}
-
-	err = u.emailSender.SendEmail(toEmail, toName, subject, htmlString)
+	var emailRequest EmailRequest
+	emailRequest.MessageBody = htmlString
+	emailRequest.Subject = domainFillTempl.Subject
+	emailRequest.ToEmail = domainFillTempl.ToEmail
+	emailRequest.ToName = domainFillTempl.ToName
+	err = u.emailSender.SendEmail(&emailRequest)
 	if err != nil {
 		slog.Debug("Error sending email")
 		return "", err
@@ -115,16 +115,7 @@ func (u *Usecase) GetTemplateByName(templateName string) (*Template, error) {
 	return templateDomain, nil
 }
 
-func (u *Usecase) FillTemplatePlaceholdersAttm(
-	templateName string,
-	shouldBeSent bool,
-	toEmail string,
-	toName string,
-	subject string,
-	placeholders map[string]string,
-	fileName string,
-	fileType string,
-	attmContent string) (string, error) {
+func (u *Usecase) FillTemplatePlaceholdersAttm(templateName string, domainEmailReq *EmailRequestAttm) (string, error) {
 	// Get domainTempl
 	domainTemplate, err := u.repository.GetTemplateByName(templateName)
 	if err != nil {
@@ -132,12 +123,12 @@ func (u *Usecase) FillTemplatePlaceholdersAttm(
 		return "", err
 	}
 	// Fill templ
-	filledTemplate, err := u.mjmlService.FillTemplatePlaceholders(*domainTemplate, placeholders)
+	filledTemplate, err := u.mjmlService.FillTemplatePlaceholders(*domainTemplate, domainEmailReq.Placeholders)
 	if err != nil {
 		slog.Debug("Error filling template placeholders")
 		return "", err
 	}
-	if !shouldBeSent {
+	if !domainEmailReq.ShouldBeSent {
 		return filledTemplate, nil
 	}
 
@@ -148,7 +139,7 @@ func (u *Usecase) FillTemplatePlaceholdersAttm(
 		return "", err
 	}
 
-	err = u.emailSender.SendEmailWithAttachment(toEmail, toName, subject, htmlString, attmContent, fileName, fileType)
+	err = u.emailSender.SendEmailWithAttachment(htmlString, domainEmailReq)
 	if err != nil {
 		slog.Debug("Error sending email")
 		return "", err

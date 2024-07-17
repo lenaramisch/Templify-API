@@ -12,6 +12,25 @@ type EmailRequest struct {
 	MessageBody string
 }
 
+type TemplateFillRequest struct {
+	ShouldBeSent bool
+	ToEmail      string
+	ToName       string
+	Subject      string
+	Placeholders map[string]string
+}
+
+type EmailRequestAttm struct {
+	ShouldBeSent bool
+	ToEmail      string
+	ToName       string
+	Subject      string
+	Placeholders map[string]string
+	FileName     string
+	FileType     string
+	AttmContent  string
+}
+
 type Template struct {
 	Name       string
 	MJMLString string

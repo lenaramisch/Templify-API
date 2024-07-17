@@ -24,13 +24,24 @@ func NewAPIHandler(usecase *domain.Usecase) *APIHandler {
 	}
 }
 
+func handleError(res http.ResponseWriter, req *http.Request, statusCode int, message string) {
+	render.Status(req, statusCode)
+	render.PlainText(res, req, message)
+}
+
+func decodeJSONBody(res http.ResponseWriter, req *http.Request, dst any) error {
+	err := json.NewDecoder(req.Body).Decode(dst)
+	if err != nil {
+		handleError(res, req, http.StatusBadRequest, "Invalid JSON: "+err.Error())
+		return err
+	}
+	return nil
+}
+
 func (ah *APIHandler) SMSPostRequest(res http.ResponseWriter, req *http.Request) {
 	var smsRequest SmsRequest
 
-	err := json.NewDecoder(req.Body).Decode(&smsRequest)
-	if err != nil {
-		render.Status(req, http.StatusBadRequest)
-		render.PlainText(res, req, "You messed up: "+err.Error())
+	if err := decodeJSONBody(res, req, &smsRequest); err != nil {
 		return
 	}
 
@@ -38,9 +49,9 @@ func (ah *APIHandler) SMSPostRequest(res http.ResponseWriter, req *http.Request)
 		http.Error(res, "Empty string content in either ToNumber or MessageBody", http.StatusBadRequest)
 		return
 	}
-	err = ah.usecase.SendSMS(smsRequest.ToNumber, smsRequest.MessageBody)
+	err := ah.usecase.SendSMS(smsRequest.ToNumber, smsRequest.MessageBody)
 	if err != nil {
-		http.Error(res, err.Error(), http.StatusInternalServerError)
+		handleError(res, req, http.StatusInternalServerError, err.Error())
 		return
 	}
 	render.Status(req, http.StatusOK)
@@ -48,21 +59,23 @@ func (ah *APIHandler) SMSPostRequest(res http.ResponseWriter, req *http.Request)
 }
 
 func (ah *APIHandler) EmailPostRequest(res http.ResponseWriter, req *http.Request) {
-	var emailRequest EmailRequest
+	var emailRequestAPI EmailRequest
 
-	err := json.NewDecoder(req.Body).Decode(&emailRequest)
-	if err != nil {
-		http.Error(res, err.Error(), http.StatusBadRequest)
-		return
-	}
+	decodeJSONBody(res, req, &emailRequestAPI)
 
-	if emailRequest.ToEmail == "" || emailRequest.ToName == "" || emailRequest.Subject == "" || emailRequest.MessageBody == "" {
+	if emailRequestAPI.ToEmail == "" || emailRequestAPI.ToName == "" || emailRequestAPI.Subject == "" || emailRequestAPI.MessageBody == "" {
 		http.Error(res, "Empty string content in either ToEmail, ToName, Subject or MessageBody", http.StatusBadRequest)
 		return
 	}
-	err = ah.usecase.SendEmail(emailRequest.ToEmail, emailRequest.ToName, emailRequest.Subject, emailRequest.MessageBody)
+	emailRequestDomain := domain.EmailRequest{
+		ToEmail:     emailRequestAPI.ToEmail,
+		ToName:      emailRequestAPI.ToName,
+		Subject:     emailRequestAPI.Subject,
+		MessageBody: emailRequestAPI.MessageBody,
+	}
+	err := ah.usecase.SendEmail(&emailRequestDomain)
 	if err != nil {
-		http.Error(res, err.Error(), http.StatusInternalServerError)
+		handleError(res, req, http.StatusInternalServerError, err.Error())
 		return
 	}
 	render.Status(req, http.StatusOK)
@@ -73,7 +86,7 @@ func (ah *APIHandler) TemplatePostRequest(res http.ResponseWriter, req *http.Req
 
 	body, err := io.ReadAll(req.Body)
 	if err != nil {
-		http.Error(res, "Reading Request Body failed", http.StatusBadRequest)
+		handleError(res, req, http.StatusBadRequest, "Reading Request Body failed")
 		return
 	}
 	MJMLString := string(body)
@@ -86,7 +99,7 @@ func (ah *APIHandler) TemplatePostRequest(res http.ResponseWriter, req *http.Req
 
 	err = ah.usecase.AddTemplate(templateName, MJMLString)
 	if err != nil {
-		http.Error(res, fmt.Sprintf("Adding template with name %v failed", templateName), http.StatusInternalServerError)
+		handleError(res, req, http.StatusInternalServerError, fmt.Sprintf("Adding template with name %v failed", templateName))
 		return
 	}
 	resultString := fmt.Sprintf("Added template with name %v", templateName)
@@ -102,11 +115,12 @@ func (ah *APIHandler) GetTemplatePlaceholdersRequest(res http.ResponseWriter, re
 	}
 	templatePlaceholders, err := ah.usecase.GetTemplatePlaceholders(templateName)
 	if err != nil {
-		http.Error(res, fmt.Sprintf("Getting placeholders for template %s failed", templateName), http.StatusInternalServerError)
+		handleError(res, req, http.StatusInternalServerError, fmt.Sprintf("Getting placeholders for template %s failed", templateName))
 		return
 	}
 	if len(templatePlaceholders) == 0 {
-		http.Error(res, fmt.Sprintf("No placeholders for template %s found", templateName), http.StatusNotFound)
+		handleError(res, req, http.StatusNotFound, fmt.Sprintf("No placeholders for template %s found", templateName))
+		return
 	}
 	render.Status(req, http.StatusOK)
 	render.JSON(res, req, templatePlaceholders)
@@ -122,11 +136,12 @@ func (ah *APIHandler) GetTemplateByName(res http.ResponseWriter, req *http.Reque
 	var err error
 	templateDomain, err = ah.usecase.GetTemplateByName(templateName)
 	if err != nil {
-		http.Error(res, "Error getting template", http.StatusInternalServerError)
+		handleError(res, req, http.StatusInternalServerError, "Error getting template")
 		return
 	}
 	if templateDomain.MJMLString == "" {
-		http.Error(res, fmt.Sprintf("Template with name %s not found", templateName), http.StatusNotFound)
+		handleError(res, req, http.StatusNotFound, fmt.Sprintf("Template with name %s not found", templateName))
+		return
 	}
 	render.Status(req, http.StatusOK)
 	render.JSON(res, req, templateDomain)
@@ -145,16 +160,16 @@ func (ah *APIHandler) PostTemplatePlaceholdersRequest(res http.ResponseWriter, r
 		http.Error(res, "Reading request body failed", http.StatusInternalServerError)
 	}
 
-	templateFillRequest := TemplateFillRequest{}
+	var templateFillRequest domain.TemplateFillRequest
 
 	if err := json.Unmarshal(body, &templateFillRequest); err != nil {
 		http.Error(res, "Invalid JSON format", http.StatusBadRequest)
 		return
 	}
 
-	filledTemplate, err := ah.usecase.FillTemplatePlaceholders(templateName, templateFillRequest.ShouldBeSent, templateFillRequest.ToEmail, templateFillRequest.ToName, templateFillRequest.Subject, templateFillRequest.Placeholders)
+	filledTemplate, err := ah.usecase.FillTemplatePlaceholders(templateName, &templateFillRequest)
 	if err != nil {
-		http.Error(res, "Error filling template", http.StatusInternalServerError)
+		handleError(res, req, http.StatusInternalServerError, "Error filling template")
 		return
 	}
 
@@ -163,31 +178,37 @@ func (ah *APIHandler) PostTemplatePlaceholdersRequest(res http.ResponseWriter, r
 }
 
 func (ah *APIHandler) EmailPostRequestAttm(res http.ResponseWriter, req *http.Request) {
-	var emailRequest EmailAttachmentRequest
+	var emailRequest domain.EmailRequestAttm
 
 	// Parse the multipart form, with a maximum memory of 32 MB for storing file parts in memory
 	err := req.ParseMultipartForm(32 << 20) // 32MB
 	if err != nil {
-		fmt.Print("Error trying to parse multipart form")
-		http.Error(res, err.Error(), http.StatusInternalServerError)
+		handleError(res, req, http.StatusInternalServerError, "Error parsing multipart form")
 		return
 	}
 
 	emailRequest.ToEmail = req.FormValue("toEmail")
 	emailRequest.ToName = req.FormValue("toName")
 	emailRequest.Subject = req.FormValue("subject")
-	emailRequest.MessageBody = req.FormValue("message")
+	message := req.FormValue("message")
 
-	if emailRequest.ToEmail == "" || emailRequest.ToName == "" || emailRequest.Subject == "" || emailRequest.MessageBody == "" {
+	if emailRequest.ToEmail == "" || emailRequest.ToName == "" || emailRequest.Subject == "" || message == "" {
 		http.Error(res, "Empty string content in either ToEmail, ToName, Subject or MessageBody", http.StatusBadRequest)
 		return
 	}
 
+	shouldBeSentString := req.FormValue("shouldBeSent")
+	shouldBeSentBool := false
+	if shouldBeSentString == "true" {
+		shouldBeSentBool = true
+	}
+
+	emailRequest.ShouldBeSent = shouldBeSentBool
+
 	// Get the uploaded file
 	file, handler, err := req.FormFile("file")
 	if err != nil {
-		fmt.Print("Error getting uploaded file")
-		http.Error(res, err.Error(), http.StatusInternalServerError)
+		handleError(res, req, http.StatusInternalServerError, "Error getting uploaded file")
 		return
 	}
 	defer file.Close()
@@ -195,17 +216,11 @@ func (ah *APIHandler) EmailPostRequestAttm(res http.ResponseWriter, req *http.Re
 	// Read the file content into a byte slice
 	fileBytes, err := io.ReadAll(file)
 	if err != nil {
-		fmt.Print("Error reading file content into byte slice")
-		http.Error(res, err.Error(), http.StatusInternalServerError)
+		handleError(res, req, http.StatusInternalServerError, "Error reading file content")
 		return
 	}
 
-	// Encode the byte slice to a base64 string
-	base64Str := base64.StdEncoding.EncodeToString(fileBytes)
-
-	emailRequest.AttachmentContent = base64Str
-	emailRequest.FileName = handler.Filename
-
+	// Get file type string
 	lastDotIndex := strings.LastIndex(handler.Filename, ".")
 	if lastDotIndex == -1 {
 		http.Error(res, "File name has to end with file extension, i.e. '.txt'", http.StatusBadRequest)
@@ -214,15 +229,15 @@ func (ah *APIHandler) EmailPostRequestAttm(res http.ResponseWriter, req *http.Re
 
 	fileTypeString := handler.Filename[lastDotIndex+1:]
 
+	emailRequest.AttmContent = base64.StdEncoding.EncodeToString(fileBytes)
+	emailRequest.FileName = handler.Filename
 	emailRequest.FileType = fileTypeString
 
-	// Print the base64 encoded string
-	fmt.Fprintf(res, "Base64 Encoded File: %s\n", base64Str)
-	err = ah.usecase.SendEmailWithAttachment(emailRequest.ToEmail, emailRequest.ToName, emailRequest.Subject, emailRequest.MessageBody, emailRequest.AttachmentContent, emailRequest.FileName, emailRequest.FileType)
-	if err != nil {
-		http.Error(res, err.Error(), http.StatusInternalServerError)
+	if err := ah.usecase.SendEmailWithAttachment(message, &emailRequest); err != nil {
+		handleError(res, req, http.StatusInternalServerError, err.Error())
 		return
 	}
+
 	render.Status(req, http.StatusOK)
 	render.PlainText(res, req, "Email sent successfully")
 }
@@ -234,60 +249,35 @@ func (ah *APIHandler) PostTmplPlaceholdersAttm(res http.ResponseWriter, req *htt
 		return
 	}
 
-	var emailRequest TemplateFillRequestAttm
+	domainEmailRequest := &domain.EmailRequestAttm{}
 
 	// Parse the multipart form, with a maximum memory of 32 MB for storing file parts in memory
 	err := req.ParseMultipartForm(32 << 20) // 32MB
 	if err != nil {
-		fmt.Print("Error trying to parse multipart form")
-		http.Error(res, err.Error(), http.StatusInternalServerError)
+		handleError(res, req, http.StatusInternalServerError, "Error parsing multipart form")
 		return
 	}
 
-	// Get all keys from multipart form
-	keys := []string{}
-
 	form := req.MultipartForm
-	if form != nil {
-		// Iterate over the form values
-		for key := range form.Value {
-			keys = append(keys, key)
-		}
-	} else {
-		fmt.Println("No multipart form data found")
-	}
-
-	// Initiate empty map for emailRequest.Placeholders
-	emailRequest.Placeholders = make(map[string]string)
-
-	for _, key := range keys {
+	domainEmailRequest.Placeholders = make(map[string]string)
+	for key, values := range form.Value {
 		if len(key) > 0 && unicode.IsUpper(rune(key[0])) {
-			// Get the value for the placeholder
-			value := req.FormValue(key)
-			// Map the placeholder key with its value
-			emailRequest.Placeholders[key] = value
+			domainEmailRequest.Placeholders[key] = values[0]
 		}
 	}
 
-	// Get the uploaded file
 	file, handler, err := req.FormFile("file")
 	if err != nil {
-		fmt.Print("Error getting uploaded file")
-		http.Error(res, err.Error(), http.StatusInternalServerError)
+		handleError(res, req, http.StatusInternalServerError, "Error getting uploaded file")
 		return
 	}
 	defer file.Close()
 
-	// Read the file content into a byte slice
 	fileBytes, err := io.ReadAll(file)
 	if err != nil {
-		fmt.Print("Error reading file content into byte slice")
-		http.Error(res, err.Error(), http.StatusInternalServerError)
+		handleError(res, req, http.StatusInternalServerError, "Error reading file content")
 		return
 	}
-
-	// Encode the byte slice to a base64 string
-	base64Str := base64.StdEncoding.EncodeToString(fileBytes)
 
 	// Get file type string
 	lastDotIndex := strings.LastIndex(handler.Filename, ".")
@@ -305,31 +295,22 @@ func (ah *APIHandler) PostTmplPlaceholdersAttm(res http.ResponseWriter, req *htt
 	}
 
 	// Fill emailRequest data
-	emailRequest.FileType = fileTypeString
-	emailRequest.AttmContent = base64Str
-	emailRequest.FileName = handler.Filename
-	emailRequest.ToEmail = req.FormValue("toEmail")
-	emailRequest.ToName = req.FormValue("toName")
-	emailRequest.Subject = req.FormValue("subject")
-	emailRequest.ShouldBeSent = shouldBeSentBool
+	domainEmailRequest.FileType = fileTypeString
+	domainEmailRequest.AttmContent = base64.StdEncoding.EncodeToString(fileBytes)
+	domainEmailRequest.FileName = handler.Filename
+	domainEmailRequest.ToEmail = req.FormValue("toEmail")
+	domainEmailRequest.ToName = req.FormValue("toName")
+	domainEmailRequest.Subject = req.FormValue("subject")
+	domainEmailRequest.ShouldBeSent = shouldBeSentBool
 
-	if emailRequest.ToEmail == "" || emailRequest.ToName == "" || emailRequest.Subject == "" {
+	if domainEmailRequest.ToEmail == "" || domainEmailRequest.ToName == "" || domainEmailRequest.Subject == "" {
 		http.Error(res, "Empty string content in either ToEmail, ToName, Subject", http.StatusBadRequest)
 		return
 	}
-	//TODO use domain model instead of each value itself!
-	filledTemplate, err := ah.usecase.FillTemplatePlaceholdersAttm(
-		templateName,
-		emailRequest.ShouldBeSent,
-		emailRequest.ToEmail,
-		emailRequest.ToName,
-		emailRequest.Subject,
-		emailRequest.Placeholders,
-		emailRequest.FileName,
-		emailRequest.FileType,
-		emailRequest.AttmContent)
+
+	filledTemplate, err := ah.usecase.FillTemplatePlaceholdersAttm(templateName, domainEmailRequest)
 	if err != nil {
-		http.Error(res, "Error filling template", http.StatusInternalServerError)
+		handleError(res, req, http.StatusInternalServerError, "Error filling template")
 		return
 	}
 
