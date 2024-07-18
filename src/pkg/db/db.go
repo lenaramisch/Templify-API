@@ -45,7 +45,7 @@ func (r *Repository) ConnectToDB() {
 
 func (r *Repository) GetTemplateByName(name string) (*domain.Template, error) {
 	tx := r.dbConnection.MustBegin()
-	getTemplateByNameQuery := "SELECT * FROM templates WHERE name=$1"
+	getTemplateByNameQuery := "SELECT * FROM emailtemplates WHERE name=$1"
 	templateDB := Template{}
 	err := tx.Get(&templateDB, getTemplateByNameQuery, name)
 	if err != nil {
@@ -64,10 +64,37 @@ func (r *Repository) GetTemplateByName(name string) (*domain.Template, error) {
 	return &templateDomain, nil
 }
 
-func (r *Repository) AddTemplate(name string, mjmlString string) error {
+func (r *Repository) AddEmailTemplate(name string, mjmlString string) error {
 	tx := r.dbConnection.MustBegin()
-	addTemplateQuery := "INSERT INTO templates (name, mjml_string) VALUES ($1, $2)"
+	addTemplateQuery := "INSERT INTO emailtemplates (name, mjml_string) VALUES ($1, $2)"
 	tx.MustExec(addTemplateQuery, name, mjmlString)
 	return tx.Commit()
+}
 
+func (r *Repository) AddPDFTemplate(name string, typstString string) error {
+	tx := r.dbConnection.MustBegin()
+	addPDFTemplateQuery := "INSERT INTO pdftemplates (name, typst_string) VALUES ($1, $2)"
+	tx.MustExec(addPDFTemplateQuery, name, typstString)
+	return tx.Commit()
+}
+
+func (r *Repository) GetPDFTemplateByName(name string) (*domain.PDFTemplate, error) {
+	tx := r.dbConnection.MustBegin()
+	getPDFTemplateByNameQuery := "SELECT * FROM pdftemplates WHERE name=$1"
+	templateDB := PDFTemplate{}
+	err := tx.Get(&templateDB, getPDFTemplateByNameQuery, name)
+	if err != nil {
+		return nil, err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+
+	// map to domain model
+	templateDomain := domain.PDFTemplate{
+		Name:        templateDB.Name,
+		TypstString: templateDB.TypstString,
+	}
+	return &templateDomain, nil
 }

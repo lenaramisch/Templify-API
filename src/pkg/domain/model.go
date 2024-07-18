@@ -35,3 +35,8 @@ type Template struct {
 	Name       string
 	MJMLString string
 }
+
+type PDFTemplate struct {
+	Name        string
+	TypstString string
+}

@@ -18,11 +18,12 @@ ADD ./src /build/
 # Build the app
 RUN go build -a -tags musl -o /build/app
 ######################################
-FROM alpine:3
+FROM alpine:3.20
 LABEL AUTHOR="Lena Ramisch (Linuxcode)"
 
 # install curl for healthcheck
 RUN apk --no-cache add curl
+RUN apk --no-cache add typst
 
 # Essentials
 RUN apk add -U tzdata

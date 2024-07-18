@@ -23,7 +23,9 @@ type MJMLService interface {
 
 type Repository interface {
 	GetTemplateByName(name string) (*Template, error)
-	AddTemplate(name string, mjmlString string) error
+	AddEmailTemplate(name string, mjmlString string) error
+	AddPDFTemplate(name string, typstString string) error
+	GetPDFTemplateByName(name string) (*PDFTemplate, error)
 }
 
 type Usecase struct {
@@ -95,8 +97,8 @@ func (u *Usecase) FillTemplatePlaceholders(templateName string, domainFillTempl 
 	return htmlString, nil
 }
 
-func (u *Usecase) AddTemplate(templateName string, MJMLString string) error {
-	err := u.repository.AddTemplate(templateName, MJMLString)
+func (u *Usecase) AddEmailTemplate(templateName string, MJMLString string) error {
+	err := u.repository.AddEmailTemplate(templateName, MJMLString)
 	if err != nil {
 		fmt.Println("=== Error ===")
 		fmt.Println(err.Error())
@@ -145,4 +147,24 @@ func (u *Usecase) FillTemplatePlaceholdersAttm(templateName string, domainEmailR
 		return "", err
 	}
 	return htmlString, nil
+}
+
+func (u *Usecase) AddPDFTemplate(templateName string, typstString string) error {
+	err := u.repository.AddPDFTemplate(templateName, typstString)
+	if err != nil {
+		fmt.Println("=== Error ===")
+		fmt.Println(err.Error())
+		return err
+	}
+	return nil
+}
+
+func (u *Usecase) GetPDFTemplateByName(templateName string) (*PDFTemplate, error) {
+	templateDomain, err := u.repository.GetPDFTemplateByName(templateName)
+	if err != nil {
+		fmt.Println("=== Error ===")
+		fmt.Println(err.Error())
+		return nil, err
+	}
+	return templateDomain, nil
 }

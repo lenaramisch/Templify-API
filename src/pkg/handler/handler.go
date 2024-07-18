@@ -97,7 +97,7 @@ func (ah *APIHandler) TemplatePostRequest(res http.ResponseWriter, req *http.Req
 		return
 	}
 
-	err = ah.usecase.AddTemplate(templateName, MJMLString)
+	err = ah.usecase.AddEmailTemplate(templateName, MJMLString)
 	if err != nil {
 		handleError(res, req, http.StatusInternalServerError, fmt.Sprintf("Adding template with name %v failed", templateName))
 		return
@@ -316,4 +316,50 @@ func (ah *APIHandler) PostTmplPlaceholdersAttm(res http.ResponseWriter, req *htt
 
 	render.Status(req, http.StatusOK)
 	render.PlainText(res, req, filledTemplate)
+}
+
+func (ah *APIHandler) PDFTemplPostReq(res http.ResponseWriter, req *http.Request) {
+	body, err := io.ReadAll(req.Body)
+	if err != nil {
+		handleError(res, req, http.StatusBadRequest, "Reading Request Body failed")
+		return
+	}
+	typstString := string(body)
+
+	fmt.Println("Typst String: ", typstString)
+	templateName := chi.URLParam(req, "templateName")
+	if templateName == "" {
+		http.Error(res, "URL Param templateName empty", http.StatusBadRequest)
+		return
+	}
+
+	err = ah.usecase.AddPDFTemplate(templateName, typstString)
+	if err != nil {
+		handleError(res, req, http.StatusInternalServerError, fmt.Sprintf("Adding template with name %v failed", templateName))
+		return
+	}
+	resultString := fmt.Sprintf("Added template with name %v", templateName)
+	render.Status(req, http.StatusCreated)
+	render.PlainText(res, req, resultString)
+}
+
+func (ah *APIHandler) GetPDFTemplByName(res http.ResponseWriter, req *http.Request) {
+	templateName := chi.URLParam(req, "templateName")
+	if templateName == "" {
+		http.Error(res, "URL Param templateName empty", http.StatusBadRequest)
+		return
+	}
+	templateDomain := &domain.PDFTemplate{}
+	var err error
+	templateDomain, err = ah.usecase.GetPDFTemplateByName(templateName)
+	if err != nil {
+		handleError(res, req, http.StatusInternalServerError, "Error getting template")
+		return
+	}
+	if templateDomain.TypstString == "" {
+		handleError(res, req, http.StatusNotFound, fmt.Sprintf("Template with name %s not found", templateName))
+		return
+	}
+	render.Status(req, http.StatusOK)
+	render.JSON(res, req, templateDomain)
 }
