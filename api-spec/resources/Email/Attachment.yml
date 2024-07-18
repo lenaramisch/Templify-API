@@ -1,4 +1,5 @@
 post:
+  description: Send an Email with some attached files by giving the recipients data as well as the file
   summary: Send an Email with attachment
   operationId: sendEmailWithAttachment
   tags:

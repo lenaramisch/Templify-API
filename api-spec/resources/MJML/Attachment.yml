@@ -1,8 +1,9 @@
 post:
-  summary: Send an MJML templated Email with attachment
+  description: Send an email with some attached files and the use of a template by giving the recipients data as well as values to fill the templates placeholders and the file
+  summary: Send a templated Email with attachment
   operationId: sendMJMLEmailWithAttachment
   tags:
-    - placeholders
+    - Placeholders
   parameters:
     - name: templateName
       in: path

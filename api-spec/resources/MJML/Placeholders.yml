@@ -1,8 +1,9 @@
 post:
+  description: Fill the placeholders of a specific template. The boolean "shouldBeSent" is telling if the filled template should be sent as email
   summary: Fill placeholders of template
   operationId: fillTemplate
   tags:
-    - placeholders
+    - Placeholders
   parameters:
     - name: templateName
       in: path
@@ -30,10 +31,11 @@ post:
   security: []
 
 get:
+  description: Get all placeholders of a specific template that have to be filled with some data
   summary: Get Template Placeholders
   operationId: getTemplatePlaceholdersByName
   tags:
-    - placeholders
+    - Placeholders
   parameters:
     - name: templateName
       in: path

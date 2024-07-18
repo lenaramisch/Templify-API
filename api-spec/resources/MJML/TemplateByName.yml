@@ -1,16 +1,16 @@
 get:
+  description: Get a specific template by its name
   summary: Get Template by Name
   operationId: getTemplateByName
   tags:
-    - template
+    - Template
   parameters:
     - name: templateName
       in: path
       description: Name of template to return
       required: true
       schema:
-        type: integer
-        format: int64
+        type: string
       example: "exampleTemplate"
   responses:
     '200':
@@ -28,18 +28,18 @@ get:
   security: []
 
 post:
+  description: Add a new template to the db
   summary: Add new template
   operationId: addNewTemplate
   tags:
-    - template
+    - Template
   parameters:
     - name: templateName
       in: path
       description: Name of template to add
       required: true
       schema:
-        type: integer
-        format: int64
+        type: string
       example: "exampleTemplate"
   requestBody:
     required: true

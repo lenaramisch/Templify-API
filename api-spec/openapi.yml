@@ -5,6 +5,10 @@ info:
   license:
     name: unlicensed
     url: "www.example.com"
+  contact: 
+    name: API Support
+    email: support@example.com
+    url: http://example.com
 servers:
   - url: /
     description: This server
@@ -13,3 +17,12 @@ paths:
 components:
   schemas: 
     $ref: './schemas/_index.yml'
+tags:
+  - name: SMS
+    description: Everything for the SMS sending service
+  - name: Email
+    description: Everything for the Email sending service
+  - name: Placeholders
+    description: Everything to get the placeholders of a template and fill them with data
+  - name: Template
+    description: Everything to save new email templates or receive existing once
