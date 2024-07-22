@@ -15,6 +15,7 @@ import (
 	emailservice "example.SMSService.com/pkg/service/email"
 	mjmlservice "example.SMSService.com/pkg/service/mjml"
 	smsservice "example.SMSService.com/pkg/service/sms"
+	typstservice "example.SMSService.com/pkg/service/typst"
 	"github.com/joho/godotenv"
 )
 
@@ -23,6 +24,7 @@ type AppConfig struct {
 	SMSTwilioConfig smsservice.TwilioSMSSenderConfig
 	MJMLConfig      mjmlservice.MJMLConfig
 	DBConfig        db.RepositoryConfig
+	TypstConfig     typstservice.TypstConfig
 }
 
 func loadConfig() AppConfig {
@@ -62,6 +64,7 @@ func loadConfig() AppConfig {
 			Host: os.Getenv("MJML_HOST"),
 			Port: mjmlPortInt,
 		},
+		TypstConfig: typstservice.TypstConfig{},
 	}
 }
 
@@ -78,9 +81,10 @@ func main() {
 	smsTwilioService := smsservice.NewTwilioSMSSender(appConfig.SMSTwilioConfig)
 	mjmlService := mjmlservice.NewMJMLService(appConfig.MJMLConfig)
 	repository := db.NewRepository(appConfig.DBConfig)
+	typstService := typstservice.NewTypstService(appConfig.TypstConfig)
 
 	// create usecase
-	usecase := domain.NewUsecase(sendgridEmailService, smsTwilioService, mjmlService, repository)
+	usecase := domain.NewUsecase(sendgridEmailService, smsTwilioService, mjmlService, repository, typstService)
 
 	//prepare handler
 	handler := handler.NewAPIHandler(usecase)

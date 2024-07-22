@@ -363,3 +363,31 @@ func (ah *APIHandler) GetPDFTemplByName(res http.ResponseWriter, req *http.Reque
 	render.Status(req, http.StatusOK)
 	render.JSON(res, req, templateDomain)
 }
+
+func (ah *APIHandler) PostPDFTemplPlaceholdersRequest(res http.ResponseWriter, req *http.Request) {
+	templateName := chi.URLParam(req, "templateName")
+	if templateName == "" {
+		http.Error(res, "URL Param templateName empty", http.StatusBadRequest)
+		return
+	}
+
+	body, err := io.ReadAll(req.Body)
+	if err != nil {
+		http.Error(res, "Reading request body failed", http.StatusInternalServerError)
+	}
+
+	var templateFillRequest domain.PDFTemplateFillRequest
+
+	if err := json.Unmarshal(body, &templateFillRequest); err != nil {
+		http.Error(res, "Invalid JSON format", http.StatusBadRequest)
+		return
+	}
+
+	//TODO Call usecase
+	ah.usecase.FillPDFTemplatePlaceholders(templateName, &templateFillRequest)
+	if err != nil {
+		handleError(res, req, http.StatusInternalServerError, "Error filling template")
+		return
+	}
+	//TODO Send back filled PDF file to user
+}

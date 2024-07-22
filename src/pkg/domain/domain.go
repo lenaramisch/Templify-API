@@ -28,19 +28,25 @@ type Repository interface {
 	GetPDFTemplateByName(name string) (*PDFTemplate, error)
 }
 
-type Usecase struct {
-	emailSender EmailSender
-	smsSender   SMSSender
-	mjmlService MJMLService
-	repository  Repository
+type TypstService interface {
+	FillTemplatePlaceholders(typstString string, placeholders map[string]string) (string, error)
 }
 
-func NewUsecase(emailsender EmailSender, smsSender SMSSender, mjmlService MJMLService, repository Repository) *Usecase {
+type Usecase struct {
+	emailSender  EmailSender
+	smsSender    SMSSender
+	mjmlService  MJMLService
+	repository   Repository
+	typstService TypstService
+}
+
+func NewUsecase(emailSender EmailSender, smsSender SMSSender, mjmlService MJMLService, repository Repository, typstService TypstService) *Usecase {
 	return &Usecase{
-		emailSender: emailsender,
-		smsSender:   smsSender,
-		mjmlService: mjmlService,
-		repository:  repository,
+		emailSender:  emailSender,
+		smsSender:    smsSender,
+		mjmlService:  mjmlService,
+		repository:   repository,
+		typstService: typstService,
 	}
 }
 
@@ -167,4 +173,15 @@ func (u *Usecase) GetPDFTemplateByName(templateName string) (*PDFTemplate, error
 		return nil, err
 	}
 	return templateDomain, nil
+}
+
+func (u *Usecase) FillPDFTemplatePlaceholders(templateName string, pdfFillRequest *PDFTemplateFillRequest) (string, error) {
+	pdfTempl, err := u.GetPDFTemplateByName(templateName)
+	if err != nil {
+		return "Getting template from db failed", err
+	}
+	templateString := pdfTempl.TypstString
+	placeholders := pdfFillRequest.Placeholders
+	u.typstService.FillTemplatePlaceholders(templateString, placeholders)
+	return "", nil
 }

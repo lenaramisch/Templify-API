@@ -40,3 +40,7 @@ type PDFTemplate struct {
 	Name        string
 	TypstString string
 }
+
+type PDFTemplateFillRequest struct {
+	Placeholders map[string]string
+}
