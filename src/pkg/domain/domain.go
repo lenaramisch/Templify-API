@@ -29,7 +29,8 @@ type Repository interface {
 }
 
 type TypstService interface {
-	FillTemplatePlaceholders(typstString string, placeholders map[string]string) (string, error)
+	FillPDFTemplatePlaceholders(typstTempl *PDFTemplate, placeholders map[string]string) (string, error)
+	GetPDFTemplatePlaceholders(typstString string) ([]string, error)
 }
 
 type Usecase struct {
@@ -180,8 +181,7 @@ func (u *Usecase) FillPDFTemplatePlaceholders(templateName string, pdfFillReques
 	if err != nil {
 		return "Getting template from db failed", err
 	}
-	templateString := pdfTempl.TypstString
 	placeholders := pdfFillRequest.Placeholders
-	u.typstService.FillTemplatePlaceholders(templateString, placeholders)
+	u.typstService.FillPDFTemplatePlaceholders(pdfTempl, placeholders)
 	return "", nil
 }
