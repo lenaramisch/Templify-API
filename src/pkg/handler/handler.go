@@ -378,16 +378,14 @@ func (ah *APIHandler) PostPDFTemplPlaceholdersRequest(res http.ResponseWriter, r
 
 	var templateFillRequest domain.PDFTemplateFillRequest
 
-	if err := json.Unmarshal(body, &templateFillRequest); err != nil {
+	if err := json.Unmarshal(body, &templateFillRequest.Placeholders); err != nil {
 		http.Error(res, "Invalid JSON format", http.StatusBadRequest)
 		return
 	}
 
-	//TODO Call usecase
 	ah.usecase.FillPDFTemplatePlaceholders(templateName, &templateFillRequest)
 	if err != nil {
 		handleError(res, req, http.StatusInternalServerError, "Error filling template")
 		return
 	}
-	//TODO Send back filled PDF file to user
 }

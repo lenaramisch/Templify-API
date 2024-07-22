@@ -21,5 +21,6 @@ func CreateRouter(apiHandler *handler.APIHandler) *chi.Mux {
 	router.Post("/templates/pdf/{templateName}", apiHandler.PDFTemplPostReq)
 	router.Get("/templates/pdf/{templateName}", apiHandler.GetPDFTemplByName)
 	router.Post("/templates/pdf/{templateName}/placeholders", apiHandler.PostPDFTemplPlaceholdersRequest)
+	//TODO Implement route to get placeholders of PDF templ
 	return router
 }
