@@ -1,9 +1,10 @@
-package domain
+package usecase
 
 import (
 	"bytes"
 	"log/slog"
 	"regexp"
+	domain "templify/pkg/domain/model"
 	"text/template"
 )
 
@@ -24,7 +25,7 @@ func FillTemplate(templateStr string, placeholderValues map[string]string) (stri
 			slog.With(
 				"RequiredPlaceholder", requiredPlaceholder,
 			).Debug("Missing placeholder")
-			return "", ErrorPlaceholderMissing{
+			return "", domain.ErrorPlaceholderMissing{
 				MissingPlaceholder: requiredPlaceholder,
 			}
 		}

@@ -1,14 +1,14 @@
 /info/version:
-  $ref: './info/version.yml'
+  $ref: './Info/version.yml'
 
 /info/status:
-  $ref: './info/status.yml'
+  $ref: './Info/status.yml'
 
 /info/openapi.json:
-  $ref: './info/openapi_json.yml'
+  $ref: './Info/openapi_json.yml'
 
 /info/openapi.html:
-  $ref: './info/openapi_html.yml'
+  $ref: './Info/openapi_html.yml'
   
 /sms:
   $ref: './SMS/Sender.yml'
@@ -19,11 +19,11 @@
 /email/attachments:
   $ref: './Email/Attachment.yml'
 
-/templates/{templateName}:
+/email/templates/{templateName}:
   $ref: './MJML/TemplateByName.yml'
 
-/templates/{templateName}/placeholders:
+/email/templates/{templateName}/placeholders:
   $ref: './MJML/Placeholders.yml'
 
-/templates/{templateName}/placeholders/attachments:
+/email/templates/{templateName}/placeholders/attachments:
   $ref: './MJML/Attachment.yml'

@@ -26,3 +26,18 @@ Template:
 
 Placeholders:
   $ref: './responses/Placeholders.yml'
+
+#Types
+Version:
+  $ref: './types/Version.yml'
+
+#Errors
+Error:
+  $ref: './errors/Error.yml'
+
+#Enum
+Status:
+  $ref: './enum/Status.yml'
+
+ErrorType:
+  $ref: './enum/ErrorType.yml'

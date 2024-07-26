@@ -10,7 +10,7 @@ post:
       description: Name of template to fill
       required: true
       schema:
-        type: integer
+        type: string
   requestBody:
     required: true
     content:
@@ -42,8 +42,7 @@ get:
       description: Name of template to return
       required: true
       schema:
-        type: integer
-        format: int64
+        type: string
   responses:
     '200':
       description: successful operation

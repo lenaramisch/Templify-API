@@ -23,10 +23,10 @@ type TwilioSMSSenderConfig struct {
 }
 
 type TwilioSMSSender struct {
-	config TwilioSMSSenderConfig
+	config *TwilioSMSSenderConfig
 }
 
-func NewTwilioSMSSender(config TwilioSMSSenderConfig) *TwilioSMSSender {
+func NewTwilioSMSSender(config *TwilioSMSSenderConfig) *TwilioSMSSender {
 	return &TwilioSMSSender{
 		config: config,
 	}
@@ -42,19 +42,19 @@ func (s *TwilioSMSSender) SendSMS(toNumber string, messageBody string) error {
 
 	// Create a new POST request
 	URL := fmt.Sprintf(TWILIO_BASE_URL+TWILIO_ACCOUNTS_URL+"%s/Messages.json", s.config.AccountSID)
-	req, err := http.NewRequest("POST", URL, strings.NewReader(SMSData.Encode()))
+	r, err := http.NewRequest("POST", URL, strings.NewReader(SMSData.Encode()))
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	// Set the Authorization header with Basic Auth base64 encoded
 	auth := base64.StdEncoding.EncodeToString([]byte(s.config.AccountSID + ":" + s.config.AuthToken))
-	req.Header.Set("Authorization", "Basic "+auth)
+	r.Header.Set("Authorization", "Basic "+auth)
 
 	// Perform the request
 	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := client.Do(r)
 	if err != nil {
 		return err
 	}

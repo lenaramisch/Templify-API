@@ -1,0 +1,9 @@
+---
+type: string
+description: The status of the API
+enum:
+  - HEALTHY
+  - UNHEALTHY
+  - UNKNOWN
+
+example: "HEALTHY"

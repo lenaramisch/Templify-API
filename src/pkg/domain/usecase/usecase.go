@@ -1,11 +1,12 @@
-package domain
+package usecase
 
 import (
 	_ "embed"
+	domain "templify/pkg/domain/model"
 )
 
 type EmailSender interface {
-	SendEmail(domainEmailReq *EmailRequest) error
+	SendEmail(domainEmailReq *domain.EmailRequest) error
 }
 
 type SMSSender interface {
@@ -18,10 +19,10 @@ type MJMLService interface {
 
 type Repository interface {
 	// Email
-	GetEmailTemplateByName(name string) (*Template, error)
+	GetEmailTemplateByName(name string) (*domain.Template, error)
 	AddEmailTemplate(name string, mjmlString string) error
 	// PDF
-	GetPDFTemplateByName(name string) (*Template, error)
+	GetPDFTemplateByName(name string) (*domain.Template, error)
 	AddPDFTemplate(name string, typstString string) error
 }
 

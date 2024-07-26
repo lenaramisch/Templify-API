@@ -9,7 +9,7 @@ import (
 	"io"
 	"net/http"
 
-	"templify/pkg/domain"
+	domain "templify/pkg/domain/model"
 
 	"github.com/joho/godotenv"
 )
@@ -23,10 +23,10 @@ type SendgridConfig struct {
 }
 
 type SendGridService struct {
-	config SendgridConfig
+	config *SendgridConfig
 }
 
-func NewSendGridService(config SendgridConfig) *SendGridService {
+func NewSendGridService(config *SendgridConfig) *SendGridService {
 	return &SendGridService{
 		config: config,
 	}
@@ -90,16 +90,16 @@ func (es *SendGridService) SendEmail(emailRequest *domain.EmailRequest) error {
 	}
 
 	// Create a new POST request
-	req, err := http.NewRequest("POST", SENDGRID_URL, bytes.NewBuffer(jsonData))
+	r, err := http.NewRequest("POST", SENDGRID_URL, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+es.config.ApiKey)
+	r.Header.Set("Content-Type", "application/json")
+	r.Header.Set("Authorization", "Bearer "+es.config.ApiKey)
 
 	//Perform the request
 	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := client.Do(r)
 	if err != nil {
 		return err
 	}

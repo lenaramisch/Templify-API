@@ -1,8 +1,9 @@
-package domain
+package usecase
 
 import (
 	"fmt"
 	"log/slog"
+	domain "templify/pkg/domain/model"
 )
 
 func (u *Usecase) AddPDFTemplate(templateName string, typstString string) error {
@@ -15,7 +16,7 @@ func (u *Usecase) AddPDFTemplate(templateName string, typstString string) error 
 	return nil
 }
 
-func (u *Usecase) GetPDFTemplateByName(templateName string) (*Template, error) {
+func (u *Usecase) GetPDFTemplateByName(templateName string) (*domain.Template, error) {
 	templateDomain, err := u.repository.GetPDFTemplateByName(templateName)
 	if err != nil {
 		fmt.Println("=== Error ===")

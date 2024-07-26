@@ -6,20 +6,16 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
-	"text/template"
-
-	"templify/pkg/domain"
 )
 
 type TypstConfig struct {
 }
 
 type TypstService struct {
-	config TypstConfig
+	config *TypstConfig
 }
 
-func NewTypstService(config TypstConfig) *TypstService {
+func NewTypstService(config *TypstConfig) *TypstService {
 	return &TypstService{
 		config: config,
 	}

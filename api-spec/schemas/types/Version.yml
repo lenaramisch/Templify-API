@@ -1,0 +1,34 @@
+---
+type: object
+description: This object holds the API version data.
+properties:
+  version:
+    type: string
+    description: The version of the API
+    example: 1.0.0
+  buildDate:
+    type: string
+    description: The date the code was built
+    example: 2020-01-01
+  details:
+    type: string
+    description: A description of the API
+    example: This is the API for the x service
+  commitHash:
+    type: string
+    description: The hash of the commit
+    example: '0d1444adb917eacc71321f1281904f71c5e378ca'
+  commitDate:
+    type: string
+    description: The date of the commit
+    example: 2020-01-01T00:00:00Z
+
+example:
+  $ref: '../../examples/_index.yml#/VersionExample'
+
+required:
+  - version
+  - buildDate
+  - details
+  - commitHash
+  - commitDate

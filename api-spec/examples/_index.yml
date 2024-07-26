@@ -1,0 +1,8 @@
+---
+# Schemas
+VersionExample:
+  $ref: './types/VersionExample.yml'
+
+# Errors
+ErrorExample:
+  $ref: './errors/ErrorExample.yml'

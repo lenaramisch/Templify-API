@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"log"
 
-	"templify/pkg/domain"
+	domain "templify/pkg/domain/model"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 )
 
 type Repository struct {
-	config       RepositoryConfig
+	config       *RepositoryConfig
 	dbConnection *sqlx.DB
 }
 
@@ -23,7 +23,7 @@ type RepositoryConfig struct {
 	DBName   string
 }
 
-func NewRepository(config RepositoryConfig) *Repository {
+func NewRepository(config *RepositoryConfig) *Repository {
 	repo := &Repository{
 		config: config,
 	}

@@ -1,0 +1,6 @@
+package: server
+output: ./src/pkg/server/generated/api.gen.go
+generate:
+  embedded-spec: true
+  strict-server: false
+  std-http-server: true

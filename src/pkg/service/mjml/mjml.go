@@ -4,13 +4,9 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
-	"text/template"
 	"io"
 	"log/slog"
 	"net/http"
-	"regexp"
-
-	"templify/pkg/domain"
 )
 
 type MJMLConfig struct {
@@ -19,10 +15,10 @@ type MJMLConfig struct {
 }
 
 type MJMLService struct {
-	config MJMLConfig
+	config *MJMLConfig
 }
 
-func NewMJMLService(config MJMLConfig) *MJMLService {
+func NewMJMLService(config *MJMLConfig) *MJMLService {
 	return &MJMLService{
 		config: config,
 	}
@@ -32,17 +28,17 @@ func (m *MJMLService) RenderMJML(MJMLString string) (string, error) {
 	//call MJML Service on Port 5000
 	// Create a new POST request
 	url := fmt.Sprintf("%s:%d", m.config.Host, m.config.Port)
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte(MJMLString)))
+	r, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte(MJMLString)))
 	if err != nil {
 		slog.Debug("Error creating request")
 		return "", err
 	}
 
-	req.Header.Set("Content-Type", "text/plain")
+	r.Header.Set("Content-Type", "text/plain")
 
 	//Perform the request
 	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := client.Do(r)
 	if err != nil {
 		slog.With("err", err.Error()).Debug("Error sending request")
 		return "", err

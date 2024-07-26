@@ -1,8 +1,9 @@
-package domain
+package usecase
 
 import (
 	"fmt"
 	"log/slog"
+	domain "templify/pkg/domain/model"
 )
 
 func (u *Usecase) AddEmailTemplate(templateName string, MJMLString string) error {
@@ -40,17 +41,17 @@ func (u *Usecase) GetFilledMJMLTemplate(templateName string, values map[string]s
 	return filledTemplate, err
 }
 
-func (u *Usecase) SendRawEmail(req *EmailRequest) error {
-	return u.emailSender.SendEmail(req)
+func (u *Usecase) SendRawEmail(r *domain.EmailRequest) error {
+	return u.emailSender.SendEmail(r)
 }
 
-func (u *Usecase) SendMJMLEmail(req *EmailRequest, templateName string, values map[string]string) error {
+func (u *Usecase) SendMJMLEmail(r *domain.EmailRequest, templateName string, values map[string]string) error {
 	emailBody, err := u.prepareMJMLBody(templateName, values)
 	if err != nil {
 		return err
 	}
-	req.MessageBody = *emailBody
-	err = u.emailSender.SendEmail(req)
+	r.MessageBody = *emailBody
+	err = u.emailSender.SendEmail(r)
 	if err != nil {
 		slog.Debug("Error sending email without attachment")
 		return err
@@ -83,7 +84,7 @@ func (u *Usecase) prepareMJMLBody(templateName string, values map[string]string)
 	return &htmlString, nil
 }
 
-func (u *Usecase) GetEmailTemplateByName(templateName string) (*Template, error) {
+func (u *Usecase) GetEmailTemplateByName(templateName string) (*domain.Template, error) {
 	templateDomain, err := u.repository.GetEmailTemplateByName(templateName)
 	if err != nil {
 		fmt.Println("=== Error ===")

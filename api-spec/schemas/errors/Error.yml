@@ -1,0 +1,33 @@
+---
+type: object
+description: This object holds the error response data.
+properties:
+  errorId:
+    type: string
+    description: The unique identifier for the error
+    example: 123e4567-e89b-12d3-a456-426614174000
+  error:
+    type: string
+    description: The error message
+    example: The item does not exist
+  ErrorType:
+    $ref: '../enum/ErrorType.yml'
+  code:
+    type: integer
+    description: The error code
+    example: 404
+  timestamp:
+    type: string
+    format: rfc3339
+    description: The time the error occurred
+    example: "2020-01-01T12:00:00Z"
+
+example:
+  $ref: '../../examples/_index.yml#/ErrorExample'
+
+required:
+  - errorId
+  - error
+  - ErrorType
+  - code
+  - timestamp

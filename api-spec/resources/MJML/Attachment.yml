@@ -10,7 +10,7 @@ post:
       description: Name of template to fill
       required: true
       schema:
-        type: integer
+        type: string
   requestBody:
     required: true
     content:
