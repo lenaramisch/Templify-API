@@ -6,41 +6,22 @@ type SmsRequest struct {
 }
 
 type EmailRequest struct {
-	ToEmail     string
-	ToName      string
-	Subject     string
-	MessageBody string
-}
-
-type TemplateFillRequest struct {
-	ShouldBeSent bool
 	ToEmail      string
 	ToName       string
 	Subject      string
-	Placeholders map[string]string
-}
-
-type EmailRequestAttm struct {
+	MessageBody  string
 	ShouldBeSent bool
-	ToEmail      string
-	ToName       string
-	Subject      string
-	Placeholders map[string]string
-	FileName     string
-	FileType     string
-	AttmContent  string
+	// if attachments
+	AttachmentInfo *AttachmentInfo
 }
 
 type Template struct {
-	Name       string
-	MJMLString string
-}
-
-type PDFTemplate struct {
 	Name        string
-	TypstString string
+	TemplateStr string
 }
 
-type PDFTemplateFillRequest struct {
-	Placeholders map[string]string
+type AttachmentInfo struct {
+	FileName      string
+	FileExtension string
+	Content       []byte
 }

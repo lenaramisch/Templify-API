@@ -1,15 +1,11 @@
 package typst
 
 import (
-	"bytes"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
-	"text/template"
-
-	"example.SMSService.com/pkg/domain"
 )
 
 type TypstConfig struct {
@@ -25,9 +21,10 @@ func NewTypstService(config TypstConfig) *TypstService {
 	}
 }
 
-func writeStringToFile(filledTemplStr string, templName string) (string, error) {
+// TODO make general write String to file method that uses path instead of filename
+func writeStringToFile(filledTemplStr string, fileName string) (string, error) {
 	dir := "/tmp"
-	typstFileName := filepath.Join(dir, templName+".typ")
+	typstFileName := filepath.Join(dir, fileName+".typ")
 	// Create the file
 	f, err := os.Create(typstFileName)
 	if err != nil {
@@ -54,73 +51,25 @@ func writeStringToFile(filledTemplStr string, templName string) (string, error) 
 	return typstFileName, nil
 }
 
-func renderTypst(typstFileName string) (string, error) {
-	cmd := exec.Command("typst", "compile", typstFileName)
+func (t *TypstService) RenderTypst(typstString string) ([]byte, error) {
+	randomName := "djaijsdh" // TODO use UUID here
+	writeStringToFile(typstString, randomName)
+	cmd := exec.Command("typst", "compile", randomName)
 	cmd.Dir = "/tmp"
-	var out bytes.Buffer
-	cmd.Stdout = &out
 	err := cmd.Run()
 	if err != nil {
-		fmt.Print("Error rendering Typst File to PD ", err)
-		return "", err
+		slog.With(
+			"Error", err.Error(),
+		).Debug("Error executing typst command")
+		return nil, err
 	}
-	fmt.Println(out.String())
-	return out.String(), nil
-}
-
-func extractPlaceholders(typstTemplString string) []string {
-	reg := regexp.MustCompile(`{{\s*\.([a-zA-Z]+)\s*}}`)
-	matches := reg.FindAllStringSubmatch(typstTemplString, -1)
-	var placeholders []string
-	for _, match := range matches {
-		placeholders = append(placeholders, match[1])
-	}
-	return placeholders
-}
-
-func (ts *TypstService) GetPDFTemplatePlaceholders(typstString string) ([]string, error) {
-	placeholders := extractPlaceholders(typstString)
-	if len(placeholders) == 0 {
-		fmt.Printf("No placeholders found")
-		return []string{}, nil
-	}
-
-	return placeholders, nil
-}
-
-func (ts *TypstService) FillPDFTemplatePlaceholders(typstTempl *domain.PDFTemplate, values map[string]string) (string, error) {
-	placeholders, err := ts.GetPDFTemplatePlaceholders(typstTempl.TypstString)
+	// open the generated PDF file
+	filePath := fmt.Sprintf("/tmp/%s.pdf", randomName)
+	bytes, err := os.ReadFile(filePath)
 	if err != nil {
-		fmt.Print("Getting placeholders for template failed")
-		return "Getting placeholders for template failed", err
+		slog.With(
+			"filePath", filePath,
+		).Debug("Error reading PDF file")
 	}
-	for _, placeholder := range placeholders {
-		if _, ok := values[placeholder]; !ok {
-			return "", fmt.Errorf("missing placeholder: %s", placeholder)
-		}
-	}
-	templ, err := template.New("someName").Parse(typstTempl.TypstString)
-	if err != nil {
-		fmt.Print("Error at template.New.Parse")
-		return "", err
-	}
-	buf := &bytes.Buffer{}
-	err = templ.Execute(buf, values)
-	if err != nil {
-		fmt.Print("Error at execute")
-		return "", err
-	}
-	filledTemplateString := buf.String()
-	typstFileName, err := writeStringToFile(filledTemplateString, typstTempl.Name)
-	if err != nil {
-		fmt.Println("Error filling Templ String")
-		return "", err
-	}
-	result, err := renderTypst(typstFileName)
-	if err != nil {
-		fmt.Println("Error rendering Typst")
-		return "", err
-	}
-	fmt.Println("Result: " + result)
-	return result, nil
+	return bytes, nil
 }

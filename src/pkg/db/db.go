@@ -43,7 +43,7 @@ func (r *Repository) ConnectToDB() {
 	r.dbConnection = db
 }
 
-func (r *Repository) GetTemplateByName(name string) (*domain.Template, error) {
+func (r *Repository) GetEmailTemplateByName(name string) (*domain.Template, error) {
 	tx := r.dbConnection.MustBegin()
 	getTemplateByNameQuery := "SELECT * FROM emailtemplates WHERE name=$1"
 	templateDB := Template{}
@@ -58,8 +58,8 @@ func (r *Repository) GetTemplateByName(name string) (*domain.Template, error) {
 
 	// map to domain model
 	templateDomain := domain.Template{
-		Name:       templateDB.Name,
-		MJMLString: templateDB.MJMLString,
+		Name:        templateDB.Name,
+		TemplateStr: templateDB.MJMLString,
 	}
 	return &templateDomain, nil
 }
@@ -78,7 +78,7 @@ func (r *Repository) AddPDFTemplate(name string, typstString string) error {
 	return tx.Commit()
 }
 
-func (r *Repository) GetPDFTemplateByName(name string) (*domain.PDFTemplate, error) {
+func (r *Repository) GetPDFTemplateByName(name string) (*domain.Template, error) {
 	tx := r.dbConnection.MustBegin()
 	getPDFTemplateByNameQuery := "SELECT * FROM pdftemplates WHERE name=$1"
 	templateDB := PDFTemplate{}
@@ -92,9 +92,9 @@ func (r *Repository) GetPDFTemplateByName(name string) (*domain.PDFTemplate, err
 	}
 
 	// map to domain model
-	templateDomain := domain.PDFTemplate{
+	templateDomain := domain.Template{
 		Name:        templateDB.Name,
-		TypstString: templateDB.TypstString,
+		TemplateStr: templateDB.TypstString,
 	}
 	return &templateDomain, nil
 }
