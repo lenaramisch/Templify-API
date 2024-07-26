@@ -6,6 +6,10 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
+	"text/template"
+
+	"templify/pkg/domain"
 )
 
 type TypstConfig struct {

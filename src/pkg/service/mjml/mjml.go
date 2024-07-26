@@ -4,9 +4,13 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
+	"text/template"
 	"io"
 	"log/slog"
 	"net/http"
+	"regexp"
+
+	"templify/pkg/domain"
 )
 
 type MJMLConfig struct {

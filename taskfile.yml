@@ -16,11 +16,37 @@ tasks:
       - docker-compose up --build
     silent: true
   
+  gen-embedded-api:
+    desc: 'Generate the embedded json for the api'
+    cmds:
+      - echo "Generating the embedded json for the api"
+      - docker run --rm -v ./api-spec/:/spec redocly/cli bundle openapi.yml -o openapi.json
+      - mv ./api-spec/openapi.json ./src/pkg/server/handler/apihandler/embedded/openapi.json
+    silent: true
+
+  gen-api-std:
+    desc: 'Generate the api wrapper interfaces for std server using oapi-codegen'
+    cmds:
+      - echo "Generate the api wrapper interfaces for std server using oapi-codegen"
+      - oapi-codegen --config ./api-spec/server-std.cfg.yml ./api-spec/bundle.yml > ./src/pkg/server/generated/api.gen.go
+    silent: true
+
   gen-api-types:
-    desc: "Generate the types for the api using opai-codegen"
+    desc: 'Generate the types for the api using oapi-codegen'
     cmds:
       - echo "Generating the types for the api using oapi-codegen"
-      - opai-codegen - generate types -package server ./api-spec/bundle.yml > ./types.gen.go
+      - oapi-codegen -generate types -package server ./api-spec/bundle.yml > ./src/pkg/server/generated/types.gen.go
+    silent: true
+
+  gen-api:
+    desc: 'Generate the api for the server using oapi-codegen'
+    cmds:
+      - echo "Generating the api for the server using oapi-codegen"
+      - task lint-api
+      - task bundle-api
+      - task gen-embedded-api
+      - task gen-api-types
+      - task gen-api-std
     silent: true
 
   lint-api:

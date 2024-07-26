@@ -9,7 +9,8 @@ import (
 	"io"
 	"net/http"
 
-	"example.SMSService.com/pkg/domain"
+	"templify/pkg/domain"
+
 	"github.com/joho/godotenv"
 )
 

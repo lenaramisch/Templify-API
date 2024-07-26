@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	"example.SMSService.com/pkg/domain"
+	"templify/pkg/domain"
+
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 )
