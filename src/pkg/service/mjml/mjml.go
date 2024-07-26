@@ -25,7 +25,6 @@ func NewMJMLService(config *MJMLConfig) *MJMLService {
 }
 
 func (m *MJMLService) RenderMJML(MJMLString string) (string, error) {
-	//call MJML Service on Port 5000
 	// Create a new POST request
 	url := fmt.Sprintf("%s:%d", m.config.Host, m.config.Port)
 	r, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte(MJMLString)))

@@ -64,7 +64,7 @@ services:
   mjml:
     image: adrianrudnik/mjml-server
     ports:
-      - 5000:80
+      - 8888:80
     environment:
       - CORS=*
       - MJML_KEEP_COMMENTS=true
