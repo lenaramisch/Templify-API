@@ -35,6 +35,14 @@
     {
       "name": "Template",
       "description": "Everything to save new email templates or receive existing once"
+    },
+    {
+      "name": "SMSPlaceholders",
+      "description": "Everything to get the placeholders of a template and fill them with data"
+    },
+    {
+      "name": "SMSTemplate",
+      "description": "Everything to save new SMS templates or receive existing once"
     }
   ],
   "paths": {
@@ -231,6 +239,171 @@
           },
           "400": {
             "description": "Invalid receiver phone number supplied"
+          }
+        },
+        "security": []
+      }
+    },
+    "/sms/templates/{templateName}": {
+      "get": {
+        "description": "Get a specific SMS template by its name",
+        "summary": "Get SMS Template by Name",
+        "operationId": "getSMSTemplateByName",
+        "tags": [
+          "SMSTemplate"
+        ],
+        "parameters": [
+          {
+            "name": "templateName",
+            "in": "path",
+            "description": "Name of template to return",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "exampleTemplate"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SMSTemplate"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid name supplied"
+          },
+          "404": {
+            "description": "Can not find template (template name)"
+          }
+        },
+        "security": []
+      },
+      "post": {
+        "description": "Add a new SMS template to the db",
+        "summary": "Add new SMS template",
+        "operationId": "addNewSMSTemplate",
+        "tags": [
+          "SMSTemplate"
+        ],
+        "parameters": [
+          {
+            "name": "templateName",
+            "in": "path",
+            "description": "Name of template to add",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "exampleTemplate"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SMSTemplatePostRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Added template (name)"
+          },
+          "400": {
+            "description": "Invalid name supplied"
+          }
+        },
+        "security": []
+      }
+    },
+    "/sms/templates/{templateName}/placeholders": {
+      "post": {
+        "description": "Fill the placeholders of a specific SMS template. The boolean \"shouldBeSent\" is telling if the filled template should be sent as SMS",
+        "summary": "Fill placeholders of SMSntemplate",
+        "operationId": "fillSMSTemplate",
+        "tags": [
+          "SMSPlaceholders"
+        ],
+        "parameters": [
+          {
+            "name": "templateName",
+            "in": "path",
+            "description": "Name of template to fill",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SMSTemplateFillRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/SMSFilledTemplateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid name or data supplied"
+          }
+        },
+        "security": []
+      },
+      "get": {
+        "description": "Get all placeholders of a specific SMS template that have to be filled with some data",
+        "summary": "Get SMS Template Placeholders",
+        "operationId": "getSMSTemplatePlaceholdersByName",
+        "tags": [
+          "SMSPlaceholders"
+        ],
+        "parameters": [
+          {
+            "name": "templateName",
+            "in": "path",
+            "description": "Name of SMS template to return",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SMSPlaceholders"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid name supplied"
+          },
+          "404": {
+            "description": "Can not find template (template name)"
           }
         },
         "security": []
@@ -629,6 +802,139 @@
           "message"
         ]
       },
+      "SMSTemplate": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "ExampleName"
+          },
+          "templateString": {
+            "type": "string",
+            "example": "Hello {{.Name}}. You are {{.Age}} years old."
+          }
+        },
+        "required": [
+          "name",
+          "templateString"
+        ]
+      },
+      "SMSTemplatePostRequest": {
+        "type": "object",
+        "properties": {
+          "templateString": {
+            "type": "string",
+            "example": "Hello {{.Name}}. You are {{.Age}} years old."
+          }
+        },
+        "required": [
+          "templateString"
+        ]
+      },
+      "SMSPlaceholders": {
+        "type": "object",
+        "properties": {
+          "placeholders": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "key",
+                      "value"
+                    ],
+                    "properties": {
+                      "key": {
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "string"
+                      }
+                    },
+                    "example": [
+                      {
+                        "key": "firstName",
+                        "value": ""
+                      },
+                      {
+                        "key": "lastName",
+                        "value": ""
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "placeholders"
+        ],
+        "example": {
+          "placeholders": [
+            {
+              "data": [
+                {
+                  "key": "firstName",
+                  "value": ""
+                },
+                {
+                  "key": "lastName",
+                  "value": ""
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "SMSTemplateFillRequest": {
+        "type": "object",
+        "properties": {
+          "shouldBeSent": {
+            "type": "boolean",
+            "example": true
+          },
+          "receiverPhoneNumber": {
+            "type": "string",
+            "example": "+49123456789"
+          },
+          "placeholders": {
+            "type": "object",
+            "properties": {
+              "FirstName": {
+                "type": "string",
+                "example": "Sherlock"
+              },
+              "LastName": {
+                "type": "string",
+                "example": "Holmes"
+              },
+              "Age": {
+                "type": "string",
+                "example": "45"
+              }
+            },
+            "required": [
+              "FirstName",
+              "LastName",
+              "Age"
+            ]
+          }
+        },
+        "required": [
+          "shouldBeSent",
+          "receiverPhoneNumber",
+          "placeholders"
+        ]
+      },
+      "SMSFilledTemplateResponse": {
+        "type": "string",
+        "example": "Hello Sherlock Holmes, you are 45 years old."
+      },
       "EmailSendRequest": {
         "type": "object",
         "properties": {
@@ -759,7 +1065,23 @@
         },
         "required": [
           "placeholders"
-        ]
+        ],
+        "example": {
+          "placeholders": [
+            {
+              "data": [
+                {
+                  "key": "firstName",
+                  "value": ""
+                },
+                {
+                  "key": "lastName",
+                  "value": ""
+                }
+              ]
+            }
+          ]
+        }
       },
       "TemplateFillRequest": {
         "type": "object",

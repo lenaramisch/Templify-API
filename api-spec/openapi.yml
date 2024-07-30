@@ -26,3 +26,7 @@ tags:
     description: Everything to get the placeholders of a template and fill them with data
   - name: Template
     description: Everything to save new email templates or receive existing once
+  - name: SMSPlaceholders
+    description: Everything to get the placeholders of a template and fill them with data
+  - name: SMSTemplate
+    description: Everything to save new SMS templates or receive existing once

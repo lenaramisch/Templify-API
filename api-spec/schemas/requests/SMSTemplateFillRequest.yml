@@ -1,0 +1,28 @@
+type: object
+properties:
+  shouldBeSent:
+    type: boolean
+    example: true
+  receiverPhoneNumber:
+    type: string
+    example: "+49123456789"
+  placeholders:
+    type: object
+    properties:
+      FirstName:
+        type: string
+        example: "Sherlock"
+      LastName:
+        type: string
+        example: "Holmes"
+      Age:
+        type: string
+        example: "45"
+    required:
+      - FirstName
+      - LastName
+      - Age
+required:
+  - shouldBeSent
+  - receiverPhoneNumber
+  - placeholders

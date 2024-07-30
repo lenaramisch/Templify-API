@@ -16,8 +16,6 @@ func (u *Usecase) AddEmailTemplate(templateName string, MJMLString string) error
 	return nil
 }
 
-// TODO rename all funcs that have template to email template
-// also reuse util func and add logging?
 func (u *Usecase) GetEmailPlaceholders(templateName string) ([]string, error) {
 	domainTemplate, err := u.repository.GetEmailTemplateByName(templateName)
 	if err != nil {

@@ -13,6 +13,12 @@
 /sms:
   $ref: './SMS/Sender.yml'
 
+/sms/templates/{templateName}:
+  $ref: './SMS/TemplateByName.yml'
+
+/sms/templates/{templateName}/placeholders:
+  $ref: './SMS/Placeholders.yml'
+
 /email:
   $ref: './Email/Sender.yml'
 

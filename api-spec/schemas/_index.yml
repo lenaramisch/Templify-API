@@ -2,6 +2,21 @@
 SMSSendRequest:
   $ref: './requests/SMSSendRequest.yml'
 
+SMSTemplate:
+  $ref: './responses/SMSTemplate.yml'
+
+SMSTemplatePostRequest:
+  $ref: './requests/SMSTemplatePostRequest.yml'
+
+SMSTemplateFillRequest:
+  $ref: './requests/SMSTemplateFillRequest.yml'
+
+SMSFilledTemplateResponse:
+  $ref: './responses/SMSFilledTemplateResponse.yml'
+
+SMSPlaceholders:
+  $ref: './responses/SMSPlaceholders.yml'
+
 EmailSendRequest:
   $ref: './requests/EmailSendRequest.yml'
 

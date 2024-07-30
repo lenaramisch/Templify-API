@@ -1,0 +1,7 @@
+type: object
+properties:
+  templateString:
+    type: string
+    example: 'Hello {{.Name}}. You are {{.Age}} years old.'
+required:
+  - templateString
