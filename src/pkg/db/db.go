@@ -72,6 +72,13 @@ func (r *Repository) AddEmailTemplate(name string, mjmlString string) error {
 	return tx.Commit()
 }
 
+func (r *Repository) AddSMSTemplate(name string, smsTemplString string) error {
+	tx := r.dbConnection.MustBegin()
+	addSMSTemplQuery := "INSERT INTO smstemplates (name, templ_string) VALUES ($1, $2)"
+	tx.MustExec(addSMSTemplQuery, name, smsTemplString)
+	return tx.Commit()
+}
+
 func (r *Repository) AddPDFTemplate(name string, typstString string) error {
 	tx := r.dbConnection.MustBegin()
 	addPDFTemplateQuery := "INSERT INTO pdftemplates (name, typst_string) VALUES ($1, $2)"
@@ -96,6 +103,27 @@ func (r *Repository) GetPDFTemplateByName(name string) (*domain.Template, error)
 	templateDomain := domain.Template{
 		Name:        templateDB.Name,
 		TemplateStr: templateDB.TypstString,
+	}
+	return &templateDomain, nil
+}
+
+func (r *Repository) GetSMSTemplateByName(name string) (*domain.Template, error) {
+	tx := r.dbConnection.MustBegin()
+	getSMSTemplateByNameQuery := "SELECT * FROM smstemplates WHERE name=$1"
+	templateDB := SMSTemplate{}
+	err := tx.Get(&templateDB, getSMSTemplateByNameQuery, name)
+	if err != nil {
+		return nil, err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+
+	// map to domain model
+	templateDomain := domain.Template{
+		Name:        templateDB.Name,
+		TemplateStr: templateDB.TemplString,
 	}
 	return &templateDomain, nil
 }

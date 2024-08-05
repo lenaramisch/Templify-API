@@ -24,6 +24,9 @@ type Repository interface {
 	// PDF
 	GetPDFTemplateByName(name string) (*domain.Template, error)
 	AddPDFTemplate(name string, typstString string) error
+	// SMS
+	AddSMSTemplate(name string, smsTemplString string) error
+	GetSMSTemplateByName(name string) (*domain.Template, error)
 }
 
 type TypstService interface {

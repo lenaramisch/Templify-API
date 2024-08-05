@@ -13,3 +13,10 @@ type PDFTemplate struct {
 	TypstString string `db:"typst_string"`
 	CreatedAt   string `db:"created_at"`
 }
+
+type SMSTemplate struct {
+	ID          int    `db:"id"`
+	Name        string `db:"name"`
+	TemplString string `db:"templ_string"`
+	CreatedAt   string `db:"created_at"`
+}

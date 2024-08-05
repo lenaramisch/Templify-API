@@ -133,7 +133,6 @@ func (ah *APIHandler) GetTemplatePlaceholdersByName(w http.ResponseWriter, r *ht
 
 // Fill placeholders of template
 // (POST /templates/{templateName}/placeholders)
-// TODO why is this expecting an INTEGER!?
 func (ah *APIHandler) FillTemplate(w http.ResponseWriter, r *http.Request, templateName string) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
