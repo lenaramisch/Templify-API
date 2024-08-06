@@ -26,6 +26,15 @@ func (u *Usecase) GetPDFTemplateByName(templateName string) (*domain.Template, e
 	return templateDomain, nil
 }
 
+func (u *Usecase) GetPDFPlaceholders(templateName string) ([]string, error) {
+	domainTemplate, err := u.repository.GetPDFTemplateByName(templateName)
+	if err != nil {
+		slog.With("templateName", templateName).Debug("Could not get template from repo")
+		return nil, err
+	}
+	return ExtractPlaceholders(domainTemplate.TemplateStr), nil
+}
+
 func (u *Usecase) FillPDFTemplatePlaceholders(templateName string, values map[string]string) (string, error) {
 	pdfTempl, err := u.GetPDFTemplateByName(templateName)
 	if err != nil {

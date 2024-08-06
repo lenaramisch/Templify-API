@@ -11,7 +11,21 @@ import (
 	"github.com/go-chi/render"
 )
 
-func (ah *APIHandler) PDFTemplPostReq(w http.ResponseWriter, r *http.Request) {
+func (ah *APIHandler) GetPDFTemplatePlaceholdersByName(w http.ResponseWriter, r *http.Request, templateName string) {
+	templatePlaceholders, err := ah.Usecase.GetPDFPlaceholders(templateName)
+	if err != nil {
+		handler.HandleError(w, r, http.StatusInternalServerError, fmt.Sprintf("Getting placeholders for template %s failed", templateName))
+		return
+	}
+	if len(templatePlaceholders) == 0 {
+		handler.HandleError(w, r, http.StatusNotFound, fmt.Sprintf("No placeholders for template %s found", templateName))
+		return
+	}
+	render.Status(r, http.StatusOK)
+	render.JSON(w, r, templatePlaceholders)
+}
+
+func (ah *APIHandler) AddNewPDFTemplate(w http.ResponseWriter, r *http.Request, templateName string) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusBadRequest, "Reading Request Body failed")
@@ -20,7 +34,6 @@ func (ah *APIHandler) PDFTemplPostReq(w http.ResponseWriter, r *http.Request) {
 	typstString := string(body)
 
 	fmt.Println("Typst String: ", typstString)
-	templateName := chi.URLParam(r, "templateName")
 	if templateName == "" {
 		http.Error(w, "URL Param templateName empty", http.StatusBadRequest)
 		return
@@ -36,8 +49,7 @@ func (ah *APIHandler) PDFTemplPostReq(w http.ResponseWriter, r *http.Request) {
 	render.PlainText(w, r, resultString)
 }
 
-func (ah *APIHandler) GetPDFTemplByName(w http.ResponseWriter, r *http.Request) {
-	templateName := chi.URLParam(r, "templateName")
+func (ah *APIHandler) GetPDFTemplateByName(w http.ResponseWriter, r *http.Request, templateName string) {
 	if templateName == "" {
 		http.Error(w, "URL Param templateName empty", http.StatusBadRequest)
 		return
@@ -56,8 +68,7 @@ func (ah *APIHandler) GetPDFTemplByName(w http.ResponseWriter, r *http.Request) 
 	render.JSON(w, r, templateDomain)
 }
 
-func (ah *APIHandler) GetFilledPDFTemplate(w http.ResponseWriter, r *http.Request) {
-	templateName := chi.URLParam(r, "templateName")
+func (ah *APIHandler) FillPDFTemplate(w http.ResponseWriter, r *http.Request, templateName string) {
 	if templateName == "" {
 		http.Error(w, "URL Param templateName empty", http.StatusBadRequest)
 		return
