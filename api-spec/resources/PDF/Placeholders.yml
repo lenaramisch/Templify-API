@@ -1,9 +1,9 @@
 post:
-  description: Fill the placeholders of a specific SMS template. The boolean "shouldBeSent" is telling if the filled template should be sent as SMS
-  summary: Fill placeholders of SMS template
-  operationId: fillSMSTemplate
+  description: Fill the placeholders of a specific PDF template
+  summary: Fill placeholders of PDF template
+  operationId: fillPDFTemplate
   tags:
-    - SMSPlaceholders
+    - PDFPlaceholders
   parameters:
     - name: templateName
       in: path
@@ -16,14 +16,14 @@ post:
     content:
       application/json:
         schema: 
-          $ref: '../../schemas/_index.yml#/SMSTemplateFillRequest'
+          $ref: '../../schemas/_index.yml#/PDFTemplateFillRequest'
   responses:
     '200':
       description: successful operation
       content:
         text/plain:
           schema:
-            $ref: '../../schemas/_index.yml#/SMSFilledTemplateResponse'
+            $ref: '../../schemas/_index.yml#/PDFFilledTemplateResponse'
     '400':
       description: Invalid name or data supplied
 
@@ -31,15 +31,15 @@ post:
   security: []
 
 get:
-  description: Get all placeholders of a specific SMS template that have to be filled with some data
-  summary: Get SMS Template Placeholders
-  operationId: getSMSTemplatePlaceholdersByName
+  description: Get all placeholders of a specific PDF template that have to be filled with some data
+  summary: Get PDF Template Placeholders
+  operationId: getPDFTemplatePlaceholdersByName
   tags:
-    - SMSPlaceholders
+    - PDFPlaceholders
   parameters:
     - name: templateName
       in: path
-      description: Name of SMS template to return
+      description: Name of template to return
       required: true
       schema:
         type: string
@@ -49,7 +49,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../schemas/_index.yml#/SMSPlaceholders'
+            $ref: '../../schemas/_index.yml#/PDFPlaceholders'
     '400':
       description: Invalid name supplied
     '404':

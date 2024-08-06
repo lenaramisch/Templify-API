@@ -33,3 +33,9 @@
 
 /email/templates/{templateName}/placeholders/attachments:
   $ref: './MJML/Attachment.yml'
+
+/pdf/templates/{templateName}:
+  $ref: './PDF/TemplateByName.yml'
+
+/pdf/templates/{templateName}/placeholders:
+  $ref: './PDF/Placeholders.yml'

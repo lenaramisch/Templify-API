@@ -1,11 +1,5 @@
 type: object
 properties:
-  shouldBeSent:
-    type: boolean
-    example: true
-  receiverPhoneNumber:
-    type: string
-    example: "+49123456789"
   placeholders:
     type: object
     properties:
@@ -19,6 +13,4 @@ properties:
         type: string
         example: "45"
 required:
-  - shouldBeSent
-  - receiverPhoneNumber
   - placeholders

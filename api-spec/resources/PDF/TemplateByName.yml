@@ -1,0 +1,57 @@
+get:
+  description: Get a specific PDF template by its name
+  summary: Get PDF Template by Name
+  operationId: getPDFTemplateByName
+  tags:
+    - PDFTemplate
+  parameters:
+    - name: templateName
+      in: path
+      description: Name of template to return
+      required: true
+      schema:
+        type: string
+      example: "exampleTemplate"
+  responses:
+    '200':
+      description: successful operation
+      content:
+        application/json:
+          schema:
+            $ref: '../../schemas/_index.yml#/PDFTemplate'
+    '400':
+      description: Invalid name supplied
+    '404':
+      description: Can not find template (template name)
+
+  # This API has no security
+  security: []
+
+post:
+  description: Add a new PDF template to the db
+  summary: Add new PDF template
+  operationId: addNewPDFTemplate
+  tags:
+    - PDFTemplate
+  parameters:
+    - name: templateName
+      in: path
+      description: Name of template to add
+      required: true
+      schema:
+        type: string
+      example: "exampleTemplate"
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema: 
+          $ref: '../../schemas/_index.yml#/PDFTemplatePostRequest'
+  responses:
+    '201':
+      description: Added template (name)
+    '400':
+      description: Invalid name supplied
+
+  # This API has no security
+  security: []

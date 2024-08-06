@@ -32,6 +32,12 @@ TemplateFillRequest:
 MJMLSendRequestAttachment:
   $ref: './requests/MJMLSendRequestAttachment.yml'
 
+PDFTemplateFillRequest:
+  $ref: './requests/PDFTemplateFillRequest.yml'
+
+PDFTemplatePostRequest:
+  $ref: './requests/PDFTemplatePostRequest.yml'
+
 #Responses
 FilledTemplateResponse:
   $ref: './responses/FilledTemplateResponse.yml'
@@ -41,6 +47,15 @@ Template:
 
 Placeholders:
   $ref: './responses/Placeholders.yml'
+
+PDFTemplate:
+  $ref: './responses/PDFTemplate.yml'
+
+PDFFilledTemplateResponse:
+  $ref: './responses/PDFFilledTemplateResponse.yml'
+
+PDFPlaceholders:
+  $ref: './responses/PDFPlaceholders.yml'
 
 #Types
 Version:

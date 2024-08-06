@@ -34,7 +34,7 @@
     },
     {
       "name": "Template",
-      "description": "Everything to save new email templates or receive existing once"
+      "description": "Everything to save new email templates or receive existing ones"
     },
     {
       "name": "SMSPlaceholders",
@@ -42,7 +42,15 @@
     },
     {
       "name": "SMSTemplate",
-      "description": "Everything to save new SMS templates or receive existing once"
+      "description": "Everything to save new SMS templates or receive existing ones"
+    },
+    {
+      "name": "PDFPlaceholders",
+      "description": "Everything to get the placeholders of a PDF template and fill them with data"
+    },
+    {
+      "name": "PDFTemplate",
+      "description": "Everything to save new PDF templates or receive existing ones"
     }
   ],
   "paths": {
@@ -327,7 +335,7 @@
     "/sms/templates/{templateName}/placeholders": {
       "post": {
         "description": "Fill the placeholders of a specific SMS template. The boolean \"shouldBeSent\" is telling if the filled template should be sent as SMS",
-        "summary": "Fill placeholders of SMSntemplate",
+        "summary": "Fill placeholders of SMS template",
         "operationId": "fillSMSTemplate",
         "tags": [
           "SMSPlaceholders"
@@ -671,6 +679,171 @@
         },
         "security": []
       }
+    },
+    "/pdf/templates/{templateName}": {
+      "get": {
+        "description": "Get a specific PDF template by its name",
+        "summary": "Get PDF Template by Name",
+        "operationId": "getPDFTemplateByName",
+        "tags": [
+          "PDFTemplate"
+        ],
+        "parameters": [
+          {
+            "name": "templateName",
+            "in": "path",
+            "description": "Name of template to return",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "exampleTemplate"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PDFTemplate"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid name supplied"
+          },
+          "404": {
+            "description": "Can not find template (template name)"
+          }
+        },
+        "security": []
+      },
+      "post": {
+        "description": "Add a new PDF template to the db",
+        "summary": "Add new PDF template",
+        "operationId": "addNewPDFTemplate",
+        "tags": [
+          "PDFTemplate"
+        ],
+        "parameters": [
+          {
+            "name": "templateName",
+            "in": "path",
+            "description": "Name of template to add",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "exampleTemplate"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PDFTemplatePostRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Added template (name)"
+          },
+          "400": {
+            "description": "Invalid name supplied"
+          }
+        },
+        "security": []
+      }
+    },
+    "/pdf/templates/{templateName}/placeholders": {
+      "post": {
+        "description": "Fill the placeholders of a specific PDF template",
+        "summary": "Fill placeholders of PDF template",
+        "operationId": "fillPDFTemplate",
+        "tags": [
+          "PDFPlaceholders"
+        ],
+        "parameters": [
+          {
+            "name": "templateName",
+            "in": "path",
+            "description": "Name of template to fill",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PDFTemplateFillRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/PDFFilledTemplateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid name or data supplied"
+          }
+        },
+        "security": []
+      },
+      "get": {
+        "description": "Get all placeholders of a specific PDF template that have to be filled with some data",
+        "summary": "Get PDF Template Placeholders",
+        "operationId": "getPDFTemplatePlaceholdersByName",
+        "tags": [
+          "PDFPlaceholders"
+        ],
+        "parameters": [
+          {
+            "name": "templateName",
+            "in": "path",
+            "description": "Name of template to return",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PDFPlaceholders"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid name supplied"
+          },
+          "404": {
+            "description": "Can not find template (template name)"
+          }
+        },
+        "security": []
+      }
     }
   },
   "components": {
@@ -917,12 +1090,7 @@
                 "type": "string",
                 "example": "45"
               }
-            },
-            "required": [
-              "FirstName",
-              "LastName",
-              "Age"
-            ]
+            }
           }
         },
         "required": [
@@ -1176,6 +1344,124 @@
           "PlaceHolder",
           "shouldBeSent"
         ]
+      },
+      "PDFTemplate": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "ExampleName"
+          },
+          "templateString": {
+            "type": "string",
+            "example": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+          }
+        },
+        "required": [
+          "name",
+          "templateString"
+        ]
+      },
+      "PDFTemplatePostRequest": {
+        "type": "object",
+        "properties": {
+          "templateString": {
+            "type": "string",
+            "example": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+          }
+        },
+        "required": [
+          "templateString"
+        ]
+      },
+      "PDFPlaceholders": {
+        "type": "object",
+        "properties": {
+          "placeholders": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "key",
+                      "value"
+                    ],
+                    "properties": {
+                      "key": {
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "string"
+                      }
+                    },
+                    "example": [
+                      {
+                        "key": "firstName",
+                        "value": ""
+                      },
+                      {
+                        "key": "lastName",
+                        "value": ""
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "placeholders"
+        ],
+        "example": {
+          "placeholders": [
+            {
+              "data": [
+                {
+                  "key": "firstName",
+                  "value": ""
+                },
+                {
+                  "key": "lastName",
+                  "value": ""
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "PDFTemplateFillRequest": {
+        "type": "object",
+        "properties": {
+          "placeholders": {
+            "type": "object",
+            "properties": {
+              "FirstName": {
+                "type": "string",
+                "example": "Sherlock"
+              },
+              "LastName": {
+                "type": "string",
+                "example": "Holmes"
+              },
+              "Age": {
+                "type": "string",
+                "example": "45"
+              }
+            }
+          }
+        },
+        "required": [
+          "placeholders"
+        ]
+      },
+      "PDFFilledTemplateResponse": {
+        "type": "string",
+        "example": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
       }
     }
   }

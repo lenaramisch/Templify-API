@@ -75,6 +75,39 @@ type MJMLSendRequestAttachment struct {
 	ToName       string `json:"toName"`
 }
 
+// PDFFilledTemplateResponse defines model for PDFFilledTemplateResponse.
+type PDFFilledTemplateResponse = string
+
+// PDFPlaceholders defines model for PDFPlaceholders.
+type PDFPlaceholders struct {
+	Placeholders []struct {
+		Data *[]struct {
+			Key   string `json:"key"`
+			Value string `json:"value"`
+		} `json:"data,omitempty"`
+	} `json:"placeholders"`
+}
+
+// PDFTemplate defines model for PDFTemplate.
+type PDFTemplate struct {
+	Name           string `json:"name"`
+	TemplateString string `json:"templateString"`
+}
+
+// PDFTemplateFillRequest defines model for PDFTemplateFillRequest.
+type PDFTemplateFillRequest struct {
+	Placeholders struct {
+		Age       *string `json:"Age,omitempty"`
+		FirstName *string `json:"FirstName,omitempty"`
+		LastName  *string `json:"LastName,omitempty"`
+	} `json:"placeholders"`
+}
+
+// PDFTemplatePostRequest defines model for PDFTemplatePostRequest.
+type PDFTemplatePostRequest struct {
+	TemplateString string `json:"templateString"`
+}
+
 // Placeholders defines model for Placeholders.
 type Placeholders struct {
 	Placeholders []struct {
@@ -113,9 +146,9 @@ type SMSTemplate struct {
 // SMSTemplateFillRequest defines model for SMSTemplateFillRequest.
 type SMSTemplateFillRequest struct {
 	Placeholders struct {
-		Age       string `json:"Age"`
-		FirstName string `json:"FirstName"`
-		LastName  string `json:"LastName"`
+		Age       *string `json:"Age,omitempty"`
+		FirstName *string `json:"FirstName,omitempty"`
+		LastName  *string `json:"LastName,omitempty"`
 	} `json:"placeholders"`
 	ReceiverPhoneNumber string `json:"receiverPhoneNumber"`
 	ShouldBeSent        bool   `json:"shouldBeSent"`
@@ -185,6 +218,12 @@ type FillTemplateJSONRequestBody = TemplateFillRequest
 
 // SendMJMLEmailWithAttachmentMultipartRequestBody defines body for SendMJMLEmailWithAttachment for multipart/form-data ContentType.
 type SendMJMLEmailWithAttachmentMultipartRequestBody = MJMLSendRequestAttachment
+
+// AddNewPDFTemplateJSONRequestBody defines body for AddNewPDFTemplate for application/json ContentType.
+type AddNewPDFTemplateJSONRequestBody = PDFTemplatePostRequest
+
+// FillPDFTemplateJSONRequestBody defines body for FillPDFTemplate for application/json ContentType.
+type FillPDFTemplateJSONRequestBody = PDFTemplateFillRequest
 
 // SendSMSJSONRequestBody defines body for SendSMS for application/json ContentType.
 type SendSMSJSONRequestBody = SMSSendRequest
