@@ -3,7 +3,7 @@ get:
   summary: Get Template by Name
   operationId: getTemplateByName
   tags:
-    - Template
+    - Email
   parameters:
     - name: templateName
       in: path
@@ -32,7 +32,7 @@ post:
   summary: Add new template
   operationId: addNewTemplate
   tags:
-    - Template
+    - Email
   parameters:
     - name: templateName
       in: path

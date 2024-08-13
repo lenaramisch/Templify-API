@@ -3,7 +3,7 @@ get:
   summary: Get SMS Template by Name
   operationId: getSMSTemplateByName
   tags:
-    - SMSTemplate
+    - SMS
   parameters:
     - name: templateName
       in: path
@@ -32,7 +32,7 @@ post:
   summary: Add new SMS template
   operationId: addNewSMSTemplate
   tags:
-    - SMSTemplate
+    - SMS
   parameters:
     - name: templateName
       in: path

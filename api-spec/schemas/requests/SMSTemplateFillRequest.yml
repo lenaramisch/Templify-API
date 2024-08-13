@@ -8,17 +8,13 @@ properties:
     example: "+49123456789"
   placeholders:
     type: object
-    properties:
-      FirstName:
-        type: string
-        example: "Sherlock"
-      LastName:
-        type: string
-        example: "Holmes"
-      Age:
-        type: string
-        example: "45"
+    additionalProperties:
+      type: string
+    example:
+      FirstName: "Sherlock"
+      LastName: "Holmes"
+      Age: "45"
 required:
-  - shouldBeSent
-  - receiverPhoneNumber
-  - placeholders
+- shouldBeSent
+- receiverPhoneNumber
+- placeholders

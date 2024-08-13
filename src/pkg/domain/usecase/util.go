@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"bytes"
+	"fmt"
 	"log/slog"
 	"regexp"
 	domain "templify/pkg/domain/model"
@@ -19,6 +20,7 @@ func ExtractPlaceholders(template string) []string {
 }
 
 func FillTemplate(templateStr string, placeholderValues map[string]string) (string, error) {
+	fmt.Printf("==== In FillTemplate\n ====")
 	requiredPlaceholders := ExtractPlaceholders(templateStr)
 	for _, requiredPlaceholder := range requiredPlaceholders {
 		if _, ok := placeholderValues[requiredPlaceholder]; !ok {

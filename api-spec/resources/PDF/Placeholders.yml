@@ -3,7 +3,7 @@ post:
   summary: Fill placeholders of PDF template
   operationId: fillPDFTemplate
   tags:
-    - PDFPlaceholders
+    - PDF
   parameters:
     - name: templateName
       in: path
@@ -35,7 +35,7 @@ get:
   summary: Get PDF Template Placeholders
   operationId: getPDFTemplatePlaceholdersByName
   tags:
-    - PDFPlaceholders
+    - PDF
   parameters:
     - name: templateName
       in: path

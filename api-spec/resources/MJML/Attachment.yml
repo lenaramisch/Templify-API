@@ -3,7 +3,7 @@ post:
   summary: Send a templated Email with attachment
   operationId: sendMJMLEmailWithAttachment
   tags:
-    - Placeholders
+    - Email
   parameters:
     - name: templateName
       in: path

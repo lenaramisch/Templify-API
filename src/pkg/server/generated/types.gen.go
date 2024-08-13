@@ -145,13 +145,9 @@ type SMSTemplate struct {
 
 // SMSTemplateFillRequest defines model for SMSTemplateFillRequest.
 type SMSTemplateFillRequest struct {
-	Placeholders struct {
-		Age       *string `json:"Age,omitempty"`
-		FirstName *string `json:"FirstName,omitempty"`
-		LastName  *string `json:"LastName,omitempty"`
-	} `json:"placeholders"`
-	ReceiverPhoneNumber string `json:"receiverPhoneNumber"`
-	ShouldBeSent        bool   `json:"shouldBeSent"`
+	Placeholders        map[string]string `json:"placeholders"`
+	ReceiverPhoneNumber string            `json:"receiverPhoneNumber"`
+	ShouldBeSent        bool              `json:"shouldBeSent"`
 }
 
 // SMSTemplatePostRequest defines model for SMSTemplatePostRequest.

@@ -38,13 +38,13 @@ func (u *Usecase) GetSMSPlaceholders(templateName string) ([]string, error) {
 	return ExtractPlaceholders(domainTemplate.TemplateStr), nil
 }
 
-func (u *Usecase) GetFilledSMSTemplate(templateName string, templateFillRequest map[string]string) (string, error) {
-	domainTemplate, err := u.repository.GetEmailTemplateByName(templateName)
+func (u *Usecase) GetFilledSMSTemplate(templateName string, placeholders map[string]string) (string, error) {
+	domainTemplate, err := u.repository.GetSMSTemplateByName(templateName)
 	if err != nil {
 		slog.Debug("Error getting template by name")
 		return "", err
 	}
-	filledTemplate, err := FillTemplate(domainTemplate.TemplateStr, templateFillRequest)
+	filledTemplate, err := FillTemplate(domainTemplate.TemplateStr, placeholders)
 	if err != nil {
 		slog.Debug("Error filling template placeholders")
 		return "", err

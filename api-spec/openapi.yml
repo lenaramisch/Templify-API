@@ -22,15 +22,7 @@ tags:
     description: Everything for the SMS sending service
   - name: Email
     description: Everything for the Email sending service
-  - name: Placeholders
-    description: Everything to get the placeholders of a template and fill them with data
-  - name: Template
-    description: Everything to save new email templates or receive existing ones
-  - name: SMSPlaceholders
-    description: Everything to get the placeholders of a template and fill them with data
-  - name: SMSTemplate
-    description: Everything to save new SMS templates or receive existing ones
-  - name: PDFPlaceholders
-    description: Everything to get the placeholders of a PDF template and fill them with data
-  - name: PDFTemplate
-    description: Everything to save new PDF templates or receive existing ones
+  - name: PDF
+    description: Everything for the PDF rendering service
+  - name: APIInfo
+    description: General API information

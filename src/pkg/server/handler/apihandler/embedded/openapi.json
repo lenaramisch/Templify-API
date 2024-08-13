@@ -29,28 +29,12 @@
       "description": "Everything for the Email sending service"
     },
     {
-      "name": "Placeholders",
-      "description": "Everything to get the placeholders of a template and fill them with data"
+      "name": "PDF",
+      "description": "Everything for the PDF rendering service"
     },
     {
-      "name": "Template",
-      "description": "Everything to save new email templates or receive existing ones"
-    },
-    {
-      "name": "SMSPlaceholders",
-      "description": "Everything to get the placeholders of a template and fill them with data"
-    },
-    {
-      "name": "SMSTemplate",
-      "description": "Everything to save new SMS templates or receive existing ones"
-    },
-    {
-      "name": "PDFPlaceholders",
-      "description": "Everything to get the placeholders of a PDF template and fill them with data"
-    },
-    {
-      "name": "PDFTemplate",
-      "description": "Everything to save new PDF templates or receive existing ones"
+      "name": "APIInfo",
+      "description": "General API information"
     }
   ],
   "paths": {
@@ -258,7 +242,7 @@
         "summary": "Get SMS Template by Name",
         "operationId": "getSMSTemplateByName",
         "tags": [
-          "SMSTemplate"
+          "SMS"
         ],
         "parameters": [
           {
@@ -297,7 +281,7 @@
         "summary": "Add new SMS template",
         "operationId": "addNewSMSTemplate",
         "tags": [
-          "SMSTemplate"
+          "SMS"
         ],
         "parameters": [
           {
@@ -338,7 +322,7 @@
         "summary": "Fill placeholders of SMS template",
         "operationId": "fillSMSTemplate",
         "tags": [
-          "SMSPlaceholders"
+          "SMS"
         ],
         "parameters": [
           {
@@ -383,7 +367,7 @@
         "summary": "Get SMS Template Placeholders",
         "operationId": "getSMSTemplatePlaceholdersByName",
         "tags": [
-          "SMSPlaceholders"
+          "SMS"
         ],
         "parameters": [
           {
@@ -481,7 +465,7 @@
         "summary": "Get Template by Name",
         "operationId": "getTemplateByName",
         "tags": [
-          "Template"
+          "Email"
         ],
         "parameters": [
           {
@@ -520,7 +504,7 @@
         "summary": "Add new template",
         "operationId": "addNewTemplate",
         "tags": [
-          "Template"
+          "Email"
         ],
         "parameters": [
           {
@@ -561,7 +545,7 @@
         "summary": "Fill placeholders of template",
         "operationId": "fillTemplate",
         "tags": [
-          "Placeholders"
+          "Email"
         ],
         "parameters": [
           {
@@ -606,7 +590,7 @@
         "summary": "Get Template Placeholders",
         "operationId": "getTemplatePlaceholdersByName",
         "tags": [
-          "Placeholders"
+          "Email"
         ],
         "parameters": [
           {
@@ -646,7 +630,7 @@
         "summary": "Send a templated Email with attachment",
         "operationId": "sendMJMLEmailWithAttachment",
         "tags": [
-          "Placeholders"
+          "Email"
         ],
         "parameters": [
           {
@@ -686,7 +670,7 @@
         "summary": "Get PDF Template by Name",
         "operationId": "getPDFTemplateByName",
         "tags": [
-          "PDFTemplate"
+          "PDF"
         ],
         "parameters": [
           {
@@ -725,7 +709,7 @@
         "summary": "Add new PDF template",
         "operationId": "addNewPDFTemplate",
         "tags": [
-          "PDFTemplate"
+          "PDF"
         ],
         "parameters": [
           {
@@ -766,7 +750,7 @@
         "summary": "Fill placeholders of PDF template",
         "operationId": "fillPDFTemplate",
         "tags": [
-          "PDFPlaceholders"
+          "PDF"
         ],
         "parameters": [
           {
@@ -811,7 +795,7 @@
         "summary": "Get PDF Template Placeholders",
         "operationId": "getPDFTemplatePlaceholdersByName",
         "tags": [
-          "PDFPlaceholders"
+          "PDF"
         ],
         "parameters": [
           {
@@ -1077,19 +1061,13 @@
           },
           "placeholders": {
             "type": "object",
-            "properties": {
-              "FirstName": {
-                "type": "string",
-                "example": "Sherlock"
-              },
-              "LastName": {
-                "type": "string",
-                "example": "Holmes"
-              },
-              "Age": {
-                "type": "string",
-                "example": "45"
-              }
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "FirstName": "Sherlock",
+              "LastName": "Holmes",
+              "Age": "45"
             }
           }
         },

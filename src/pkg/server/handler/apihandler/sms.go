@@ -49,19 +49,22 @@ func (ah *APIHandler) AddNewSMSTemplate(w http.ResponseWriter, r *http.Request, 
 }
 
 func (ah *APIHandler) FillSMSTemplate(w http.ResponseWriter, r *http.Request, templateName string) {
+	fmt.Printf("==== In APIHandler func FillSMSTemplate\n ====")
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Reading request body failed", http.StatusInternalServerError)
 	}
 
-	var templateFillRequest map[string]string
+	var templateFillRequest domain.SMSTemplateFillRequest
 
 	if err := json.Unmarshal(body, &templateFillRequest); err != nil {
 		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
 		return
 	}
 
-	filledTemplate, err := ah.Usecase.GetFilledSMSTemplate(templateName, templateFillRequest)
+	//TODO THIS THROWING ERROR
+	placeholders := templateFillRequest.Placeholders
+	filledTemplate, err := ah.Usecase.GetFilledSMSTemplate(templateName, placeholders)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, "Error filling template")
 		return

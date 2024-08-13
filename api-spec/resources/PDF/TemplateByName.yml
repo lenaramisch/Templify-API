@@ -3,7 +3,7 @@ get:
   summary: Get PDF Template by Name
   operationId: getPDFTemplateByName
   tags:
-    - PDFTemplate
+    - PDF
   parameters:
     - name: templateName
       in: path
@@ -32,7 +32,7 @@ post:
   summary: Add new PDF template
   operationId: addNewPDFTemplate
   tags:
-    - PDFTemplate
+    - PDF
   parameters:
     - name: templateName
       in: path
