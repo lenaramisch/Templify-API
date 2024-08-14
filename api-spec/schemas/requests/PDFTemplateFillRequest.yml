@@ -2,15 +2,10 @@ type: object
 properties:
   placeholders:
     type: object
-    properties:
-      FirstName:
-        type: string
-        example: "Sherlock"
-      LastName:
-        type: string
-        example: "Holmes"
-      Age:
-        type: string
-        example: "45"
+    additionalProperties:
+      type: string
+    example:
+      Name: "Sherlock Holmes"
+      Age: "45"
 required:
   - placeholders

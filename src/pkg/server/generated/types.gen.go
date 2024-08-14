@@ -96,11 +96,7 @@ type PDFTemplate struct {
 
 // PDFTemplateFillRequest defines model for PDFTemplateFillRequest.
 type PDFTemplateFillRequest struct {
-	Placeholders struct {
-		Age       *string `json:"Age,omitempty"`
-		FirstName *string `json:"FirstName,omitempty"`
-		LastName  *string `json:"LastName,omitempty"`
-	} `json:"placeholders"`
+	Placeholders map[string]string `json:"placeholders"`
 }
 
 // PDFTemplatePostRequest defines model for PDFTemplatePostRequest.

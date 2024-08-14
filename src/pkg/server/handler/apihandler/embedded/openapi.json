@@ -1332,7 +1332,7 @@
           },
           "templateString": {
             "type": "string",
-            "example": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+            "example": "= Client Name: {Name}, Age: {Age}"
           }
         },
         "required": [
@@ -1345,7 +1345,7 @@
         "properties": {
           "templateString": {
             "type": "string",
-            "example": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+            "example": "= Client Name: {Name}, Age: {Age}"
           }
         },
         "required": [
@@ -1417,19 +1417,13 @@
         "properties": {
           "placeholders": {
             "type": "object",
-            "properties": {
-              "FirstName": {
-                "type": "string",
-                "example": "Sherlock"
-              },
-              "LastName": {
-                "type": "string",
-                "example": "Holmes"
-              },
-              "Age": {
-                "type": "string",
-                "example": "45"
-              }
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "FirstName": "Sherlock",
+              "LastName": "Holmes",
+              "Age": "45"
             }
           }
         },
@@ -1439,7 +1433,7 @@
       },
       "PDFFilledTemplateResponse": {
         "type": "string",
-        "example": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+        "example": "= Client Name: Sherlock Holmes, Age: 42"
       }
     }
   }

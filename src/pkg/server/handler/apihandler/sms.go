@@ -49,7 +49,6 @@ func (ah *APIHandler) AddNewSMSTemplate(w http.ResponseWriter, r *http.Request, 
 }
 
 func (ah *APIHandler) FillSMSTemplate(w http.ResponseWriter, r *http.Request, templateName string) {
-	fmt.Printf("==== In APIHandler func FillSMSTemplate\n ====")
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Reading request body failed", http.StatusInternalServerError)
@@ -62,7 +61,6 @@ func (ah *APIHandler) FillSMSTemplate(w http.ResponseWriter, r *http.Request, te
 		return
 	}
 
-	//TODO THIS THROWING ERROR
 	placeholders := templateFillRequest.Placeholders
 	filledTemplate, err := ah.Usecase.GetFilledSMSTemplate(templateName, placeholders)
 	if err != nil {

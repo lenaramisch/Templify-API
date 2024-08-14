@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	domain "templify/pkg/domain/model"
 	"templify/pkg/server/handler"
 
 	"github.com/go-chi/chi/v5"
@@ -79,13 +80,14 @@ func (ah *APIHandler) FillPDFTemplate(w http.ResponseWriter, r *http.Request, te
 		http.Error(w, "Reading request body failed", http.StatusInternalServerError)
 	}
 
-	var values map[string]string
-	if err := json.Unmarshal(body, &values); err != nil {
+	var pdfFillReq domain.PDFTemplateFillRequest
+	if err := json.Unmarshal(body, &pdfFillReq); err != nil {
 		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
 		return
 	}
+	placeholderValues := pdfFillReq.Placeholders
 
-	filledTemplate, err := ah.Usecase.FillPDFTemplatePlaceholders(templateName, values)
+	filledTemplate, err := ah.Usecase.FillPDFTemplatePlaceholders(templateName, placeholderValues)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, "Error filling template")
 		return

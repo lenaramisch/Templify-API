@@ -2,6 +2,6 @@ type: object
 properties:
   templateString:
     type: string
-    example: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='
+    example: '= Client Name: {{.Name}}, Age: {{.Age}}'
 required:
   - templateString
