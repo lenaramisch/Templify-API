@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	domain "templify/pkg/domain/model"
 	server "templify/pkg/server/generated"
@@ -14,8 +15,7 @@ import (
 
 // Send a SMS with custom text
 // (POST /sms)
-func (ah *APIHandler) SendSMS(w http.ResponseWriter, r *http.Request) {
-	// TODO create DTO in api spec
+func (ah *APIHandler) SendBasicSMS(w http.ResponseWriter, r *http.Request) {
 	var smsRequest server.SMSSendRequest
 
 	if err := handler.ReadRequestBody(w, r, &smsRequest); err != nil {
@@ -31,14 +31,50 @@ func (ah *APIHandler) SendSMS(w http.ResponseWriter, r *http.Request) {
 	render.PlainText(w, r, "SMS sent successfully")
 }
 
+func (ah *APIHandler) SendTemplatedSMS(w http.ResponseWriter, r *http.Request, templateName string) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		handler.HandleError(w, r, http.StatusBadRequest, "Reading Request Body failed")
+		return
+	}
+	var smsRequest server.SMSTemplateSendRequest
+
+	if err := json.Unmarshal(body, &smsRequest); err != nil {
+		handler.HandleError(w, r, http.StatusBadRequest, "Invalid JSON format")
+		return
+	}
+
+	var filledTemplate string
+	filledTemplate, err = ah.Usecase.GetFilledSMSTemplate(templateName, smsRequest.Placeholders)
+	slog.With(
+		"FilledTemplate", filledTemplate,
+	).Debug("Filled template")
+	if err != nil {
+		handler.HandleError(w, r, http.StatusInternalServerError, "Error filling template")
+		return
+	}
+
+	err = ah.Usecase.SendSMS(smsRequest.ReceiverPhoneNumber, filledTemplate)
+	if err != nil {
+		handler.HandleError(w, r, http.StatusInternalServerError, err.Error())
+		return
+	}
+	render.Status(r, http.StatusOK)
+	render.PlainText(w, r, "SMS sent successfully")
+}
+
 func (ah *APIHandler) AddNewSMSTemplate(w http.ResponseWriter, r *http.Request, templateName string) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusBadRequest, "Reading Request Body failed")
 		return
 	}
-	SMSTemplString := string(body)
-	err = ah.Usecase.AddSMSTemplate(templateName, SMSTemplString)
+	var SMSTempl server.SMSTemplate
+	if err := json.Unmarshal(body, &SMSTempl); err != nil {
+		handler.HandleError(w, r, http.StatusBadRequest, "Invalid JSON format")
+		return
+	}
+	err = ah.Usecase.AddSMSTemplate(templateName, SMSTempl.TemplateString)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, fmt.Sprintf("Adding SMS template with name %v failed", templateName))
 		return

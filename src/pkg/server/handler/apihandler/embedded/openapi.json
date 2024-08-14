@@ -207,11 +207,11 @@
         "security": []
       }
     },
-    "/sms": {
+    "/sms/basic/send": {
       "post": {
         "description": "Send a SMS with a custom message text by giving the recipients data as well as the message text",
         "summary": "Send a SMS with custom text",
-        "operationId": "sendSMS",
+        "operationId": "sendBasicSMS",
         "tags": [
           "SMS"
         ],
@@ -221,6 +221,47 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/SMSSendRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "SMS send"
+          },
+          "400": {
+            "description": "Invalid receiver phone number supplied"
+          }
+        },
+        "security": []
+      }
+    },
+    "/sms/template/{templateName}/send": {
+      "post": {
+        "description": "Send a templated SMS with a custom message text by giving the recipients data as well as the placeholder values",
+        "summary": "Send a templated SMS with custom text",
+        "operationId": "sendTemplatedSMS",
+        "tags": [
+          "SMS"
+        ],
+        "parameters": [
+          {
+            "name": "templateName",
+            "in": "path",
+            "description": "Name of template to fill and send",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "exampleTemplate"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SMSTemplateSendRequest"
               }
             }
           }
@@ -317,6 +358,46 @@
       }
     },
     "/sms/templates/{templateName}/placeholders": {
+      "get": {
+        "description": "Get all placeholders of a specific SMS template that have to be filled with some data",
+        "summary": "Get SMS Template Placeholders",
+        "operationId": "getSMSTemplatePlaceholdersByName",
+        "tags": [
+          "SMS"
+        ],
+        "parameters": [
+          {
+            "name": "templateName",
+            "in": "path",
+            "description": "Name of SMS template to return",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SMSPlaceholders"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid name supplied"
+          },
+          "404": {
+            "description": "Can not find template (template name)"
+          }
+        },
+        "security": []
+      }
+    },
+    "/sms/templates/{templateName}/fill": {
       "post": {
         "description": "Fill the placeholders of a specific SMS template.",
         "summary": "Fill placeholders of SMS template",
@@ -358,44 +439,6 @@
           },
           "400": {
             "description": "Invalid name or data supplied"
-          }
-        },
-        "security": []
-      },
-      "get": {
-        "description": "Get all placeholders of a specific SMS template that have to be filled with some data",
-        "summary": "Get SMS Template Placeholders",
-        "operationId": "getSMSTemplatePlaceholdersByName",
-        "tags": [
-          "SMS"
-        ],
-        "parameters": [
-          {
-            "name": "templateName",
-            "in": "path",
-            "description": "Name of SMS template to return",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successful operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SMSPlaceholders"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid name supplied"
-          },
-          "404": {
-            "description": "Can not find template (template name)"
           }
         },
         "security": []
@@ -947,7 +990,7 @@
         "properties": {
           "receiverPhoneNumber": {
             "type": "string",
-            "example": "+49123456789"
+            "example": "+4915170640522"
           },
           "message": {
             "type": "string",
@@ -957,6 +1000,29 @@
         "required": [
           "receiverPhoneNumber",
           "message"
+        ]
+      },
+      "SMSTemplateSendRequest": {
+        "type": "object",
+        "properties": {
+          "receiverPhoneNumber": {
+            "type": "string",
+            "example": "+4915170640522"
+          },
+          "placeholders": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "Name": "Sherlock Holmes",
+              "Age": "45"
+            }
+          }
+        },
+        "required": [
+          "receiverPhoneNumber",
+          "placeholders"
         ]
       },
       "SMSTemplate": {
@@ -1053,7 +1119,7 @@
         "properties": {
           "receiverPhoneNumber": {
             "type": "string",
-            "example": "+49123456789"
+            "example": "+4915170640522"
           },
           "placeholders": {
             "type": "object",
@@ -1292,7 +1358,7 @@
             "type": "string",
             "example": "New Case"
           },
-          "PlaceHolder": {
+          "placeholders": {
             "type": "string",
             "description": "Each placeholder key-value pair should be in its own form field",
             "example": "placeholder value"
@@ -1304,7 +1370,7 @@
           "toName",
           "subject",
           "message",
-          "PlaceHolder"
+          "placeholders"
         ]
       },
       "PDFTemplate": {

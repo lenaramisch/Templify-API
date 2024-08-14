@@ -2,7 +2,7 @@ type: object
 properties:
   receiverPhoneNumber:
     type: string
-    example: "+49123456789"
+    example: "+4915170640522"
   message:
     type: string
     example: "Don't forget to buy some milk!"

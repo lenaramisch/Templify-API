@@ -1,0 +1,28 @@
+post:
+  description: Send a templated SMS with a custom message text by giving the recipients data as well as the placeholder values
+  summary: Send a templated SMS with custom text
+  operationId: sendTemplatedSMS
+  tags:
+    - SMS
+  parameters:
+    - name: templateName
+      in: path
+      description: Name of template to fill and send
+      required: true
+      schema:
+        type: string
+      example: "exampleTemplate"
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema: 
+          $ref: '../../schemas/_index.yml#/SMSTemplateSendRequest'
+  responses:
+    '201':
+      description: SMS send
+    '400':
+      description: Invalid receiver phone number supplied
+
+  # This API has no security
+  security: []

@@ -10,14 +10,20 @@
 /info/openapi.html:
   $ref: './Info/openapi_html.yml'
   
-/sms:
-  $ref: './SMS/Sender.yml'
+/sms/basic/send:
+  $ref: './SMS/Basic.yml'
+
+/sms/template/{templateName}/send:
+  $ref: './SMS/Templated.yml'
 
 /sms/templates/{templateName}:
   $ref: './SMS/TemplateByName.yml'
 
 /sms/templates/{templateName}/placeholders:
   $ref: './SMS/Placeholders.yml'
+
+/sms/templates/{templateName}/fill:
+  $ref: './SMS/FillTemplate.yml'
 
 /email:
   $ref: './Email/Sender.yml'

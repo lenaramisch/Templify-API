@@ -44,6 +44,9 @@ func (u *Usecase) GetFilledSMSTemplate(templateName string, placeholders map[str
 		slog.Debug("Error getting template by name")
 		return "", err
 	}
+	slog.With(
+		"templateStringUnfilled", domainTemplate.TemplateStr,
+	).Debug("Unfilled template string")
 	filledTemplate, err := FillTemplate(domainTemplate.TemplateStr, placeholders)
 	if err != nil {
 		slog.Debug("Error filling template placeholders")

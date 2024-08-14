@@ -5,6 +5,9 @@ SMSSendRequest:
 SMSTemplate:
   $ref: './responses/SMSTemplate.yml'
 
+SMSTemplateSendRequest:
+  $ref: './requests/SMSTemplateSendRequest.yml'
+
 SMSTemplatePostRequest:
   $ref: './requests/SMSTemplatePostRequest.yml'
 

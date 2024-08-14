@@ -8,9 +8,8 @@ properties:
     additionalProperties:
       type: string
     example:
-      FirstName: "Sherlock"
-      LastName: "Holmes"
+      Name: "Sherlock Holmes"
       Age: "45"
 required:
-- receiverPhoneNumber
-- placeholders
+  - receiverPhoneNumber
+  - placeholders

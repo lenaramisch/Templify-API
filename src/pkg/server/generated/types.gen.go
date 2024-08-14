@@ -62,14 +62,14 @@ type FilledTemplateResponse = string
 
 // MJMLSendRequestAttachment defines model for MJMLSendRequestAttachment.
 type MJMLSendRequestAttachment struct {
-	// PlaceHolder Each placeholder key-value pair should be in its own form field
-	PlaceHolder string `json:"PlaceHolder"`
-
 	// File The file that should be send as attachment
-	File    string `json:"file"`
-	Subject string `json:"subject"`
-	ToEmail string `json:"toEmail"`
-	ToName  string `json:"toName"`
+	File string `json:"file"`
+
+	// Placeholders Each placeholder key-value pair should be in its own form field
+	Placeholders string `json:"placeholders"`
+	Subject      string `json:"subject"`
+	ToEmail      string `json:"toEmail"`
+	ToName       string `json:"toName"`
 }
 
 // PDFFilledTemplateResponse defines model for PDFFilledTemplateResponse.
@@ -147,6 +147,12 @@ type SMSTemplatePostRequest struct {
 	TemplateString string `json:"templateString"`
 }
 
+// SMSTemplateSendRequest defines model for SMSTemplateSendRequest.
+type SMSTemplateSendRequest struct {
+	Placeholders        map[string]string `json:"placeholders"`
+	ReceiverPhoneNumber string            `json:"receiverPhoneNumber"`
+}
+
 // Status The status of the API
 type Status string
 
@@ -212,8 +218,11 @@ type AddNewPDFTemplateJSONRequestBody = PDFTemplatePostRequest
 // FillPDFTemplateJSONRequestBody defines body for FillPDFTemplate for application/json ContentType.
 type FillPDFTemplateJSONRequestBody = PDFTemplateFillRequest
 
-// SendSMSJSONRequestBody defines body for SendSMS for application/json ContentType.
-type SendSMSJSONRequestBody = SMSSendRequest
+// SendBasicSMSJSONRequestBody defines body for SendBasicSMS for application/json ContentType.
+type SendBasicSMSJSONRequestBody = SMSSendRequest
+
+// SendTemplatedSMSJSONRequestBody defines body for SendTemplatedSMS for application/json ContentType.
+type SendTemplatedSMSJSONRequestBody = SMSTemplateSendRequest
 
 // AddNewSMSTemplateJSONRequestBody defines body for AddNewSMSTemplate for application/json ContentType.
 type AddNewSMSTemplateJSONRequestBody = SMSTemplatePostRequest

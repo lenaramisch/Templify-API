@@ -1,7 +1,7 @@
 post:
   description: Send a SMS with a custom message text by giving the recipients data as well as the message text
   summary: Send a SMS with custom text
-  operationId: sendSMS
+  operationId: sendBasicSMS
   tags:
     - SMS
   requestBody:

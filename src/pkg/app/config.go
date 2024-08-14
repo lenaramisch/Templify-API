@@ -1,6 +1,7 @@
 package app
 
 import (
+	"log/slog"
 	"templify/pkg/db"
 	domain "templify/pkg/domain/model"
 	"templify/pkg/server"
@@ -93,7 +94,7 @@ func LoadConfig(
 
 	typstConfig := &typstservice.TypstConfig{}
 
-	return &Config{
+	cfg := &Config{
 		Info:   infoConfig,
 		Router: routerConfig,
 		Server: serverConfig,
@@ -103,5 +104,17 @@ func LoadConfig(
 		MJMLConfig:      mjmlConfig,
 		DBConfig:        dbConfig,
 		TypstConfig:     typstConfig,
-	}, nil
+	}
+
+	slog.With(
+		"info", infoConfig,
+		"router", routerConfig,
+		"server", serverConfig,
+		"sendgrid", sendgridConfig,
+		"twilio", smsTwilioConfig,
+		"mjml", mjmlConfig,
+		"db", dbConfig,
+		"typst", typstConfig,
+	).Info("Config loaded")
+	return cfg, nil
 }
