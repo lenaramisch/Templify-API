@@ -318,7 +318,7 @@
     },
     "/sms/templates/{templateName}/placeholders": {
       "post": {
-        "description": "Fill the placeholders of a specific SMS template. The boolean \"shouldBeSent\" is telling if the filled template should be sent as SMS",
+        "description": "Fill the placeholders of a specific SMS template.",
         "summary": "Fill placeholders of SMS template",
         "operationId": "fillSMSTemplate",
         "tags": [
@@ -541,7 +541,7 @@
     },
     "/email/templates/{templateName}/placeholders": {
       "post": {
-        "description": "Fill the placeholders of a specific template. The boolean \"shouldBeSent\" is telling if the filled template should be sent as email",
+        "description": "Fill the placeholders of a specific template.",
         "summary": "Fill placeholders of template",
         "operationId": "fillTemplate",
         "tags": [
@@ -1051,10 +1051,6 @@
       "SMSTemplateFillRequest": {
         "type": "object",
         "properties": {
-          "shouldBeSent": {
-            "type": "boolean",
-            "example": true
-          },
           "receiverPhoneNumber": {
             "type": "string",
             "example": "+49123456789"
@@ -1072,7 +1068,6 @@
           }
         },
         "required": [
-          "shouldBeSent",
           "receiverPhoneNumber",
           "placeholders"
         ]
@@ -1232,10 +1227,6 @@
       "TemplateFillRequest": {
         "type": "object",
         "properties": {
-          "shouldBeSent": {
-            "type": "boolean",
-            "example": true
-          },
           "toEmail": {
             "type": "string",
             "example": "holmes.sherlock@example.com"
@@ -1272,7 +1263,6 @@
           }
         },
         "required": [
-          "shouldBeSent",
           "toEmail",
           "toName",
           "subject",
@@ -1306,11 +1296,6 @@
             "type": "string",
             "description": "Each placeholder key-value pair should be in its own form field",
             "example": "placeholder value"
-          },
-          "shouldBeSent": {
-            "type": "string",
-            "description": "Determines if the email will be sent (true/false)",
-            "example": true
           }
         },
         "required": [
@@ -1319,8 +1304,7 @@
           "toName",
           "subject",
           "message",
-          "PlaceHolder",
-          "shouldBeSent"
+          "PlaceHolder"
         ]
       },
       "PDFTemplate": {

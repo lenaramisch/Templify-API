@@ -66,13 +66,10 @@ type MJMLSendRequestAttachment struct {
 	PlaceHolder string `json:"PlaceHolder"`
 
 	// File The file that should be send as attachment
-	File string `json:"file"`
-
-	// ShouldBeSent Determines if the email will be sent (true/false)
-	ShouldBeSent string `json:"shouldBeSent"`
-	Subject      string `json:"subject"`
-	ToEmail      string `json:"toEmail"`
-	ToName       string `json:"toName"`
+	File    string `json:"file"`
+	Subject string `json:"subject"`
+	ToEmail string `json:"toEmail"`
+	ToName  string `json:"toName"`
 }
 
 // PDFFilledTemplateResponse defines model for PDFFilledTemplateResponse.
@@ -143,7 +140,6 @@ type SMSTemplate struct {
 type SMSTemplateFillRequest struct {
 	Placeholders        map[string]string `json:"placeholders"`
 	ReceiverPhoneNumber string            `json:"receiverPhoneNumber"`
-	ShouldBeSent        bool              `json:"shouldBeSent"`
 }
 
 // SMSTemplatePostRequest defines model for SMSTemplatePostRequest.
@@ -167,10 +163,9 @@ type TemplateFillRequest struct {
 		FirstName string `json:"FirstName"`
 		LastName  string `json:"LastName"`
 	} `json:"placeholders"`
-	ShouldBeSent bool   `json:"shouldBeSent"`
-	Subject      string `json:"subject"`
-	ToEmail      string `json:"toEmail"`
-	ToName       string `json:"toName"`
+	Subject string `json:"subject"`
+	ToEmail string `json:"toEmail"`
+	ToName  string `json:"toName"`
 }
 
 // TemplatePostRequest defines model for TemplatePostRequest.

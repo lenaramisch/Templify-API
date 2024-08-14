@@ -1,5 +1,5 @@
 post:
-  description: Fill the placeholders of a specific SMS template. The boolean "shouldBeSent" is telling if the filled template should be sent as SMS
+  description: Fill the placeholders of a specific SMS template.
   summary: Fill placeholders of SMS template
   operationId: fillSMSTemplate
   tags:
