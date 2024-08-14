@@ -16,10 +16,6 @@ properties:
     type: string
     description: Each placeholder key-value pair should be in its own form field
     example: placeholder value
-  shouldBeSent:
-    type: string
-    description: Determines if the email will be sent (true/false)
-    example: true
 required:
   - file
   - toEmail
@@ -27,4 +23,3 @@ required:
   - subject
   - message
   - PlaceHolder
-  - shouldBeSent

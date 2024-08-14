@@ -1,8 +1,5 @@
 type: object
 properties:
-  shouldBeSent:
-    type: boolean
-    example: true
   toEmail:
     type: string
     example: "holmes.sherlock@example.com"
@@ -29,7 +26,6 @@ properties:
       - LastName
       - Age
 required:
-  - shouldBeSent
   - toEmail
   - toName
   - subject

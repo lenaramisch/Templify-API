@@ -1,8 +1,5 @@
 type: object
 properties:
-  shouldBeSent:
-    type: boolean
-    example: true
   receiverPhoneNumber:
     type: string
     example: "+49123456789"
@@ -15,6 +12,5 @@ properties:
       LastName: "Holmes"
       Age: "45"
 required:
-- shouldBeSent
 - receiverPhoneNumber
 - placeholders

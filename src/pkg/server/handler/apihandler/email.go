@@ -51,15 +51,6 @@ func (ah *APIHandler) SendEmailWithAttachment(w http.ResponseWriter, r *http.Req
 	emailRequest.Subject = r.FormValue("subject")
 	message := r.FormValue("message")
 
-	// TODO Do we really need to set this shouldBeSent value
-	// or can we offer a Endpoint to see the rendered result?
-	shouldBeSentString := r.FormValue("shouldBeSent")
-	shouldBeSentBool := false
-	if shouldBeSentString == "true" {
-		shouldBeSentBool = true
-	}
-
-	emailRequest.ShouldBeSent = shouldBeSentBool
 	attachmentInfo, err := handler.ReadMultipartFileAsBytes(r, w)
 	if err != nil {
 		http.Error(w, "Error with the attachment", http.StatusBadRequest)
@@ -166,19 +157,12 @@ func (ah *APIHandler) SendMJMLEmailWithAttachment(w http.ResponseWriter, r *http
 		return
 	}
 
-	shouldBeSentString := r.FormValue("shouldBeSent")
-	shouldBeSentBool := false
-	if shouldBeSentString == "true" {
-		shouldBeSentBool = true
-	}
-
 	// Fill emailRequest data
 	domainEmailReq := &domain.EmailRequest{
 		ToEmail:        r.FormValue("toEmail"),
 		ToName:         r.FormValue("toName"),
 		Subject:        r.FormValue("subject"),
 		MessageBody:    "",
-		ShouldBeSent:   shouldBeSentBool,
 		AttachmentInfo: attachmentInfo,
 	}
 

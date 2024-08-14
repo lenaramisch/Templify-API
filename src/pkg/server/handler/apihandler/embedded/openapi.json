@@ -1332,7 +1332,7 @@
           },
           "templateString": {
             "type": "string",
-            "example": "= Client Name: {Name}, Age: {Age}"
+            "example": "= Client Name: {{.Name}}, Age: {{.Age}}"
           }
         },
         "required": [
@@ -1345,7 +1345,7 @@
         "properties": {
           "templateString": {
             "type": "string",
-            "example": "= Client Name: {Name}, Age: {Age}"
+            "example": "= Client Name: {{.Name}}, Age: {{.Age}}"
           }
         },
         "required": [
@@ -1421,8 +1421,7 @@
               "type": "string"
             },
             "example": {
-              "FirstName": "Sherlock",
-              "LastName": "Holmes",
+              "Name": "Sherlock Holmes",
               "Age": "45"
             }
           }
@@ -1433,7 +1432,7 @@
       },
       "PDFFilledTemplateResponse": {
         "type": "string",
-        "example": "= Client Name: Sherlock Holmes, Age: 42"
+        "example": "= Client Name: Sherlock Holmes, Age: 45"
       }
     }
   }
