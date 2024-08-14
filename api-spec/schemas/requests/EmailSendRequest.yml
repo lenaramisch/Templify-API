@@ -12,6 +12,9 @@ properties:
   message:
     type: string
     example: "Find the thief!"
+  attachment:
+    type: string
+    example: "base64 encoded attachment"
 required:
   - toEmail
   - toName

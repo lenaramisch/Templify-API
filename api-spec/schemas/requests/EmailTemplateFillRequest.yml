@@ -25,6 +25,9 @@ properties:
       - FirstName
       - LastName
       - Age
+  attachment:
+    type: string
+    example: "base64 encoded attachment"
 required:
   - toEmail
   - toName

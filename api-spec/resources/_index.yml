@@ -25,20 +25,17 @@
 /sms/templates/{templateName}/fill:
   $ref: './SMS/FillTemplate.yml'
 
-/email:
-  $ref: './Email/Sender.yml'
-
-/email/attachments:
-  $ref: './Email/Attachment.yml'
+/email/basic/send:
+  $ref: './Email/Basic.yml'
 
 /email/templates/{templateName}:
-  $ref: './MJML/TemplateByName.yml'
+  $ref: './Email/TemplateByName.yml'
 
 /email/templates/{templateName}/placeholders:
-  $ref: './MJML/Placeholders.yml'
+  $ref: './Email/Placeholders.yml'
 
-/email/templates/{templateName}/placeholders/attachments:
-  $ref: './MJML/Attachment.yml'
+/email/templates/{templateName}/fill:
+  $ref: './Email/FillTemplate.yml'
 
 /pdf/templates/{templateName}:
   $ref: './PDF/TemplateByName.yml'

@@ -18,7 +18,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../schemas/_index.yml#/Template'
+            $ref: '../../schemas/_index.yml#/EmailTemplate'
     '400':
       description: Invalid name supplied
     '404':
@@ -46,7 +46,7 @@ post:
     content:
       application/json:
         schema: 
-          $ref: '../../schemas/_index.yml#/TemplatePostRequest'
+          $ref: '../../schemas/_index.yml#/EmailTemplatePostRequest'
   responses:
     '201':
       description: Added template (name)

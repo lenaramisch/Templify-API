@@ -18,22 +18,48 @@ const (
 	UNKNOWN   Status = "UNKNOWN"
 )
 
+// EmailPlaceholders defines model for EmailPlaceholders.
+type EmailPlaceholders struct {
+	Placeholders []struct {
+		Data *[]struct {
+			Key   string `json:"key"`
+			Value string `json:"value"`
+		} `json:"data,omitempty"`
+	} `json:"placeholders"`
+}
+
 // EmailSendRequest defines model for EmailSendRequest.
 type EmailSendRequest struct {
-	Message string `json:"message"`
+	Attachment *string `json:"attachment,omitempty"`
+	Message    string  `json:"message"`
+	Subject    string  `json:"subject"`
+	ToEmail    string  `json:"toEmail"`
+	ToName     string  `json:"toName"`
+}
+
+// EmailTemplate defines model for EmailTemplate.
+type EmailTemplate struct {
+	Name             string `json:"name"`
+	TemplateMJMLCode string `json:"templateMJMLCode"`
+}
+
+// EmailTemplateFillRequest defines model for EmailTemplateFillRequest.
+type EmailTemplateFillRequest struct {
+	Attachment   *string `json:"attachment,omitempty"`
+	Placeholders struct {
+		Age       string `json:"Age"`
+		FirstName string `json:"FirstName"`
+		LastName  string `json:"LastName"`
+	} `json:"placeholders"`
 	Subject string `json:"subject"`
 	ToEmail string `json:"toEmail"`
 	ToName  string `json:"toName"`
 }
 
-// EmailSendRequestAttachment defines model for EmailSendRequestAttachment.
-type EmailSendRequestAttachment struct {
-	// File The file that should be send as attachment
-	File    string `json:"file"`
-	Message string `json:"message"`
-	Subject string `json:"subject"`
-	ToEmail string `json:"toEmail"`
-	ToName  string `json:"toName"`
+// EmailTemplatePostRequest defines model for EmailTemplatePostRequest.
+type EmailTemplatePostRequest struct {
+	IsMJML           bool   `json:"isMJML"`
+	TemplateMJMLCode string `json:"templateMJMLCode"`
 }
 
 // Error This object holds the error response data.
@@ -57,20 +83,8 @@ type Error struct {
 // ErrorType The error type
 type ErrorType string
 
-// FilledTemplateResponse defines model for FilledTemplateResponse.
-type FilledTemplateResponse = string
-
-// MJMLSendRequestAttachment defines model for MJMLSendRequestAttachment.
-type MJMLSendRequestAttachment struct {
-	// File The file that should be send as attachment
-	File string `json:"file"`
-
-	// Placeholders Each placeholder key-value pair should be in its own form field
-	Placeholders string `json:"placeholders"`
-	Subject      string `json:"subject"`
-	ToEmail      string `json:"toEmail"`
-	ToName       string `json:"toName"`
-}
+// FilledEmailTemplateResponse defines model for FilledEmailTemplateResponse.
+type FilledEmailTemplateResponse = string
 
 // PDFFilledTemplateResponse defines model for PDFFilledTemplateResponse.
 type PDFFilledTemplateResponse = string
@@ -99,16 +113,6 @@ type PDFTemplateFillRequest struct {
 // PDFTemplatePostRequest defines model for PDFTemplatePostRequest.
 type PDFTemplatePostRequest struct {
 	TemplateString string `json:"templateString"`
-}
-
-// Placeholders defines model for Placeholders.
-type Placeholders struct {
-	Placeholders []struct {
-		Data *[]struct {
-			Key   string `json:"key"`
-			Value string `json:"value"`
-		} `json:"data,omitempty"`
-	} `json:"placeholders"`
 }
 
 // SMSFilledTemplateResponse defines model for SMSFilledTemplateResponse.
@@ -156,29 +160,6 @@ type SMSTemplateSendRequest struct {
 // Status The status of the API
 type Status string
 
-// Template defines model for Template.
-type Template struct {
-	Name             string `json:"name"`
-	TemplateMJMLCode string `json:"templateMJMLCode"`
-}
-
-// TemplateFillRequest defines model for TemplateFillRequest.
-type TemplateFillRequest struct {
-	Placeholders struct {
-		Age       string `json:"Age"`
-		FirstName string `json:"FirstName"`
-		LastName  string `json:"LastName"`
-	} `json:"placeholders"`
-	Subject string `json:"subject"`
-	ToEmail string `json:"toEmail"`
-	ToName  string `json:"toName"`
-}
-
-// TemplatePostRequest defines model for TemplatePostRequest.
-type TemplatePostRequest struct {
-	TemplateMJMLCode string `json:"templateMJMLCode"`
-}
-
 // Version This object holds the API version data.
 type Version struct {
 	// BuildDate The date the code was built
@@ -200,17 +181,11 @@ type Version struct {
 // SendEmailJSONRequestBody defines body for SendEmail for application/json ContentType.
 type SendEmailJSONRequestBody = EmailSendRequest
 
-// SendEmailWithAttachmentMultipartRequestBody defines body for SendEmailWithAttachment for multipart/form-data ContentType.
-type SendEmailWithAttachmentMultipartRequestBody = EmailSendRequestAttachment
-
 // AddNewTemplateJSONRequestBody defines body for AddNewTemplate for application/json ContentType.
-type AddNewTemplateJSONRequestBody = TemplatePostRequest
+type AddNewTemplateJSONRequestBody = EmailTemplatePostRequest
 
 // FillTemplateJSONRequestBody defines body for FillTemplate for application/json ContentType.
-type FillTemplateJSONRequestBody = TemplateFillRequest
-
-// SendMJMLEmailWithAttachmentMultipartRequestBody defines body for SendMJMLEmailWithAttachment for multipart/form-data ContentType.
-type SendMJMLEmailWithAttachmentMultipartRequestBody = MJMLSendRequestAttachment
+type FillTemplateJSONRequestBody = EmailTemplateFillRequest
 
 // AddNewPDFTemplateJSONRequestBody defines body for AddNewPDFTemplate for application/json ContentType.
 type AddNewPDFTemplateJSONRequestBody = PDFTemplatePostRequest

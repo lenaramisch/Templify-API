@@ -444,7 +444,7 @@
         "security": []
       }
     },
-    "/email": {
+    "/email/basic/send": {
       "post": {
         "description": "Send an Email without attachments or the use of templates by giving the recipients data as well as the message content",
         "summary": "Send an Email with custom text",
@@ -465,35 +465,6 @@
         "responses": {
           "200": {
             "description": "Email sent"
-          },
-          "400": {
-            "description": "Bad request"
-          }
-        },
-        "security": []
-      }
-    },
-    "/email/attachments": {
-      "post": {
-        "description": "Send an Email with some attached files by giving the recipients data as well as the file",
-        "summary": "Send an Email with attachment",
-        "operationId": "sendEmailWithAttachment",
-        "tags": [
-          "Email"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "$ref": "#/components/schemas/EmailSendRequestAttachment"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Email send"
           },
           "400": {
             "description": "Bad request"
@@ -528,7 +499,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Template"
+                  "$ref": "#/components/schemas/EmailTemplate"
                 }
               }
             }
@@ -566,7 +537,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/TemplatePostRequest"
+                "$ref": "#/components/schemas/EmailTemplatePostRequest"
               }
             }
           }
@@ -583,51 +554,6 @@
       }
     },
     "/email/templates/{templateName}/placeholders": {
-      "post": {
-        "description": "Fill the placeholders of a specific template.",
-        "summary": "Fill placeholders of template",
-        "operationId": "fillTemplate",
-        "tags": [
-          "Email"
-        ],
-        "parameters": [
-          {
-            "name": "templateName",
-            "in": "path",
-            "description": "Name of template to fill",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TemplateFillRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "successful operation",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/FilledTemplateResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid name or data supplied"
-          }
-        },
-        "security": []
-      },
       "get": {
         "description": "Get all placeholders of a specific template that have to be filled with some data",
         "summary": "Get Template Placeholders",
@@ -652,7 +578,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Placeholders"
+                  "$ref": "#/components/schemas/EmailPlaceholders"
                 }
               }
             }
@@ -667,11 +593,11 @@
         "security": []
       }
     },
-    "/email/templates/{templateName}/placeholders/attachments": {
+    "/email/templates/{templateName}/fill": {
       "post": {
-        "description": "Send an email with some attached files and the use of a template by giving the recipients data as well as values to fill the templates placeholders and the file",
-        "summary": "Send a templated Email with attachment",
-        "operationId": "sendMJMLEmailWithAttachment",
+        "description": "Fill the placeholders of a specific template.",
+        "summary": "Fill placeholders of template",
+        "operationId": "fillTemplate",
         "tags": [
           "Email"
         ],
@@ -689,19 +615,26 @@
         "requestBody": {
           "required": true,
           "content": {
-            "multipart/form-data": {
+            "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/MJMLSendRequestAttachment"
+                "$ref": "#/components/schemas/EmailTemplateFillRequest"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Email send"
+            "description": "successful operation",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/FilledEmailTemplateResponse"
+                }
+              }
+            }
           },
           "400": {
-            "description": "Bad request"
+            "description": "Invalid name or data supplied"
           }
         },
         "security": []
@@ -1160,6 +1093,10 @@
           "message": {
             "type": "string",
             "example": "Find the thief!"
+          },
+          "attachment": {
+            "type": "string",
+            "example": "base64 encoded attachment"
           }
         },
         "required": [
@@ -1169,39 +1106,7 @@
           "message"
         ]
       },
-      "EmailSendRequestAttachment": {
-        "type": "object",
-        "properties": {
-          "file": {
-            "type": "string",
-            "description": "The file that should be send as attachment"
-          },
-          "toEmail": {
-            "type": "string",
-            "example": "holmes@detective.com"
-          },
-          "toName": {
-            "type": "string",
-            "example": "Sherlock Holmes"
-          },
-          "subject": {
-            "type": "string",
-            "example": "New Case"
-          },
-          "message": {
-            "type": "string",
-            "example": "Find the thief!"
-          }
-        },
-        "required": [
-          "file",
-          "toEmail",
-          "toName",
-          "subject",
-          "message"
-        ]
-      },
-      "Template": {
+      "EmailTemplate": {
         "type": "object",
         "properties": {
           "name": {
@@ -1218,19 +1123,24 @@
           "templateMJMLCode"
         ]
       },
-      "TemplatePostRequest": {
+      "EmailTemplatePostRequest": {
         "type": "object",
         "properties": {
           "templateMJMLCode": {
             "type": "string",
             "example": "<mjml><mj-body><mj-section><mj-column><mj-text font-size=\"20px\" color=\"#F45E43\" font-family=\"helvetica\">Hello World </mj-text></mj-column></mj-section></mj-body></mjml>"
+          },
+          "isMJML": {
+            "type": "boolean",
+            "example": true
           }
         },
         "required": [
-          "templateMJMLCode"
+          "templateMJMLCode",
+          "isMJML"
         ]
       },
-      "Placeholders": {
+      "EmailPlaceholders": {
         "type": "object",
         "properties": {
           "placeholders": {
@@ -1290,7 +1200,7 @@
           ]
         }
       },
-      "TemplateFillRequest": {
+      "EmailTemplateFillRequest": {
         "type": "object",
         "properties": {
           "toEmail": {
@@ -1326,6 +1236,10 @@
               "LastName",
               "Age"
             ]
+          },
+          "attachment": {
+            "type": "string",
+            "example": "base64 encoded attachment"
           }
         },
         "required": [
@@ -1335,43 +1249,9 @@
           "placeholders"
         ]
       },
-      "FilledTemplateResponse": {
+      "FilledEmailTemplateResponse": {
         "type": "string",
         "example": "<mjml><mj-body><mj-section><mj-column><mj-text font-size=\"20px\" color=\"#F45E43\" font-family=\"helvetica\">Hello World </mj-text></mj-column></mj-section></mj-body></mjml>"
-      },
-      "MJMLSendRequestAttachment": {
-        "type": "object",
-        "properties": {
-          "file": {
-            "type": "string",
-            "description": "The file that should be send as attachment"
-          },
-          "toEmail": {
-            "type": "string",
-            "example": "holmes@detective.com"
-          },
-          "toName": {
-            "type": "string",
-            "example": "Sherlock Holmes"
-          },
-          "subject": {
-            "type": "string",
-            "example": "New Case"
-          },
-          "placeholders": {
-            "type": "string",
-            "description": "Each placeholder key-value pair should be in its own form field",
-            "example": "placeholder value"
-          }
-        },
-        "required": [
-          "file",
-          "toEmail",
-          "toName",
-          "subject",
-          "message",
-          "placeholders"
-        ]
       },
       "PDFTemplate": {
         "type": "object",

@@ -23,17 +23,11 @@ SMSPlaceholders:
 EmailSendRequest:
   $ref: './requests/EmailSendRequest.yml'
 
-EmailSendRequestAttachment:
-  $ref: './requests/EmailSendRequestAttachment.yml'
+EmailTemplatePostRequest:
+  $ref: './requests/EmailTemplatePostRequest.yml'
 
-TemplatePostRequest:
-  $ref: './requests/TemplatePostRequest.yml'
-
-TemplateFillRequest:
-  $ref: './requests/TemplateFillRequest.yml'
-
-MJMLSendRequestAttachment:
-  $ref: './requests/MJMLSendRequestAttachment.yml'
+EmailTemplateFillRequest:
+  $ref: './requests/EmailTemplateFillRequest.yml'
 
 PDFTemplateFillRequest:
   $ref: './requests/PDFTemplateFillRequest.yml'
@@ -42,14 +36,14 @@ PDFTemplatePostRequest:
   $ref: './requests/PDFTemplatePostRequest.yml'
 
 #Responses
-FilledTemplateResponse:
-  $ref: './responses/FilledTemplateResponse.yml'
+FilledEmailTemplateResponse:
+  $ref: './responses/FilledEmailTemplateResponse.yml'
 
-Template:
-  $ref: './responses/Template.yml'
+EmailTemplate:
+  $ref: './responses/EmailTemplate.yml'
 
-Placeholders:
-  $ref: './responses/Placeholders.yml'
+EmailPlaceholders:
+  $ref: './responses/EmailPlaceholders.yml'
 
 PDFTemplate:
   $ref: './responses/PDFTemplate.yml'
