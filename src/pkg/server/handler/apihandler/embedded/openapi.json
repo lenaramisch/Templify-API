@@ -446,7 +446,7 @@
     },
     "/email/basic/send": {
       "post": {
-        "description": "Send an Email without attachments or the use of templates by giving the recipients data as well as the message content",
+        "description": "Send an Email with or without attachments by giving the recipients data as well as the message content",
         "summary": "Send an Email with custom text",
         "operationId": "sendEmail",
         "tags": [
@@ -548,6 +548,47 @@
           },
           "400": {
             "description": "Invalid name supplied"
+          }
+        },
+        "security": []
+      }
+    },
+    "/email/templates/{templateName}/send": {
+      "post": {
+        "description": "Send an templated Email with or without by giving the recipients data as well as the placeholder values",
+        "summary": "Send an templated Email",
+        "operationId": "sendTemplatedEmail",
+        "tags": [
+          "Email"
+        ],
+        "parameters": [
+          {
+            "name": "templateName",
+            "in": "path",
+            "description": "Name of template to add",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "exampleTemplate"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailTemplateSendRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Email sent"
+          },
+          "400": {
+            "description": "Bad request"
           }
         },
         "security": []
@@ -1097,6 +1138,14 @@
           "attachment": {
             "type": "string",
             "example": "base64 encoded attachment"
+          },
+          "attachmentName": {
+            "type": "string",
+            "example": "attachment"
+          },
+          "attachmentExtension": {
+            "type": "string",
+            "example": "txt"
           }
         },
         "required": [
@@ -1126,9 +1175,9 @@
       "EmailTemplatePostRequest": {
         "type": "object",
         "properties": {
-          "templateMJMLCode": {
+          "templateString": {
             "type": "string",
-            "example": "<mjml><mj-body><mj-section><mj-column><mj-text font-size=\"20px\" color=\"#F45E43\" font-family=\"helvetica\">Hello World </mj-text></mj-column></mj-section></mj-body></mjml>"
+            "example": "<mjml><mj-body><mj-section><mj-column><mj-text>Your Name: {{.Name}}, Age: {{.Age}}</mj-text></mj-column></mj-section></mj-body></mjml>"
           },
           "isMJML": {
             "type": "boolean",
@@ -1136,8 +1185,53 @@
           }
         },
         "required": [
-          "templateMJMLCode",
+          "templateString",
           "isMJML"
+        ]
+      },
+      "EmailTemplateSendRequest": {
+        "type": "object",
+        "properties": {
+          "toEmail": {
+            "type": "string",
+            "example": "holmes@detective.com"
+          },
+          "toName": {
+            "type": "string",
+            "example": "Sherlock Holmes"
+          },
+          "subject": {
+            "type": "string",
+            "example": "New Case"
+          },
+          "attachment": {
+            "type": "string",
+            "example": "base64 encoded attachment"
+          },
+          "attachmentName": {
+            "type": "string",
+            "example": "attachment"
+          },
+          "attachmentExtension": {
+            "type": "string",
+            "example": "txt"
+          },
+          "placeholders": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "Name": "Sherlock Holmes",
+              "Age": "45"
+            }
+          }
+        },
+        "required": [
+          "toEmail",
+          "toName",
+          "subject",
+          "placeholders"
         ]
       },
       "EmailPlaceholders": {
@@ -1203,49 +1297,18 @@
       "EmailTemplateFillRequest": {
         "type": "object",
         "properties": {
-          "toEmail": {
-            "type": "string",
-            "example": "holmes.sherlock@example.com"
-          },
-          "toName": {
-            "type": "string",
-            "example": "Sherlock Holmes"
-          },
-          "subject": {
-            "type": "string",
-            "example": "TestSubject"
-          },
           "placeholders": {
             "type": "object",
-            "properties": {
-              "FirstName": {
-                "type": "string",
-                "example": "Sherlock"
-              },
-              "LastName": {
-                "type": "string",
-                "example": "Holmes"
-              },
-              "Age": {
-                "type": "string",
-                "example": "45"
-              }
+            "additionalProperties": {
+              "type": "string"
             },
-            "required": [
-              "FirstName",
-              "LastName",
-              "Age"
-            ]
-          },
-          "attachment": {
-            "type": "string",
-            "example": "base64 encoded attachment"
+            "example": {
+              "Name": "Sherlock Holmes",
+              "Age": "45"
+            }
           }
         },
         "required": [
-          "toEmail",
-          "toName",
-          "subject",
           "placeholders"
         ]
       },

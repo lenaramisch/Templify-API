@@ -14,7 +14,7 @@ import (
 )
 
 // Send a SMS with custom text
-// (POST /sms)
+// (POST /sms/basic/send)
 func (ah *APIHandler) SendBasicSMS(w http.ResponseWriter, r *http.Request) {
 	var smsRequest server.SMSSendRequest
 
@@ -31,6 +31,9 @@ func (ah *APIHandler) SendBasicSMS(w http.ResponseWriter, r *http.Request) {
 	render.PlainText(w, r, "SMS sent successfully")
 }
 
+// TODO handler should only call one usecase method!
+// Send a SMS with template
+// (POST /sms/templates/{templateName}/send)
 func (ah *APIHandler) SendTemplatedSMS(w http.ResponseWriter, r *http.Request, templateName string) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -63,6 +66,8 @@ func (ah *APIHandler) SendTemplatedSMS(w http.ResponseWriter, r *http.Request, t
 	render.PlainText(w, r, "SMS sent successfully")
 }
 
+// Add a new SMS template
+// (POST /sms/templates/{templateName})
 func (ah *APIHandler) AddNewSMSTemplate(w http.ResponseWriter, r *http.Request, templateName string) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -84,6 +89,8 @@ func (ah *APIHandler) AddNewSMSTemplate(w http.ResponseWriter, r *http.Request, 
 	render.PlainText(w, r, resultString)
 }
 
+// Fill placeholders of SMS template
+// (POST /sms/templates/{templateName}/fill)
 func (ah *APIHandler) FillSMSTemplate(w http.ResponseWriter, r *http.Request, templateName string) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -108,6 +115,8 @@ func (ah *APIHandler) FillSMSTemplate(w http.ResponseWriter, r *http.Request, te
 	render.PlainText(w, r, filledTemplate)
 }
 
+// Get SMS template by name
+// (GET /sms/templates/{templateName})
 func (ah *APIHandler) GetSMSTemplateByName(w http.ResponseWriter, r *http.Request, templateName string) {
 	templateDomain := &domain.Template{}
 	var err error
@@ -124,6 +133,8 @@ func (ah *APIHandler) GetSMSTemplateByName(w http.ResponseWriter, r *http.Reques
 	render.JSON(w, r, templateDomain)
 }
 
+// Get SMS template placeholders by name
+// (GET /sms/templates/{templateName}/placeholders)
 func (ah *APIHandler) GetSMSTemplatePlaceholdersByName(w http.ResponseWriter, r *http.Request, templateName string) {
 	templatePlaceholders, err := ah.Usecase.GetSMSPlaceholders(templateName)
 	if err != nil {

@@ -1,35 +1,11 @@
 type: object
 properties:
-  toEmail:
-    type: string
-    example: "holmes.sherlock@example.com"
-  toName:
-    type: string
-    example: "Sherlock Holmes"
-  subject:
-    type: string
-    example: "TestSubject"
   placeholders:
     type: object
-    properties:
-      FirstName:
-        type: string
-        example: "Sherlock"
-      LastName:
-        type: string
-        example: "Holmes"
-      Age:
-        type: string
-        example: "45"
-    required:
-      - FirstName
-      - LastName
-      - Age
-  attachment:
-    type: string
-    example: "base64 encoded attachment"
+    additionalProperties:
+      type: string
+    example:
+      Name: "Sherlock Holmes"
+      Age: "45"
 required:
-  - toEmail
-  - toName
-  - subject
   - placeholders

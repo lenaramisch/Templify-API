@@ -1,7 +1,8 @@
 Table emailtemplates {
   id integer [primary key, increment]
   name varchar [not null, unique]
-  mjml_string varchar [not null]
+  templ_string varchar [not null]
+  is_mjml bool [not null]
   created_at timestamptz [default: `now()`]
 }
 

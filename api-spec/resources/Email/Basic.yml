@@ -1,5 +1,5 @@
 post:
-  description: Send an Email without attachments or the use of templates by giving the recipients data as well as the message content
+  description: Send an Email with or without attachments by giving the recipients data as well as the message content
   summary: Send an Email with custom text
   operationId: sendEmail
   tags:

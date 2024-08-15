@@ -30,11 +30,13 @@ type EmailPlaceholders struct {
 
 // EmailSendRequest defines model for EmailSendRequest.
 type EmailSendRequest struct {
-	Attachment *string `json:"attachment,omitempty"`
-	Message    string  `json:"message"`
-	Subject    string  `json:"subject"`
-	ToEmail    string  `json:"toEmail"`
-	ToName     string  `json:"toName"`
+	Attachment          *string `json:"attachment,omitempty"`
+	AttachmentExtension *string `json:"attachmentExtension,omitempty"`
+	AttachmentName      *string `json:"attachmentName,omitempty"`
+	Message             string  `json:"message"`
+	Subject             string  `json:"subject"`
+	ToEmail             string  `json:"toEmail"`
+	ToName              string  `json:"toName"`
 }
 
 // EmailTemplate defines model for EmailTemplate.
@@ -45,21 +47,24 @@ type EmailTemplate struct {
 
 // EmailTemplateFillRequest defines model for EmailTemplateFillRequest.
 type EmailTemplateFillRequest struct {
-	Attachment   *string `json:"attachment,omitempty"`
-	Placeholders struct {
-		Age       string `json:"Age"`
-		FirstName string `json:"FirstName"`
-		LastName  string `json:"LastName"`
-	} `json:"placeholders"`
-	Subject string `json:"subject"`
-	ToEmail string `json:"toEmail"`
-	ToName  string `json:"toName"`
+	Placeholders map[string]string `json:"placeholders"`
 }
 
 // EmailTemplatePostRequest defines model for EmailTemplatePostRequest.
 type EmailTemplatePostRequest struct {
-	IsMJML           bool   `json:"isMJML"`
-	TemplateMJMLCode string `json:"templateMJMLCode"`
+	IsMJML         bool   `json:"isMJML"`
+	TemplateString string `json:"templateString"`
+}
+
+// EmailTemplateSendRequest defines model for EmailTemplateSendRequest.
+type EmailTemplateSendRequest struct {
+	Attachment          *string           `json:"attachment,omitempty"`
+	AttachmentExtension *string           `json:"attachmentExtension,omitempty"`
+	AttachmentName      *string           `json:"attachmentName,omitempty"`
+	Placeholders        map[string]string `json:"placeholders"`
+	Subject             string            `json:"subject"`
+	ToEmail             string            `json:"toEmail"`
+	ToName              string            `json:"toName"`
 }
 
 // Error This object holds the error response data.
@@ -186,6 +191,9 @@ type AddNewTemplateJSONRequestBody = EmailTemplatePostRequest
 
 // FillTemplateJSONRequestBody defines body for FillTemplate for application/json ContentType.
 type FillTemplateJSONRequestBody = EmailTemplateFillRequest
+
+// SendTemplatedEmailJSONRequestBody defines body for SendTemplatedEmail for application/json ContentType.
+type SendTemplatedEmailJSONRequestBody = EmailTemplateSendRequest
 
 // AddNewPDFTemplateJSONRequestBody defines body for AddNewPDFTemplate for application/json ContentType.
 type AddNewPDFTemplateJSONRequestBody = PDFTemplatePostRequest

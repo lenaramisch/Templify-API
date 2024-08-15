@@ -2,7 +2,6 @@ package emailservice
 
 import (
 	"bytes"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -76,7 +75,7 @@ func (es *SendGridService) SendEmail(emailRequest *domain.EmailRequest) error {
 	if emailRequest.AttachmentInfo != nil {
 		emailData["attachments"] = []map[string]any{
 			{
-				"content":     base64.StdEncoding.EncodeToString(emailRequest.AttachmentInfo.Content),
+				"content":     emailRequest.AttachmentInfo.Base64Content,
 				"disposition": "attachment",
 				"filename":    emailRequest.AttachmentInfo.FileName,
 				"type":        emailRequest.AttachmentInfo.FileExtension,

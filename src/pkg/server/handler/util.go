@@ -3,14 +3,10 @@ package handler
 import (
 	"encoding/json"
 	"errors"
-	"io"
 	"log/slog"
 	"net/http"
-	"strings"
 	"time"
 	"unicode"
-
-	domain "templify/pkg/domain/model"
 
 	"github.com/go-chi/render"
 	"github.com/google/uuid"
@@ -81,42 +77,6 @@ func ReadRequestBody(w http.ResponseWriter, r *http.Request, v any) error {
 func HandleError(w http.ResponseWriter, r *http.Request, statusCode int, message string) {
 	render.Status(r, statusCode)
 	render.PlainText(w, r, message)
-}
-
-func ReadMultipartFileAsBytes(r *http.Request, w http.ResponseWriter) (*domain.AttachmentInfo, error) {
-	// Parse the multipart form, with a maximum memory of 32 MB for storing file parts in memory
-	err := r.ParseMultipartForm(32 << 20) // 32MB
-	if err != nil {
-		return nil, err
-	}
-
-	file, handler, err := r.FormFile("file")
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	fileBytes, err := io.ReadAll(file)
-	if err != nil {
-		HandleError(w, r, http.StatusInternalServerError, "Error reading file content")
-		return nil, err
-	}
-
-	// Get file type string
-	lastDotIndex := strings.LastIndex(handler.Filename, ".")
-	if lastDotIndex == -1 {
-		http.Error(w, "File name has to end with file extension, i.e. '.txt'", http.StatusBadRequest)
-		return nil, err
-	}
-
-	fileTypeString := handler.Filename[lastDotIndex+1:]
-	fileName := handler.Filename
-
-	return &domain.AttachmentInfo{
-		FileName:      fileName,
-		FileExtension: fileTypeString,
-		Content:       fileBytes,
-	}, nil
 }
 
 func FormToCapitalPlaceholders(r *http.Request) {

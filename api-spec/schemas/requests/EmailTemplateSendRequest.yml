@@ -9,9 +9,6 @@ properties:
   subject:
     type: string
     example: "New Case"
-  message:
-    type: string
-    example: "Find the thief!"
   attachment:
     type: string
     example: "base64 encoded attachment"
@@ -21,8 +18,15 @@ properties:
   attachmentExtension:
     type: string
     example: "txt"
+  placeholders:
+    type: object
+    additionalProperties:
+      type: string
+    example:
+      Name: "Sherlock Holmes"
+      Age: "45"
 required:
   - toEmail
   - toName
   - subject
-  - message
+  - placeholders

@@ -60,15 +60,16 @@ func (r *Repository) GetEmailTemplateByName(name string) (*domain.Template, erro
 	// map to domain model
 	templateDomain := domain.Template{
 		Name:        templateDB.Name,
-		TemplateStr: templateDB.MJMLString,
+		TemplateStr: templateDB.TemplString,
+		IsMJML:      templateDB.IsMJML,
 	}
 	return &templateDomain, nil
 }
 
-func (r *Repository) AddEmailTemplate(name string, mjmlString string) error {
+func (r *Repository) AddEmailTemplate(name string, templStr string, isMJML bool) error {
 	tx := r.dbConnection.MustBegin()
-	addTemplateQuery := "INSERT INTO emailtemplates (name, mjml_string) VALUES ($1, $2)"
-	tx.MustExec(addTemplateQuery, name, mjmlString)
+	addTemplateQuery := "INSERT INTO emailtemplates (name, templ_string, is_mjml) VALUES ($1, $2, $3)"
+	tx.MustExec(addTemplateQuery, name, templStr, isMJML)
 	return tx.Commit()
 }
 

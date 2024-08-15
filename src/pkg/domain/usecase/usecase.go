@@ -20,7 +20,7 @@ type MJMLService interface {
 type Repository interface {
 	// Email
 	GetEmailTemplateByName(name string) (*domain.Template, error)
-	AddEmailTemplate(name string, mjmlString string) error
+	AddEmailTemplate(name string, templateStr string, isMJML bool) error
 	// PDF
 	GetPDFTemplateByName(name string) (*domain.Template, error)
 	AddPDFTemplate(name string, typstString string) error

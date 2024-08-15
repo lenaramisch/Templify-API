@@ -1,0 +1,28 @@
+post:
+  description: Send an templated Email with or without by giving the recipients data as well as the placeholder values
+  summary: Send an templated Email
+  operationId: sendTemplatedEmail
+  tags:
+    - Email
+  parameters:
+    - name: templateName
+      in: path
+      description: Name of template to add
+      required: true
+      schema:
+        type: string
+      example: "exampleTemplate"
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema: 
+          $ref: '../../schemas/_index.yml#/EmailTemplateSendRequest'
+  responses:
+    '200':
+      description: Email sent
+    '400':
+      description: Bad request
+
+  # This API has no security
+  security: []

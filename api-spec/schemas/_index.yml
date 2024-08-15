@@ -23,6 +23,9 @@ SMSPlaceholders:
 EmailSendRequest:
   $ref: './requests/EmailSendRequest.yml'
 
+EmailTemplateSendRequest:
+  $ref: './requests/EmailTemplateSendRequest.yml'
+
 EmailTemplatePostRequest:
   $ref: './requests/EmailTemplatePostRequest.yml'
 

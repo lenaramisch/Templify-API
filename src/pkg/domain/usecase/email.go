@@ -6,8 +6,8 @@ import (
 	domain "templify/pkg/domain/model"
 )
 
-func (u *Usecase) AddEmailTemplate(templateName string, MJMLString string) error {
-	err := u.repository.AddEmailTemplate(templateName, MJMLString)
+func (u *Usecase) AddEmailTemplate(r *domain.Template) error {
+	err := u.repository.AddEmailTemplate(r.Name, r.TemplateStr, r.IsMJML)
 	if err != nil {
 		fmt.Println("=== Error ===")
 		fmt.Println(err.Error())
@@ -25,33 +25,74 @@ func (u *Usecase) GetEmailPlaceholders(templateName string) ([]string, error) {
 	return ExtractPlaceholders(domainTemplate.TemplateStr), nil
 }
 
-func (u *Usecase) GetFilledMJMLTemplate(templateName string, values map[string]string) (string, error) {
+func (u *Usecase) GetFilledTemplateString(templateName string, values map[string]string) (string, error) {
 	domainTemplate, err := u.repository.GetEmailTemplateByName(templateName)
 	if err != nil {
 		slog.Debug("Error getting template by name")
 		return "", err
 	}
-	filledTemplate, err := FillTemplate(domainTemplate.TemplateStr, values)
+
+	filledTemplateString, err := FillTemplate(domainTemplate.TemplateStr, values)
 	if err != nil {
 		slog.Debug("Error filling template placeholders")
 		return "", err
 	}
-	return filledTemplate, err
+
+	//Check if isMJML
+	if domainTemplate.IsMJML {
+		// Render MJML
+		filledHTMLString, err := u.mjmlService.RenderMJML(filledTemplateString)
+		if err != nil {
+			slog.Debug("Error rendering mjml template")
+			return "", err
+		}
+		return filledHTMLString, nil
+	}
+	return filledTemplateString, nil
 }
 
 func (u *Usecase) SendRawEmail(r *domain.EmailRequest) error {
 	return u.emailSender.SendEmail(r)
 }
 
-func (u *Usecase) SendMJMLEmail(r *domain.EmailRequest, templateName string, values map[string]string) error {
-	emailBody, err := u.prepareMJMLBody(templateName, values)
+func (u *Usecase) SendTemplatedEmail(r *domain.EmailTemplateSendRequest) error {
+	// Get template by name
+	templateDomain, err := u.GetEmailTemplateByName(r.TemplateName)
 	if err != nil {
+		slog.Debug("Error getting template by name")
 		return err
 	}
-	r.MessageBody = *emailBody
-	err = u.emailSender.SendEmail(r)
+	// Fill placeholders
+	filledTemplate, err := FillTemplate(templateDomain.TemplateStr, r.Placeholders)
 	if err != nil {
-		slog.Debug("Error sending email without attachment")
+		slog.Debug("Error filling template placeholders")
+		return err
+	}
+
+	var emailRequest = domain.EmailRequest{
+		ToEmail:        r.ToEmail,
+		ToName:         r.ToName,
+		Subject:        r.Subject,
+		AttachmentInfo: r.AttachmentInfo,
+	}
+
+	// Check if isMJML
+	if templateDomain.IsMJML {
+		// Render MJML
+		htmlString, err := u.mjmlService.RenderMJML(filledTemplate)
+		if err != nil {
+			slog.Debug("Error rendering mjml template")
+			return err
+		}
+		emailRequest.MessageBody = htmlString
+	} else {
+		emailRequest.MessageBody = filledTemplate
+	}
+
+	// Send email
+	err = u.emailSender.SendEmail(&emailRequest)
+	if err != nil {
+		slog.Debug("Error sending email")
 		return err
 	}
 	return nil
@@ -59,7 +100,7 @@ func (u *Usecase) SendMJMLEmail(r *domain.EmailRequest, templateName string, val
 
 func (u *Usecase) prepareMJMLBody(templateName string, values map[string]string) (*string, error) {
 	// Get template and fill placeholders
-	mjml, err := u.GetFilledMJMLTemplate(templateName, values)
+	mjml, err := FillTemplate(templateName, values)
 	if err != nil {
 		slog.
 			With(

@@ -31,6 +31,9 @@
 /email/templates/{templateName}:
   $ref: './Email/TemplateByName.yml'
 
+/email/templates/{templateName}/send:
+  $ref: './Email/Templated.yml'
+
 /email/templates/{templateName}/placeholders:
   $ref: './Email/Placeholders.yml'
 
