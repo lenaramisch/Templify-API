@@ -1,35 +1,3 @@
-post:
-  description: Fill the placeholders of a specific PDF template
-  summary: Fill placeholders of PDF template
-  operationId: fillPDFTemplate
-  tags:
-    - PDF
-  parameters:
-    - name: templateName
-      in: path
-      description: Name of template to fill
-      required: true
-      schema:
-        type: string
-  requestBody:
-    required: true
-    content:
-      application/json:
-        schema: 
-          $ref: '../../schemas/_index.yml#/PDFTemplateFillRequest'
-  responses:
-    '200':
-      description: successful operation
-      content:
-        text/plain:
-          schema:
-            $ref: '../../schemas/_index.yml#/PDFFilledTemplateResponse'
-    '400':
-      description: Invalid name or data supplied
-
-  # This API has no security
-  security: []
-
 get:
   description: Get all placeholders of a specific PDF template that have to be filled with some data
   summary: Get PDF Template Placeholders

@@ -45,3 +45,6 @@
 
 /pdf/templates/{templateName}/placeholders:
   $ref: './PDF/Placeholders.yml'
+
+/pdf/templates/{templateName}/fill:
+  $ref: './PDF/FillTemplate.yml'

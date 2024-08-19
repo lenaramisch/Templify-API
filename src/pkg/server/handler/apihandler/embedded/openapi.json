@@ -610,7 +610,8 @@
             "required": true,
             "schema": {
               "type": "string"
-            }
+            },
+            "example": "exampleTemplate"
           }
         ],
         "responses": {
@@ -762,6 +763,46 @@
       }
     },
     "/pdf/templates/{templateName}/placeholders": {
+      "get": {
+        "description": "Get all placeholders of a specific PDF template that have to be filled with some data",
+        "summary": "Get PDF Template Placeholders",
+        "operationId": "getPDFTemplatePlaceholdersByName",
+        "tags": [
+          "PDF"
+        ],
+        "parameters": [
+          {
+            "name": "templateName",
+            "in": "path",
+            "description": "Name of template to return",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PDFPlaceholders"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid name supplied"
+          },
+          "404": {
+            "description": "Can not find template (template name)"
+          }
+        },
+        "security": []
+      }
+    },
+    "/pdf/templates/{templateName}/fill": {
       "post": {
         "description": "Fill the placeholders of a specific PDF template",
         "summary": "Fill placeholders of PDF template",
@@ -803,44 +844,6 @@
           },
           "400": {
             "description": "Invalid name or data supplied"
-          }
-        },
-        "security": []
-      },
-      "get": {
-        "description": "Get all placeholders of a specific PDF template that have to be filled with some data",
-        "summary": "Get PDF Template Placeholders",
-        "operationId": "getPDFTemplatePlaceholdersByName",
-        "tags": [
-          "PDF"
-        ],
-        "parameters": [
-          {
-            "name": "templateName",
-            "in": "path",
-            "description": "Name of template to return",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successful operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PDFPlaceholders"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid name supplied"
-          },
-          "404": {
-            "description": "Can not find template (template name)"
           }
         },
         "security": []
