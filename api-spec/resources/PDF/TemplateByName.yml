@@ -28,7 +28,7 @@ get:
   security: []
 
 post:
-  description: Add a new PDF template to the db
+  description: Add a new PDF template to the db. If you want new lines in your template, use '\n' in the string. For placeholders use the syntax '{{.placeholderName}}'.
   summary: Add new PDF template
   operationId: addNewPDFTemplate
   tags:

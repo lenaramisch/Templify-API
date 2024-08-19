@@ -2,6 +2,6 @@ type: object
 properties:
   templateString:
     type: string
-    example: '= Client Name: {{.Name}}, Age: {{.Age}}'
+    example: '= Client\nName: {{.Name}}, Age: {{.Age}}'
 required:
   - templateString

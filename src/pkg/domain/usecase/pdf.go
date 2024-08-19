@@ -36,7 +36,15 @@ func (u *Usecase) GetPDFPlaceholders(templateName string) ([]string, error) {
 }
 
 func (u *Usecase) GeneratePDF(templateName string, values map[string]string) ([]byte, error) {
-	filledTemplate, err := FillTemplate(templateName, values)
+	template, err := u.GetPDFTemplateByName(templateName)
+	if err != nil {
+		slog.With(
+			"TemplateName", templateName,
+			"Error", err.Error(),
+		).Debug("Error getting template during GeneratePDF")
+		return nil, err
+	}
+	filledTemplate, err := FillTemplate(template.TemplateStr, values)
 	if err != nil {
 		slog.With(
 			"TemplateName", templateName,
@@ -45,6 +53,12 @@ func (u *Usecase) GeneratePDF(templateName string, values map[string]string) ([]
 		).Debug("Error filling template during GeneratePDF")
 		return nil, err
 	}
+
+	slog.With(
+		"TemplateName", templateName,
+		"FilledTemplate", filledTemplate,
+	).Debug("Filled template")
+
 	pdfFile, err := u.typstService.RenderTypst(filledTemplate)
 	if err != nil {
 		slog.With(
