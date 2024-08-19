@@ -5,14 +5,19 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	domain "templify/pkg/domain/model"
+	server "templify/pkg/server/generated"
 	"templify/pkg/server/handler"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 )
 
 func (ah *APIHandler) GetPDFTemplatePlaceholdersByName(w http.ResponseWriter, r *http.Request, templateName string) {
+
+	if templateName == "" {
+		http.Error(w, "URL Param templateName empty", http.StatusBadRequest)
+		return
+	}
+
 	templatePlaceholders, err := ah.Usecase.GetPDFPlaceholders(templateName)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, fmt.Sprintf("Getting placeholders for template %s failed", templateName))
@@ -32,15 +37,19 @@ func (ah *APIHandler) AddNewPDFTemplate(w http.ResponseWriter, r *http.Request, 
 		handler.HandleError(w, r, http.StatusBadRequest, "Reading Request Body failed")
 		return
 	}
-	typstString := string(body)
 
-	fmt.Println("Typst String: ", typstString)
+	var addTemplateRequest server.PDFTemplatePostRequest
+	if err := json.Unmarshal(body, &addTemplateRequest); err != nil {
+		handler.HandleError(w, r, http.StatusBadRequest, "Invalid JSON format")
+		return
+	}
+
 	if templateName == "" {
 		http.Error(w, "URL Param templateName empty", http.StatusBadRequest)
 		return
 	}
 
-	err = ah.Usecase.AddPDFTemplate(templateName, typstString)
+	err = ah.Usecase.AddPDFTemplate(templateName, addTemplateRequest.TemplateString)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, fmt.Sprintf("Adding template with name %v failed", templateName))
 		return
@@ -80,41 +89,13 @@ func (ah *APIHandler) FillPDFTemplate(w http.ResponseWriter, r *http.Request, te
 		http.Error(w, "Reading request body failed", http.StatusInternalServerError)
 	}
 
-	var pdfFillReq domain.PDFTemplateFillRequest
+	var pdfFillReq server.PDFTemplateFillRequest
 	if err := json.Unmarshal(body, &pdfFillReq); err != nil {
 		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
 		return
 	}
-	placeholderValues := pdfFillReq.Placeholders
 
-	filledTemplate, err := ah.Usecase.FillPDFTemplatePlaceholders(templateName, placeholderValues)
-	if err != nil {
-		handler.HandleError(w, r, http.StatusInternalServerError, "Error filling template")
-		return
-	}
-	render.Status(r, http.StatusOK)
-	render.PlainText(w, r, filledTemplate)
-}
-
-func (ah *APIHandler) GeneratePDF(w http.ResponseWriter, r *http.Request) {
-	templateName := chi.URLParam(r, "templateName")
-	if templateName == "" {
-		http.Error(w, "URL Param templateName empty", http.StatusBadRequest)
-		return
-	}
-
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, "Reading request body failed", http.StatusInternalServerError)
-	}
-
-	var values map[string]string
-	if err := json.Unmarshal(body, &values); err != nil {
-		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
-		return
-	}
-
-	pdfBytes, err := ah.Usecase.GeneratePDF(templateName, values)
+	pdfBytes, err := ah.Usecase.GeneratePDF(templateName, pdfFillReq.Placeholders)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, "Error generating PDF")
 		return

@@ -35,16 +35,8 @@ func (u *Usecase) GetPDFPlaceholders(templateName string) ([]string, error) {
 	return ExtractPlaceholders(domainTemplate.TemplateStr), nil
 }
 
-func (u *Usecase) FillPDFTemplatePlaceholders(templateName string, values map[string]string) (string, error) {
-	pdfTempl, err := u.GetPDFTemplateByName(templateName)
-	if err != nil {
-		return "Getting template from db failed", err
-	}
-	return FillTemplate(pdfTempl.TemplateStr, values)
-}
-
 func (u *Usecase) GeneratePDF(templateName string, values map[string]string) ([]byte, error) {
-	filledTemplate, err := u.FillPDFTemplatePlaceholders(templateName, values)
+	filledTemplate, err := FillTemplate(templateName, values)
 	if err != nil {
 		slog.With(
 			"TemplateName", templateName,
