@@ -3,22 +3,22 @@ version: '3.8'
 services:
   app:
     container_name: sms-sender-app
-    image: golang:1.22-alpine
-    ports: 
-      - "8080:8080"
-    volumes:
-      - ${PWD}/src/:/app
-      - ~/go/pkg/mod/cache:/go/pkg/mod/cache
-    working_dir: /app
-    command: go run main.go
+    image: sms-sender-app
+    build:
+      context: .
+      dockerfile: ./build/dockerfiles/Dockerfile.app
+    ports:
+      - '8080:8080'
     env_file:
       - .env
     restart: on-failure
-    healthcheck:
-      test: curl --fail -s localhost:8080/info/status || exit 1
-      interval: 30s
-      timeout: 10s
-      retries: 5
+    depends_on:
+      - db
+    # healthcheck:
+    #   test: curl --fail -s localhost:8080/info/status || exit 1
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 5
 
   db:
     container_name: sms_service_db
