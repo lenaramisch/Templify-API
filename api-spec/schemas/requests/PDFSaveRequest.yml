@@ -1,0 +1,11 @@
+type: object
+properties:
+  fileName:
+    type: string
+    example: "example.pdf"
+  base64Content:
+    type: string
+    example: "JVBERi0xLjMKJcTl8uXrp/Og0MTGCjQgMCBvYmoKPDwv"
+required:
+  - fileName
+  - base64Content

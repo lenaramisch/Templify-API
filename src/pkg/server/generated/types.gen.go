@@ -104,6 +104,12 @@ type PDFPlaceholders struct {
 	} `json:"placeholders"`
 }
 
+// PDFSaveRequest defines model for PDFSaveRequest.
+type PDFSaveRequest struct {
+	Base64Content string `json:"base64Content"`
+	FileName      string `json:"fileName"`
+}
+
 // PDFTemplate defines model for PDFTemplate.
 type PDFTemplate struct {
 	Name           string `json:"name"`
@@ -194,6 +200,9 @@ type FillTemplateJSONRequestBody = EmailTemplateFillRequest
 
 // SendTemplatedEmailJSONRequestBody defines body for SendTemplatedEmail for application/json ContentType.
 type SendTemplatedEmailJSONRequestBody = EmailTemplateSendRequest
+
+// SavePDFJSONRequestBody defines body for SavePDF for application/json ContentType.
+type SavePDFJSONRequestBody = PDFSaveRequest
 
 // AddNewPDFTemplateJSONRequestBody defines body for AddNewPDFTemplate for application/json ContentType.
 type AddNewPDFTemplateJSONRequestBody = PDFTemplatePostRequest

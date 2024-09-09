@@ -11,6 +11,28 @@ import (
 	"github.com/go-chi/render"
 )
 
+func (ah *APIHandler) SavePDF(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		handler.HandleError(w, r, http.StatusBadRequest, "Reading Request Body failed")
+		return
+	}
+
+	var pdfSaveRequest server.PDFSaveRequest
+	if err := json.Unmarshal(body, &pdfSaveRequest); err != nil {
+		handler.HandleError(w, r, http.StatusBadRequest, "Invalid JSON format")
+		return
+	}
+
+	err = ah.Usecase.SavePDF(pdfSaveRequest.FileName, pdfSaveRequest.Base64Content)
+	if err != nil {
+		handler.HandleError(w, r, http.StatusInternalServerError, "Error saving PDF")
+		return
+	}
+	render.Status(r, http.StatusCreated)
+	render.PlainText(w, r, "PDF saved")
+}
+
 func (ah *APIHandler) GetPDFTemplatePlaceholdersByName(w http.ResponseWriter, r *http.Request, templateName string) {
 
 	if templateName == "" {

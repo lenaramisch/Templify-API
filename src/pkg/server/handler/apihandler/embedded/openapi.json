@@ -682,6 +682,35 @@
         "security": []
       }
     },
+    "/pdf/basic": {
+      "post": {
+        "description": "Save a static PDF to DB for later use",
+        "summary": "Save a static PDF",
+        "operationId": "savePDF",
+        "tags": [
+          "PDF"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PDFSaveRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "400": {
+            "description": "Invalid name or data supplied"
+          }
+        },
+        "security": []
+      }
+    },
     "/pdf/templates/{templateName}": {
       "get": {
         "description": "Get a specific PDF template by its name",
@@ -723,7 +752,7 @@
         "security": []
       },
       "post": {
-        "description": "Add a new PDF template to the db",
+        "description": "Add a new PDF template to the db. If you want new lines in your template, use '\\n' in the string. For placeholders use the syntax '{{.placeholderName}}'.",
         "summary": "Add new PDF template",
         "operationId": "addNewPDFTemplate",
         "tags": [
@@ -1319,6 +1348,23 @@
         "type": "string",
         "example": "<mjml><mj-body><mj-section><mj-column><mj-text font-size=\"20px\" color=\"#F45E43\" font-family=\"helvetica\">Hello World </mj-text></mj-column></mj-section></mj-body></mjml>"
       },
+      "PDFSaveRequest": {
+        "type": "object",
+        "properties": {
+          "fileName": {
+            "type": "string",
+            "example": "example.pdf"
+          },
+          "base64Content": {
+            "type": "string",
+            "example": "JVBERi0xLjMKJcTl8uXrp/Og0MTGCjQgMCBvYmoKPDwv"
+          }
+        },
+        "required": [
+          "fileName",
+          "base64Content"
+        ]
+      },
       "PDFTemplate": {
         "type": "object",
         "properties": {
@@ -1341,7 +1387,7 @@
         "properties": {
           "templateString": {
             "type": "string",
-            "example": "= Client Name: {{.Name}}, Age: {{.Age}}"
+            "example": "= Client\\nName: {{.Name}}, Age: {{.Age}}"
           }
         },
         "required": [

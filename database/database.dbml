@@ -19,3 +19,10 @@ Table smstemplates {
   templ_string varchar [not null]
   created_at timestamptz [default: `now()`]
 }
+
+Table pdfs {
+  id integer [primary key, increment]
+  name varchar [not null, unique]
+  content varchar [not null]
+  created_at timestamptz [default: `now()`]
+}

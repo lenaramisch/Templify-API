@@ -32,6 +32,9 @@ EmailTemplatePostRequest:
 EmailTemplateFillRequest:
   $ref: './requests/EmailTemplateFillRequest.yml'
 
+PDFSaveRequest:
+  $ref: './requests/PDFSaveRequest.yml'
+
 PDFTemplateFillRequest:
   $ref: './requests/PDFTemplateFillRequest.yml'
 

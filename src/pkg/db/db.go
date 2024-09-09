@@ -80,6 +80,13 @@ func (r *Repository) AddSMSTemplate(name string, smsTemplString string) error {
 	return tx.Commit()
 }
 
+func (r *Repository) SavePDF(fileName string, base64Content string) error {
+	tx := r.dbConnection.MustBegin()
+	savePDFQuery := "INSERT INTO pdfs (name, content) VALUES ($1, $2)"
+	tx.MustExec(savePDFQuery, fileName, base64Content)
+	return tx.Commit()
+}
+
 func (r *Repository) AddPDFTemplate(name string, typstString string) error {
 	tx := r.dbConnection.MustBegin()
 	addPDFTemplateQuery := "INSERT INTO pdftemplates (name, typst_string) VALUES ($1, $2)"
