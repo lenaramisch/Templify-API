@@ -18,13 +18,15 @@ func (ah *APIHandler) SendEmail(w http.ResponseWriter, r *http.Request) {
 	var emailRequestAPI server.EmailSendRequest
 
 	handler.ReadRequestBody(w, r, &emailRequestAPI)
-
-	var attachmentInfo *domain.AttachmentInfo
-	if emailRequestAPI.Attachment != nil {
-		attachmentInfo = &domain.AttachmentInfo{
-			FileExtension: *emailRequestAPI.AttachmentExtension,
-			FileName:      *emailRequestAPI.AttachmentName,
-			Base64Content: *emailRequestAPI.Attachment,
+	var attachmentInfo []domain.AttachmentInfo
+	// Check if Attachments are present and create AttachmentInfo
+	if emailRequestAPI.Attachments != nil {
+		for _, attachment := range *emailRequestAPI.Attachments {
+			attachmentInfo = append(attachmentInfo, domain.AttachmentInfo{
+				FileExtension: attachment.AttachmentExtension,
+				FileName:      attachment.AttachmentName,
+				Base64Content: attachment.AttachmentContent,
+			})
 		}
 	}
 
@@ -62,13 +64,15 @@ func (ah *APIHandler) SendTemplatedEmail(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	// Check if Attachment is present and create AttachmentInfo
-	var attachmentInfo *domain.AttachmentInfo
-	if emailTemplateSendReq.Attachment != nil {
-		attachmentInfo = &domain.AttachmentInfo{
-			FileExtension: *emailTemplateSendReq.AttachmentExtension,
-			FileName:      *emailTemplateSendReq.AttachmentName,
-			Base64Content: *emailTemplateSendReq.Attachment,
+	var attachmentInfo []domain.AttachmentInfo
+	// Check if Attachments are present and create AttachmentInfo
+	if emailTemplateSendReq.Attachments != nil {
+		for _, attachment := range *emailTemplateSendReq.Attachments {
+			attachmentInfo = append(attachmentInfo, domain.AttachmentInfo{
+				FileExtension: attachment.AttachmentExtension,
+				FileName:      attachment.AttachmentName,
+				Base64Content: attachment.AttachmentContent,
+			})
 		}
 	}
 

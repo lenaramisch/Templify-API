@@ -30,13 +30,15 @@ type EmailPlaceholders struct {
 
 // EmailSendRequest defines model for EmailSendRequest.
 type EmailSendRequest struct {
-	Attachment          *string `json:"attachment,omitempty"`
-	AttachmentExtension *string `json:"attachmentExtension,omitempty"`
-	AttachmentName      *string `json:"attachmentName,omitempty"`
-	Message             string  `json:"message"`
-	Subject             string  `json:"subject"`
-	ToEmail             string  `json:"toEmail"`
-	ToName              string  `json:"toName"`
+	Attachments *[]struct {
+		AttachmentContent   string `json:"attachmentContent"`
+		AttachmentExtension string `json:"attachmentExtension"`
+		AttachmentName      string `json:"attachmentName"`
+	} `json:"attachments,omitempty"`
+	Message string `json:"message"`
+	Subject string `json:"subject"`
+	ToEmail string `json:"toEmail"`
+	ToName  string `json:"toName"`
 }
 
 // EmailTemplate defines model for EmailTemplate.
@@ -58,13 +60,15 @@ type EmailTemplatePostRequest struct {
 
 // EmailTemplateSendRequest defines model for EmailTemplateSendRequest.
 type EmailTemplateSendRequest struct {
-	Attachment          *string           `json:"attachment,omitempty"`
-	AttachmentExtension *string           `json:"attachmentExtension,omitempty"`
-	AttachmentName      *string           `json:"attachmentName,omitempty"`
-	Placeholders        map[string]string `json:"placeholders"`
-	Subject             string            `json:"subject"`
-	ToEmail             string            `json:"toEmail"`
-	ToName              string            `json:"toName"`
+	Attachments *[]struct {
+		AttachmentContent   string `json:"attachmentContent"`
+		AttachmentExtension string `json:"attachmentExtension"`
+		AttachmentName      string `json:"attachmentName"`
+	} `json:"attachments,omitempty"`
+	Placeholders map[string]string `json:"placeholders"`
+	Subject      string            `json:"subject"`
+	ToEmail      string            `json:"toEmail"`
+	ToName       string            `json:"toName"`
 }
 
 // Error This object holds the error response data.

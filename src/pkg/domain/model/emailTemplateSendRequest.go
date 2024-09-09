@@ -6,5 +6,5 @@ type EmailTemplateSendRequest struct {
 	Subject        string
 	TemplateName   string
 	Placeholders   map[string]string
-	AttachmentInfo *AttachmentInfo
+	AttachmentInfo []AttachmentInfo
 }

@@ -12,15 +12,24 @@ properties:
   message:
     type: string
     example: "Find the thief!"
-  attachment:
-    type: string
-    example: "base64 encoded attachment"
-  attachmentName:
-    type: string
-    example: "attachment"
-  attachmentExtension:
-    type: string
-    example: "txt"
+  attachments:
+    type: array
+    items:
+      type: object
+      properties:
+        attachmentContent:
+          type: string
+          example: "base64 encoded attachment"
+        attachmentName:
+          type: string
+          example: "attachment"
+        attachmentExtension:
+          type: string
+          example: "txt"
+      required:
+        - attachmentContent
+        - attachmentName
+        - attachmentExtension
 required:
   - toEmail
   - toName

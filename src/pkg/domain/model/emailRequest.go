@@ -5,5 +5,5 @@ type EmailRequest struct {
 	ToName         string
 	Subject        string
 	MessageBody    string
-	AttachmentInfo *AttachmentInfo
+	AttachmentInfo []AttachmentInfo
 }
