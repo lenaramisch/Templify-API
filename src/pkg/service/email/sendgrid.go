@@ -73,17 +73,22 @@ func (es *SendGridService) SendEmail(emailRequest *domain.EmailRequest) error {
 
 	// add attachments if present
 	if emailRequest.AttachmentInfo != nil {
-		//range over the attachments and add them to the emailData
+		// Initialize the attachments slice
+		var attachments []map[string]string
+
+		// Range over the attachments and add them to the attachments slice
 		for _, attachment := range emailRequest.AttachmentInfo {
-			emailData["attachments"] = []map[string]string{
-				{
-					"content":     attachment.Base64Content,
-					"disposition": "attachment",
-					"filename":    attachment.FileName,
-					"type":        attachment.FileExtension,
-				},
+			attachmentData := map[string]string{
+				"content":     attachment.Base64Content,
+				"disposition": "attachment",
+				"filename":    attachment.FileName,
+				"type":        attachment.FileExtension,
 			}
+			attachments = append(attachments, attachmentData)
 		}
+
+		// Add the attachments slice to the emailData
+		emailData["attachments"] = attachments
 	}
 
 	jsonData, err := json.Marshal(emailData)
