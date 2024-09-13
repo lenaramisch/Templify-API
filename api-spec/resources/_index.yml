@@ -51,3 +51,9 @@
 
 /pdf/templates/{templateName}/fill:
   $ref: './PDF/FillTemplate.yml'
+
+/workflow/{workflowName}:
+  $ref: './Workflow/WorkflowByName.yml'
+
+/workflow/{workflowName}/send:
+  $ref: './Workflow/WorkflowSend.yml'

@@ -11,6 +11,7 @@ post:
       required: true
       schema:
         type: string
+      example: "exampleTemplate"
   requestBody:
     required: true
     content:

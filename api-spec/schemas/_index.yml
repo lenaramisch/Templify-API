@@ -41,6 +41,12 @@ PDFTemplateFillRequest:
 PDFTemplatePostRequest:
   $ref: './requests/PDFTemplatePostRequest.yml'
 
+WorkflowCreateRequest:
+  $ref: './requests/WorkflowCreateRequest.yml'
+
+WorkflowSendRequest:
+  $ref: './requests/WorkflowSendRequest.yml'
+
 #Responses
 FilledEmailTemplateResponse:
   $ref: './responses/FilledEmailTemplateResponse.yml'
@@ -59,6 +65,9 @@ PDFFilledTemplateResponse:
 
 PDFPlaceholders:
   $ref: './responses/PDFPlaceholders.yml'
+
+Workflow:
+  $ref: './responses/Workflow.yml'
 
 #Types
 Version:

@@ -1,6 +1,6 @@
 post:
-  description: Send an templated Email with or without by giving the recipients data as well as the placeholder values
-  summary: Send an templated Email
+  description: Send a templated Email with or without by giving the recipients data as well as the placeholder values
+  summary: Send a templated Email
   operationId: sendTemplatedEmail
   tags:
     - Email

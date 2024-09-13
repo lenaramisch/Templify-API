@@ -1,0 +1,57 @@
+post:
+  description: Create a new workflow for sending emails with or without static and templated attachments
+  summary: Create a new workflow
+  operationId: createWorkflow
+  tags:
+    - Workflow
+  parameters:
+    - name: workflowName
+      in: path
+      description: Name of workflow to return
+      required: true
+      schema:
+        type: string
+      example: "exampleWorkflow"
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema: 
+          $ref: '../../schemas/_index.yml#/WorkflowCreateRequest'
+  responses:
+    '200':
+      description: Workflow created
+    '400':
+      description: Bad request
+
+  # This API has no security
+  security: []
+
+get:
+  description: Get a specific workflow by its name
+  summary: Get Workflow by Name
+  operationId: getWorkflowByName
+  tags:
+    - Workflow
+  parameters:
+    - name: workflowName
+      in: path
+      description: Name of workflow to return
+      required: true
+      schema:
+        type: string
+      example: "exampleWorkflow"
+  responses:
+    '200':
+      description: successful operation
+      content:
+        application/json:
+          schema:
+            $ref: '../../schemas/_index.yml#/Workflow'
+    '400':
+      description: Invalid name supplied
+    '404':
+      description: Can not find workflow (workflow name)
+
+  # This API has no security
+  security: []

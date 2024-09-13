@@ -35,6 +35,10 @@
     {
       "name": "APIInfo",
       "description": "General API information"
+    },
+    {
+      "name": "Workflow",
+      "description": "Everything for creating and using Workflows"
     }
   ],
   "paths": {
@@ -555,8 +559,8 @@
     },
     "/email/templates/{templateName}/send": {
       "post": {
-        "description": "Send an templated Email with or without by giving the recipients data as well as the placeholder values",
-        "summary": "Send an templated Email",
+        "description": "Send a templated Email with or without by giving the recipients data as well as the placeholder values",
+        "summary": "Send a templated Email",
         "operationId": "sendTemplatedEmail",
         "tags": [
           "Email"
@@ -847,7 +851,8 @@
             "required": true,
             "schema": {
               "type": "string"
-            }
+            },
+            "example": "exampleTemplate"
           }
         ],
         "requestBody": {
@@ -873,6 +878,127 @@
           },
           "400": {
             "description": "Invalid name or data supplied"
+          }
+        },
+        "security": []
+      }
+    },
+    "/workflow/{workflowName}": {
+      "post": {
+        "description": "Create a new workflow for sending emails with or without static and templated attachments",
+        "summary": "Create a new workflow",
+        "operationId": "createWorkflow",
+        "tags": [
+          "Workflow"
+        ],
+        "parameters": [
+          {
+            "name": "workflowName",
+            "in": "path",
+            "description": "Name of workflow to return",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "exampleWorkflow"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkflowCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Workflow created"
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        },
+        "security": []
+      },
+      "get": {
+        "description": "Get a specific workflow by its name",
+        "summary": "Get Workflow by Name",
+        "operationId": "getWorkflowByName",
+        "tags": [
+          "Workflow"
+        ],
+        "parameters": [
+          {
+            "name": "workflowName",
+            "in": "path",
+            "description": "Name of workflow to return",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "exampleWorkflow"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Workflow"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid name supplied"
+          },
+          "404": {
+            "description": "Can not find workflow (workflow name)"
+          }
+        },
+        "security": []
+      }
+    },
+    "/workflow/{workflowName}/send": {
+      "post": {
+        "description": "Use a workflow to send emails with or without static and templated attachments",
+        "summary": "Use workflow",
+        "operationId": "useWorkflow",
+        "tags": [
+          "Workflow"
+        ],
+        "parameters": [
+          {
+            "name": "workflowName",
+            "in": "path",
+            "description": "Name of workflow to use",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "exampleWorkflow"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkflowSendRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Workflow used"
+          },
+          "400": {
+            "description": "Bad request"
           }
         },
         "security": []
@@ -1500,7 +1626,223 @@
       },
       "PDFFilledTemplateResponse": {
         "type": "string",
-        "example": "= Client Name: Sherlock Holmes, Age: 45"
+        "example": "base64 encoded PDF file"
+      },
+      "Workflow": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "ExampleName"
+          },
+          "requiredInputs": {
+            "type": "object",
+            "properties": {
+              "toEmail": {
+                "type": "string",
+                "example": "example@example.com"
+              },
+              "toName": {
+                "type": "string",
+                "example": "exampleName"
+              },
+              "emailTemplate": {
+                "type": "object",
+                "properties": {
+                  "templateName": {
+                    "type": "string",
+                    "example": "exampleTemplate"
+                  },
+                  "placeholders": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "example": [
+                      "key1",
+                      "key2"
+                    ]
+                  }
+                },
+                "required": [
+                  "templateName",
+                  "placeholders"
+                ]
+              },
+              "pdfTemplate": {
+                "type": "object",
+                "properties": {
+                  "templateName": {
+                    "type": "string",
+                    "example": "exampleTemplate"
+                  },
+                  "placeholders": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "example": [
+                      "key1",
+                      "key2"
+                    ]
+                  }
+                },
+                "required": [
+                  "templateName",
+                  "placeholders"
+                ]
+              }
+            },
+            "required": [
+              "toEmail",
+              "toName",
+              "emailTemplate"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "requiredInputs"
+        ]
+      },
+      "WorkflowCreateRequest": {
+        "type": "object",
+        "properties": {
+          "emailTemplateName": {
+            "type": "string",
+            "example": "exampleTemplate"
+          },
+          "emailTemplateString": {
+            "type": "string",
+            "example": "Hello, {{.Name}}! You are {{.Age}} years old."
+          },
+          "isMJML": {
+            "type": "boolean",
+            "example": false
+          },
+          "staticAttachments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "fileName": {
+                  "type": "string",
+                  "example": "example.pdf"
+                },
+                "content": {
+                  "type": "string",
+                  "example": "base64 encoded content"
+                }
+              },
+              "required": [
+                "fileName",
+                "content"
+              ]
+            }
+          },
+          "templatedAttachments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "templateName": {
+                  "type": "string",
+                  "example": "exampleTemplate"
+                },
+                "templateString": {
+                  "type": "string",
+                  "example": "Hello, {{.Name}}! You are {{.Age}} years old."
+                }
+              },
+              "required": [
+                "templateName",
+                "templateString"
+              ]
+            }
+          },
+          "emailSubject": {
+            "type": "string",
+            "example": "Registration Confirmation"
+          }
+        },
+        "required": [
+          "emailTemplateName",
+          "emailTemplateString",
+          "isMJML",
+          "staticAttachments",
+          "templatedAttachments",
+          "emailSubject"
+        ]
+      },
+      "WorkflowSendRequest": {
+        "type": "object",
+        "properties": {
+          "toEmail": {
+            "type": "string",
+            "example": "example@example.com"
+          },
+          "toName": {
+            "type": "string",
+            "example": "exampleName"
+          },
+          "emailTemplate": {
+            "type": "object",
+            "properties": {
+              "templateName": {
+                "type": "string",
+                "example": "exampleTemplate"
+              },
+              "placeholders": {
+                "type": "object",
+                "properties": {
+                  "key1": {
+                    "type": "string",
+                    "example": "value1"
+                  },
+                  "key2": {
+                    "type": "string",
+                    "example": "value2"
+                  }
+                }
+              }
+            },
+            "required": [
+              "templateName",
+              "placeholders"
+            ]
+          },
+          "pdfTemplate": {
+            "type": "object",
+            "properties": {
+              "templateName": {
+                "type": "string",
+                "example": "exampleTemplate"
+              },
+              "placeholders": {
+                "type": "object",
+                "properties": {
+                  "key1": {
+                    "type": "string",
+                    "example": "value1"
+                  },
+                  "key2": {
+                    "type": "string",
+                    "example": "value2"
+                  }
+                }
+              }
+            },
+            "required": [
+              "templateName",
+              "placeholders"
+            ]
+          }
+        },
+        "required": [
+          "toEmail",
+          "toName",
+          "emailTemplate"
+        ]
       }
     }
   }

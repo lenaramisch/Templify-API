@@ -1,0 +1,28 @@
+post:
+  description: Use a workflow to send emails with or without static and templated attachments
+  summary: Use workflow
+  operationId: useWorkflow
+  tags:
+    - Workflow
+  parameters:
+    - name: workflowName
+      in: path
+      description: Name of workflow to use
+      required: true
+      schema:
+        type: string
+      example: "exampleWorkflow"
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema: 
+          $ref: '../../schemas/_index.yml#/WorkflowSendRequest'
+  responses:
+    '200':
+      description: Workflow used
+    '400':
+      description: Bad request
+
+  # This API has no security
+  security: []

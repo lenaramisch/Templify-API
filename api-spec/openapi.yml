@@ -26,3 +26,5 @@ tags:
     description: Everything for the PDF rendering service
   - name: APIInfo
     description: General API information
+  - name: Workflow
+    description: Everything for creating and using Workflows

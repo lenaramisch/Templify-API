@@ -193,6 +193,59 @@ type Version struct {
 	Version string `json:"version"`
 }
 
+// Workflow defines model for Workflow.
+type Workflow struct {
+	Name           string `json:"name"`
+	RequiredInputs struct {
+		EmailTemplate struct {
+			Placeholders []string `json:"placeholders"`
+			TemplateName string   `json:"templateName"`
+		} `json:"emailTemplate"`
+		PdfTemplate *struct {
+			Placeholders []string `json:"placeholders"`
+			TemplateName string   `json:"templateName"`
+		} `json:"pdfTemplate,omitempty"`
+		ToEmail string `json:"toEmail"`
+		ToName  string `json:"toName"`
+	} `json:"requiredInputs"`
+}
+
+// WorkflowCreateRequest defines model for WorkflowCreateRequest.
+type WorkflowCreateRequest struct {
+	EmailSubject        string `json:"emailSubject"`
+	EmailTemplateName   string `json:"emailTemplateName"`
+	EmailTemplateString string `json:"emailTemplateString"`
+	IsMJML              bool   `json:"isMJML"`
+	StaticAttachments   []struct {
+		Content  string `json:"content"`
+		FileName string `json:"fileName"`
+	} `json:"staticAttachments"`
+	TemplatedAttachments []struct {
+		TemplateName   string `json:"templateName"`
+		TemplateString string `json:"templateString"`
+	} `json:"templatedAttachments"`
+}
+
+// WorkflowSendRequest defines model for WorkflowSendRequest.
+type WorkflowSendRequest struct {
+	EmailTemplate struct {
+		Placeholders struct {
+			Key1 *string `json:"key1,omitempty"`
+			Key2 *string `json:"key2,omitempty"`
+		} `json:"placeholders"`
+		TemplateName string `json:"templateName"`
+	} `json:"emailTemplate"`
+	PdfTemplate *struct {
+		Placeholders struct {
+			Key1 *string `json:"key1,omitempty"`
+			Key2 *string `json:"key2,omitempty"`
+		} `json:"placeholders"`
+		TemplateName string `json:"templateName"`
+	} `json:"pdfTemplate,omitempty"`
+	ToEmail string `json:"toEmail"`
+	ToName  string `json:"toName"`
+}
+
 // SendEmailJSONRequestBody defines body for SendEmail for application/json ContentType.
 type SendEmailJSONRequestBody = EmailSendRequest
 
@@ -225,3 +278,9 @@ type AddNewSMSTemplateJSONRequestBody = SMSTemplatePostRequest
 
 // FillSMSTemplateJSONRequestBody defines body for FillSMSTemplate for application/json ContentType.
 type FillSMSTemplateJSONRequestBody = SMSTemplateFillRequest
+
+// CreateWorkflowJSONRequestBody defines body for CreateWorkflow for application/json ContentType.
+type CreateWorkflowJSONRequestBody = WorkflowCreateRequest
+
+// UseWorkflowJSONRequestBody defines body for UseWorkflow for application/json ContentType.
+type UseWorkflowJSONRequestBody = WorkflowSendRequest
