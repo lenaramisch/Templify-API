@@ -26,3 +26,13 @@ Table pdfs {
   content varchar [not null]
   created_at timestamptz [default: `now()`]
 }
+
+Table workflows {
+  id integer [primary key, increment]
+  name varchar [not null, unique]
+  email_templated_name varchar [not null]
+  email_subject varchar [not null]
+  static_attachments varchar [not null]
+  templated_PDFs varchar [not null]
+  created_at timestamptz [default: `now()`]
+}

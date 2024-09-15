@@ -66,6 +66,55 @@ func (r *Repository) GetEmailTemplateByName(name string) (*domain.Template, erro
 	return &templateDomain, nil
 }
 
+func (r *Repository) AddWorkflow(workflow *domain.Workflow) error {
+
+	var staticAttachments string
+	for _, attachment := range workflow.StaticAttachments {
+		staticAttachments = staticAttachments + attachment.FileName + ","
+	}
+
+	var templatedPDFs string
+	for _, templatedPDF := range workflow.TemplatedPDFs {
+		templatedPDFs = templatedPDFs + templatedPDF.TemplateName + ","
+	}
+
+	//map domain model to db model
+	workflowDB := Workflow{
+		Name:              workflow.Name,
+		EmailTemplateName: workflow.EmailTemplateName,
+		EmailSubject:      workflow.EmailSubject,
+		StaticAttachments: staticAttachments,
+		TemplatedPDFs:     templatedPDFs,
+	}
+	tx := r.dbConnection.MustBegin()
+	addWorkflowQuery := "INSERT INTO workflows (name, email_template_name, email_subject, static_attachments, templated_pdfs) VALUES ($1, $2, $3, $4, $5)"
+	tx.MustExec(addWorkflowQuery, workflowDB.Name, workflowDB.EmailTemplateName, workflowDB.EmailSubject, workflowDB.StaticAttachments, workflowDB.TemplatedPDFs)
+	//tx.MustExec(addWorkflowQuery, workflowDB)
+	return tx.Commit()
+}
+
+func (r *Repository) GetWorkflowByName(workflowName string) (*domain.Workflow, error) {
+	tx := r.dbConnection.MustBegin()
+	getWorkflowByNameQuery := "SELECT * FROM workflows WHERE name=$1"
+	workflowDB := Workflow{}
+	err := tx.Get(&workflowDB, getWorkflowByNameQuery, workflowName)
+	if err != nil {
+		return nil, err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+
+	// map to domain model
+	workflowDomain := domain.Workflow{
+		Name:              workflowDB.Name,
+		EmailTemplateName: workflowDB.EmailTemplateName,
+		EmailSubject:      workflowDB.EmailSubject,
+	}
+	return &workflowDomain, nil
+}
+
 func (r *Repository) AddEmailTemplate(name string, templStr string, isMJML bool) error {
 	tx := r.dbConnection.MustBegin()
 	addTemplateQuery := "INSERT INTO emailtemplates (name, templ_string, is_mjml) VALUES ($1, $2, $3)"

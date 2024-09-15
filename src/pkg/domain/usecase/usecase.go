@@ -28,6 +28,8 @@ type Repository interface {
 	// SMS
 	AddSMSTemplate(name string, smsTemplString string) error
 	GetSMSTemplateByName(name string) (*domain.Template, error)
+	// Workflow
+	AddWorkflow(workflow *domain.WorkflowCreateRequest) error
 }
 
 type TypstService interface {
