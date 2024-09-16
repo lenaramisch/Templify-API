@@ -88,3 +88,11 @@ func FormToCapitalPlaceholders(r *http.Request) {
 		}
 	}
 }
+
+func ToPointer(s string) *string {
+	return &s
+}
+
+func ToSlicePointer(slice []string) *[]string {
+	return &slice
+}

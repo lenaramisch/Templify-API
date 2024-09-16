@@ -1,0 +1,48 @@
+type: object
+properties:
+  name:
+    type: string
+    example: "ExampleName"
+  requiredInputs:
+    type: array
+    items:
+      type: object
+      properties:
+        toEmail:
+          type: string
+          example: "test@example.com"
+        toName:
+          type: string
+          example: "Test Name"
+        emailTemplate:
+          type: object
+          properties:
+            templateName:
+              type: string
+              example: "exampleName"
+            placeholders:
+              type: array
+              items:
+                type: string
+              example: ["examplePlaceholder1", "examplePlaceholder2"]
+        pdfTemplates:
+          type: array
+          items:
+            type: object
+            properties:
+              templateName:
+                type: string
+                example: "exampleName"
+              placeholders:
+                type: array
+                items:
+                  type: string
+                example: ["examplePlaceholder1", "examplePlaceholder2"]
+      required: 
+        - toEmail
+        - toName
+        - emailTemplate
+        - pdfTemplates
+required:
+  - name
+  - requiredInputs

@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"log/slog"
+	"strings"
 
 	domain "templify/pkg/domain/model"
 )
@@ -15,11 +16,64 @@ func (u *Usecase) AddWorkflow(workflow *domain.WorkflowCreateRequest) error {
 	return nil
 }
 
-func (u *Usecase) GetWorkflowByName(workflowName string) (*domain.Workflow, error) {
-	workflow, err := u.repository.GetWorkflowByName(workflowName)
+func (u *Usecase) GetWorkflowByName(workflowName string) (*domain.WorkflowInfo, error) {
+	workflowRaw, err := u.repository.GetWorkflowByName(workflowName)
 	if err != nil {
 		slog.With("workflowName", workflowName).Debug("Could not get workflow from repo")
 		return nil, err
 	}
-	return workflow, nil
+	var workflowInfo = &domain.WorkflowInfo{}
+
+	workflowInfo.RequiredInputs = append(workflowInfo.RequiredInputs, struct {
+		ToEmail       string
+		ToName        string
+		EmailTemplate struct {
+			TemplateName string
+			Placeholders []string
+		}
+		PdfTemplates []struct {
+			TemplateName string
+			Placeholders []string
+		}
+	}{})
+
+	// Get email template and placeholders
+	emailTemplate, err := u.repository.GetEmailTemplateByName(workflowRaw.EmailTemplateName)
+	if err != nil {
+		slog.With("workflowName", workflowName).Debug("Could not get email template from repo")
+		return nil, err
+	}
+
+	emailTemplatePlaceholders := ExtractPlaceholders(emailTemplate.TemplateStr)
+
+	workflowInfo.RequiredInputs[0].EmailTemplate = struct {
+		TemplateName string
+		Placeholders []string
+	}{
+		TemplateName: emailTemplate.Name,
+		Placeholders: emailTemplatePlaceholders,
+	}
+
+	// Split the PDF template names string into single names
+	pdfTemplateNames := strings.Split(workflowRaw.PDFTemplateNames, ",")
+	for _, templateName := range pdfTemplateNames {
+		// Get each PDF template and placeholders
+		pdfTemplate, err := u.repository.GetPDFTemplateByName(templateName)
+		if err != nil {
+			slog.With("workflowName", workflowName).Debug("Could not get pdf template from repo")
+			return nil, err
+		}
+
+		pdfTemplatePlaceholders := ExtractPlaceholders(pdfTemplate.TemplateStr)
+
+		// Append PDF template details to the PdfTemplates slice
+		workflowInfo.RequiredInputs[0].PdfTemplates = append(workflowInfo.RequiredInputs[0].PdfTemplates, domain.PdfTemplate{
+			TemplateName: templateName,
+			Placeholders: pdfTemplatePlaceholders,
+		})
+	}
+
+	workflowInfo.Name = workflowRaw.Name
+
+	return workflowInfo, nil
 }

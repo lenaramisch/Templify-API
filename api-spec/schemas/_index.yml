@@ -66,8 +66,8 @@ PDFFilledTemplateResponse:
 PDFPlaceholders:
   $ref: './responses/PDFPlaceholders.yml'
 
-Workflow:
-  $ref: './responses/Workflow.yml'
+GetWorkflowResponse:
+  $ref: './responses/GetWorkflowResponse.yml'
 
 #Types
 Version:

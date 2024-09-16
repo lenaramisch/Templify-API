@@ -95,6 +95,23 @@ type ErrorType string
 // FilledEmailTemplateResponse defines model for FilledEmailTemplateResponse.
 type FilledEmailTemplateResponse = string
 
+// GetWorkflowResponse defines model for GetWorkflowResponse.
+type GetWorkflowResponse struct {
+	Name           string `json:"name"`
+	RequiredInputs []struct {
+		EmailTemplate struct {
+			Placeholders *[]string `json:"placeholders,omitempty"`
+			TemplateName *string   `json:"templateName,omitempty"`
+		} `json:"emailTemplate"`
+		PdfTemplates []struct {
+			Placeholders *[]string `json:"placeholders,omitempty"`
+			TemplateName *string   `json:"templateName,omitempty"`
+		} `json:"pdfTemplates"`
+		ToEmail string `json:"toEmail"`
+		ToName  string `json:"toName"`
+	} `json:"requiredInputs"`
+}
+
 // PDFFilledTemplateResponse defines model for PDFFilledTemplateResponse.
 type PDFFilledTemplateResponse = string
 
@@ -191,23 +208,6 @@ type Version struct {
 
 	// Version The version of the API
 	Version string `json:"version"`
-}
-
-// Workflow defines model for Workflow.
-type Workflow struct {
-	Name           string `json:"name"`
-	RequiredInputs struct {
-		EmailTemplate struct {
-			Placeholders []string `json:"placeholders"`
-			TemplateName string   `json:"templateName"`
-		} `json:"emailTemplate"`
-		PdfTemplate *struct {
-			Placeholders []string `json:"placeholders"`
-			TemplateName string   `json:"templateName"`
-		} `json:"pdfTemplate,omitempty"`
-		ToEmail string `json:"toEmail"`
-		ToName  string `json:"toName"`
-	} `json:"requiredInputs"`
 }
 
 // WorkflowCreateRequest defines model for WorkflowCreateRequest.

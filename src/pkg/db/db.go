@@ -66,7 +66,7 @@ func (r *Repository) GetEmailTemplateByName(name string) (*domain.Template, erro
 	return &templateDomain, nil
 }
 
-func (r *Repository) AddWorkflow(workflow *domain.Workflow) error {
+func (r *Repository) AddWorkflow(workflow *domain.WorkflowCreateRequest) error {
 
 	var staticAttachments string
 	for _, attachment := range workflow.StaticAttachments {
@@ -110,8 +110,9 @@ func (r *Repository) GetWorkflowByName(workflowName string) (*domain.Workflow, e
 	workflowDomain := domain.Workflow{
 		Name:              workflowDB.Name,
 		EmailTemplateName: workflowDB.EmailTemplateName,
-		EmailSubject:      workflowDB.EmailSubject,
+		PDFTemplateNames:  workflowDB.TemplatedPDFs,
 	}
+
 	return &workflowDomain, nil
 }
 

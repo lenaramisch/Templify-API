@@ -47,7 +47,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../../schemas/_index.yml#/Workflow'
+            $ref: '../../schemas/_index.yml#/GetWorkflowResponse'
     '400':
       description: Invalid name supplied
     '404':

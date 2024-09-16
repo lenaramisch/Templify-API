@@ -948,7 +948,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Workflow"
+                  "$ref": "#/components/schemas/GetWorkflowResponse"
                 }
               }
             }
@@ -1628,7 +1628,7 @@
         "type": "string",
         "example": "base64 encoded PDF file"
       },
-      "Workflow": {
+      "GetWorkflowResponse": {
         "type": "object",
         "properties": {
           "name": {
@@ -1636,68 +1636,67 @@
             "example": "ExampleName"
           },
           "requiredInputs": {
-            "type": "object",
-            "properties": {
-              "toEmail": {
-                "type": "string",
-                "example": "example@example.com"
-              },
-              "toName": {
-                "type": "string",
-                "example": "exampleName"
-              },
-              "emailTemplate": {
-                "type": "object",
-                "properties": {
-                  "templateName": {
-                    "type": "string",
-                    "example": "exampleTemplate"
-                  },
-                  "placeholders": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "toEmail": {
+                  "type": "string",
+                  "example": "test@example.com"
+                },
+                "toName": {
+                  "type": "string",
+                  "example": "Test Name"
+                },
+                "emailTemplate": {
+                  "type": "object",
+                  "properties": {
+                    "templateName": {
+                      "type": "string",
+                      "example": "exampleName"
                     },
-                    "example": [
-                      "key1",
-                      "key2"
-                    ]
+                    "placeholders": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "examplePlaceholder1",
+                        "examplePlaceholder2"
+                      ]
+                    }
                   }
                 },
-                "required": [
-                  "templateName",
-                  "placeholders"
-                ]
-              },
-              "pdfTemplate": {
-                "type": "object",
-                "properties": {
-                  "templateName": {
-                    "type": "string",
-                    "example": "exampleTemplate"
-                  },
-                  "placeholders": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    },
-                    "example": [
-                      "key1",
-                      "key2"
-                    ]
+                "pdfTemplates": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "templateName": {
+                        "type": "string",
+                        "example": "exampleName"
+                      },
+                      "placeholders": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "example": [
+                          "examplePlaceholder1",
+                          "examplePlaceholder2"
+                        ]
+                      }
+                    }
                   }
-                },
-                "required": [
-                  "templateName",
-                  "placeholders"
-                ]
-              }
-            },
-            "required": [
-              "toEmail",
-              "toName",
-              "emailTemplate"
-            ]
+                }
+              },
+              "required": [
+                "toEmail",
+                "toName",
+                "emailTemplate",
+                "pdfTemplates"
+              ]
+            }
           }
         },
         "required": [
