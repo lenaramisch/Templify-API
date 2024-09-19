@@ -1,9 +1,11 @@
 package domain
 
 type WorkflowCreateRequest struct {
-	Name              string
-	EmailTemplateName string
-	StaticAttachments []struct {
+	Name                string
+	EmailTemplateName   string
+	EmailTemplateString string
+	IsMJML              bool
+	StaticAttachments   []struct {
 		Content  string
 		FileName string
 	}

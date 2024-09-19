@@ -8,10 +8,33 @@ import (
 )
 
 func (u *Usecase) AddWorkflow(workflow *domain.WorkflowCreateRequest) error {
+	//add workflow
 	err := u.repository.AddWorkflow(workflow)
 	if err != nil {
 		slog.With("workflowName", workflow.Name).Debug("Could not add workflow to repo")
 		return err
+	}
+	//add email template
+	err = u.repository.AddEmailTemplate(workflow.EmailTemplateName, workflow.EmailTemplateString, workflow.IsMJML)
+	if err != nil {
+		slog.With("workflowName", workflow.Name).Debug("Could not add email template to repo")
+		return err
+	}
+	//add pdf templates
+	for _, pdfTemplate := range workflow.TemplatedPDFs {
+		err = u.repository.AddPDFTemplate(pdfTemplate.TemplateName, pdfTemplate.TemplateString)
+		if err != nil {
+			slog.With("workflowName", workflow.Name).Debug("Could not add pdf template to repo")
+			return err
+		}
+	}
+	//add static attachments
+	for _, staticAttachment := range workflow.StaticAttachments {
+		err = u.repository.SavePDF(staticAttachment.FileName, staticAttachment.Content)
+		if err != nil {
+			slog.With("workflowName", workflow.Name).Debug("Could not add static attachment to repo")
+			return err
+		}
 	}
 	return nil
 }

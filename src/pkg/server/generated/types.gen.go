@@ -212,11 +212,13 @@ type Version struct {
 
 // WorkflowCreateRequest defines model for WorkflowCreateRequest.
 type WorkflowCreateRequest struct {
-	EmailSubject        string `json:"emailSubject"`
-	EmailTemplateName   string `json:"emailTemplateName"`
-	EmailTemplateString string `json:"emailTemplateString"`
-	IsMJML              bool   `json:"isMJML"`
-	StaticAttachments   []struct {
+	EmailSubject  string `json:"emailSubject"`
+	EmailTemplate struct {
+		EmailTemplateName   string `json:"emailTemplateName"`
+		EmailTemplateString string `json:"emailTemplateString"`
+		IsMJML              bool   `json:"isMJML"`
+	} `json:"emailTemplate"`
+	StaticAttachments []struct {
 		Content  string `json:"content"`
 		FileName string `json:"fileName"`
 	} `json:"staticAttachments"`

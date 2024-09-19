@@ -25,18 +25,21 @@ func (ah *APIHandler) CreateWorkflow(w http.ResponseWriter, r *http.Request, wor
 		return
 	}
 
-	var workflowDomain = &domain.WorkflowCreateRequest{
-		Name:              workflowName,
-		EmailTemplateName: addWorkflowRequest.EmailTemplateName,
+	// Map the DTO to the domain model
+	workflowDomain := &domain.WorkflowCreateRequest{
+		Name:                workflowName,
+		EmailSubject:        addWorkflowRequest.EmailSubject,
+		EmailTemplateName:   addWorkflowRequest.EmailTemplate.EmailTemplateName,
+		EmailTemplateString: addWorkflowRequest.EmailTemplate.EmailTemplateString,
+		IsMJML:              addWorkflowRequest.EmailTemplate.IsMJML,
 		StaticAttachments: []struct {
 			Content  string
 			FileName string
-		}(addWorkflowRequest.StaticAttachments),
+		}{},
 		TemplatedPDFs: []struct {
 			TemplateName   string
 			TemplateString string
-		}(addWorkflowRequest.TemplatedAttachments),
-		EmailSubject: addWorkflowRequest.EmailSubject,
+		}{},
 	}
 
 	err = ah.Usecase.AddWorkflow(workflowDomain)
