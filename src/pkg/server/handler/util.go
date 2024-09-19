@@ -96,3 +96,11 @@ func ToPointer(s string) *string {
 func ToSlicePointer(slice []string) *[]string {
 	return &slice
 }
+
+func ConvertPlaceholders(placeholders map[string]string) map[string]*string {
+	result := make(map[string]*string)
+	for key, value := range placeholders {
+		result[key] = ToPointer(value) // Use your existing ToPointer function
+	}
+	return result
+}

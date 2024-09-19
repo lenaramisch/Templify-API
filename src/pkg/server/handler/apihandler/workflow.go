@@ -109,5 +109,48 @@ func (ah *APIHandler) GetWorkflowByName(w http.ResponseWriter, r *http.Request, 
 }
 
 func (ah *APIHandler) UseWorkflow(w http.ResponseWriter, r *http.Request, workflowName string) {
-	//TODO Implement this
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		handler.HandleError(w, r, http.StatusBadRequest, "Reading Request Body failed")
+		return
+	}
+
+	var useWorkflowRequest server.WorkflowSendRequest
+	if err := json.Unmarshal(body, &useWorkflowRequest); err != nil {
+		handler.HandleError(w, r, http.StatusBadRequest, "Invalid JSON format")
+		return
+	}
+
+	// Map the DTO to the domain model
+	workflowUseRequestDomain := &domain.WorkflowUseRequest{
+		EmailTemplate: struct {
+			Placeholders map[string]*string
+			TemplateName string
+		}{
+			Placeholders: handler.ConvertPlaceholders(useWorkflowRequest.EmailTemplate.Placeholders),
+			TemplateName: useWorkflowRequest.EmailTemplate.TemplateName,
+		},
+		ToEmail: useWorkflowRequest.ToEmail,
+		ToName:  useWorkflowRequest.ToName,
+	}
+
+	if useWorkflowRequest.PdfTemplate != nil {
+		workflowUseRequestDomain.PdfTemplate = &struct {
+			Placeholders map[string]*string
+			TemplateName string
+		}{
+			Placeholders: handler.ConvertPlaceholders(useWorkflowRequest.PdfTemplate.Placeholders),
+			TemplateName: useWorkflowRequest.PdfTemplate.TemplateName,
+		}
+	}
+
+	//TODO Implement UseWorkflow in usecase
+	err = ah.Usecase.UseWorkflow(workflowUseRequestDomain)
+	if err != nil {
+		handler.HandleError(w, r, http.StatusInternalServerError, fmt.Sprintf("Using workflow with name %v failed", workflowName))
+		return
+	}
+	resultString := fmt.Sprintf("Used workflow with name %v", workflowName)
+	render.Status(r, http.StatusCreated)
+	render.PlainText(w, r, resultString)
 }

@@ -231,18 +231,12 @@ type WorkflowCreateRequest struct {
 // WorkflowSendRequest defines model for WorkflowSendRequest.
 type WorkflowSendRequest struct {
 	EmailTemplate struct {
-		Placeholders struct {
-			Key1 *string `json:"key1,omitempty"`
-			Key2 *string `json:"key2,omitempty"`
-		} `json:"placeholders"`
-		TemplateName string `json:"templateName"`
+		Placeholders map[string]string `json:"placeholders"`
+		TemplateName string            `json:"templateName"`
 	} `json:"emailTemplate"`
 	PdfTemplate *struct {
-		Placeholders struct {
-			Key1 *string `json:"key1,omitempty"`
-			Key2 *string `json:"key2,omitempty"`
-		} `json:"placeholders"`
-		TemplateName string `json:"templateName"`
+		Placeholders map[string]string `json:"placeholders"`
+		TemplateName string            `json:"templateName"`
 	} `json:"pdfTemplate,omitempty"`
 	ToEmail string `json:"toEmail"`
 	ToName  string `json:"toName"`

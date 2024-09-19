@@ -1801,15 +1801,12 @@
               },
               "placeholders": {
                 "type": "object",
-                "properties": {
-                  "key1": {
-                    "type": "string",
-                    "example": "value1"
-                  },
-                  "key2": {
-                    "type": "string",
-                    "example": "value2"
-                  }
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "example": {
+                  "key1": "value1",
+                  "key2": "value2"
                 }
               }
             },
@@ -1827,15 +1824,12 @@
               },
               "placeholders": {
                 "type": "object",
-                "properties": {
-                  "key1": {
-                    "type": "string",
-                    "example": "value1"
-                  },
-                  "key2": {
-                    "type": "string",
-                    "example": "value2"
-                  }
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "example": {
+                  "key1": "value1",
+                  "key2": "value2"
                 }
               }
             },
