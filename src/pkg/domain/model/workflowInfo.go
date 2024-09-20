@@ -13,5 +13,6 @@ type WorkflowInfo struct {
 			TemplateName string
 			Placeholders []string
 		}
+		StaticAttachments []string
 	}
 }

@@ -137,6 +137,21 @@ func (r *Repository) SavePDF(fileName string, base64Content string) error {
 	return tx.Commit()
 }
 
+func (r *Repository) GetPDF(fileName string) (string, error) {
+	tx := r.dbConnection.MustBegin()
+	getPDFQuery := "SELECT * FROM pdfs WHERE name=$1"
+	pdf := PDF{}
+	err := tx.Get(&pdf, getPDFQuery, fileName)
+	if err != nil {
+		return "", err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return "", err
+	}
+	return pdf.Content, nil
+}
+
 func (r *Repository) AddPDFTemplate(name string, typstString string) error {
 	tx := r.dbConnection.MustBegin()
 	addPDFTemplateQuery := "INSERT INTO pdftemplates (name, typst_string) VALUES ($1, $2)"

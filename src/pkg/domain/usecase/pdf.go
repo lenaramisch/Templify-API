@@ -15,6 +15,15 @@ func (u *Usecase) SavePDF(fileName string, base64Content string) error {
 	return nil
 }
 
+func (u *Usecase) GetPDF(fileName string) (string, error) {
+	pdf, err := u.repository.GetPDF(fileName)
+	if err != nil {
+		slog.With("fileName", fileName).Debug("Error getting PDF")
+		return "", err
+	}
+	return pdf, nil
+}
+
 func (u *Usecase) AddPDFTemplate(templateName string, typstString string) error {
 	err := u.repository.AddPDFTemplate(templateName, typstString)
 	if err != nil {

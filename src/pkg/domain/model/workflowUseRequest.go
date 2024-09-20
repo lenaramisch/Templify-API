@@ -1,6 +1,7 @@
 package domain
 
 type WorkflowUseRequest struct {
+	Name          string
 	EmailTemplate struct {
 		Placeholders map[string]*string
 		TemplateName string

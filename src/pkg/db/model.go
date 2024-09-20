@@ -31,3 +31,10 @@ type SMSTemplate struct {
 	TemplString string `db:"templ_string"`
 	CreatedAt   string `db:"created_at"`
 }
+
+type PDF struct {
+	ID        int    `db:"id"`
+	Name      string `db:"name"`
+	Content   string `db:"content"`
+	CreatedAt string `db:"created_at"`
+}

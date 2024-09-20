@@ -122,7 +122,8 @@ func (ah *APIHandler) UseWorkflow(w http.ResponseWriter, r *http.Request, workfl
 	}
 
 	// Map the DTO to the domain model
-	workflowUseRequestDomain := &domain.WorkflowUseRequest{
+	useWorkflowRequestDomain := &domain.WorkflowUseRequest{
+		Name: workflowName,
 		EmailTemplate: struct {
 			Placeholders map[string]*string
 			TemplateName string
@@ -134,8 +135,9 @@ func (ah *APIHandler) UseWorkflow(w http.ResponseWriter, r *http.Request, workfl
 		ToName:  useWorkflowRequest.ToName,
 	}
 
+	//TODO How to handle multiple PDF templates?
 	if useWorkflowRequest.PdfTemplate != nil {
-		workflowUseRequestDomain.PdfTemplate = &struct {
+		useWorkflowRequestDomain.PdfTemplate = &struct {
 			Placeholders map[string]*string
 			TemplateName string
 		}{
@@ -144,8 +146,7 @@ func (ah *APIHandler) UseWorkflow(w http.ResponseWriter, r *http.Request, workfl
 		}
 	}
 
-	//TODO Implement UseWorkflow in usecase
-	err = ah.Usecase.UseWorkflow(workflowUseRequestDomain)
+	err = ah.Usecase.UseWorkflow(useWorkflowRequestDomain)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, fmt.Sprintf("Using workflow with name %v failed", workflowName))
 		return

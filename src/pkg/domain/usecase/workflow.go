@@ -58,6 +58,7 @@ func (u *Usecase) GetWorkflowByName(workflowName string) (*domain.WorkflowInfo, 
 			TemplateName string
 			Placeholders []string
 		}
+		StaticAttachments []string
 	}{})
 
 	// Get email template and placeholders
@@ -96,7 +97,85 @@ func (u *Usecase) GetWorkflowByName(workflowName string) (*domain.WorkflowInfo, 
 		})
 	}
 
+	// Split the static attachment names string into single names
+	staticAttachmentNames := strings.Split(workflowRaw.StaticAttachments, ",")
+	for _, attachmentName := range staticAttachmentNames {
+		// Append static attachment names to the StaticAttachments array
+		workflowInfo.RequiredInputs[0].StaticAttachments = append(workflowInfo.RequiredInputs[0].StaticAttachments, attachmentName)
+	}
+	workflowInfo.RequiredInputs[0].StaticAttachments = staticAttachmentNames
 	workflowInfo.Name = workflowRaw.Name
 
 	return workflowInfo, nil
+}
+
+func (u *Usecase) UseWorkflow(workflowUseRequest *domain.WorkflowUseRequest) error {
+	// get pdf template by name
+	pdfTemplate, err := u.repository.GetPDFTemplateByName(workflowUseRequest.PdfTemplate.TemplateName)
+	if err != nil {
+		slog.With("templateName", workflowUseRequest.PdfTemplate.TemplateName).Debug("Could not get pdf template from repo")
+		return err
+	}
+	// fill pdf template
+	pdfPlaceholders := ConvertPlaceholdersToSlice(workflowUseRequest.PdfTemplate.Placeholders)
+	filledPdfTemplate, err := FillTemplate(pdfTemplate.TemplateStr, pdfPlaceholders)
+	if err != nil {
+		slog.With("templateName", workflowUseRequest.PdfTemplate.TemplateName).Debug("Could not fill pdf template")
+		return err
+	}
+	pdfAttachment := domain.PDF{
+		FileName:      workflowUseRequest.PdfTemplate.TemplateName[:strings.LastIndex(workflowUseRequest.PdfTemplate.TemplateName, ".")],
+		FileExtension: "pdf",
+		Content:       filledPdfTemplate,
+	}
+	// -----------------------------------------------
+	//TODO get workflow from db
+	// get workflow
+	workflowInfo, err := u.GetWorkflowByName(workflowUseRequest.Name)
+	if err != nil {
+		slog.With("workflowName", workflowUseRequest.Name).Debug("Could not get workflow from repo")
+		return err
+	}
+	var staticAttachments []domain.PDF
+	for _, attachmentName := range workflowInfo.RequiredInputs[0].StaticAttachments {
+		content, err := u.repository.GetPDF(attachmentName)
+		if err != nil {
+			slog.With("attachmentName", attachmentName).Debug("Could not get PDF from repo")
+			return err
+		}
+		//append attachment to staticAttachments
+		staticAttachments = append(staticAttachments, domain.PDF{
+			FileName: attachmentName[:strings.LastIndex(attachmentName, ".")],
+			Content:  content,
+		})
+	}
+	emailPlaceholders := ConvertPlaceholdersToSlice(workflowUseRequest.EmailTemplate.Placeholders)
+	emailRequest := &domain.EmailTemplateSendRequest{
+		ToEmail:      workflowUseRequest.ToEmail,
+		ToName:       workflowUseRequest.ToName,
+		TemplateName: workflowUseRequest.EmailTemplate.TemplateName,
+		Placeholders: emailPlaceholders,
+	}
+	attachmentData := []domain.AttachmentInfo{}
+	for _, attachment := range staticAttachments {
+		attachmentData = append(attachmentData, domain.AttachmentInfo{
+			FileName:      attachment.FileName,
+			FileExtension: "pdf",
+			Base64Content: attachment.Content,
+		})
+	}
+	attachmentData = append(attachmentData, domain.AttachmentInfo{
+		FileName:      pdfAttachment.FileName,
+		FileExtension: pdfAttachment.FileExtension,
+		Base64Content: pdfAttachment.Content,
+	})
+	emailRequest.AttachmentInfo = attachmentData
+
+	// send email
+	err = u.SendTemplatedEmail(emailRequest)
+	if err != nil {
+		slog.With("emailRequest", emailRequest).Debug("Could not send email")
+		return err
+	}
+	return nil
 }
