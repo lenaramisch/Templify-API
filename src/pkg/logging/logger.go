@@ -8,9 +8,10 @@ import (
 
 func SetLogger() *slog.Logger {
 	slog.SetLogLoggerLevel(slog.LevelDebug)
-	var slogLevel slog.Level
+	slogLevel := slog.LevelDebug
 	logLevel, ok := os.LookupEnv("LOGGER_LEVEL")
 	if ok && logLevel != "" {
+		logLevel = strings.ToLower(logLevel)
 		switch logLevel {
 		case "debug":
 			slogLevel = slog.LevelDebug
@@ -31,18 +32,24 @@ func SetLogger() *slog.Logger {
 	loggerVar = strings.ToLower(loggerVar)
 	// set slog to json or console
 	if ok && loggerVar == "json" {
-		handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-			AddSource: false,
+		logger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+			AddSource: true,
 			Level:     slogLevel,
-		})
-		logger = slog.New(handler)
+		}))
+	} else if ok && loggerVar == "prettyjson" {
+		logger = slog.New(NewPrettyHandler(&slog.HandlerOptions{
+			Level:     slogLevel,
+			AddSource: true,
+		}))
 	} else {
 		slog.Warn("LOGGER environment variable not set to json, using default console logger")
-		handler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-			AddSource: false,
+		logger = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+			AddSource: true,
 			Level:     slogLevel,
-		})
-		logger = slog.New(handler)
+		}))
 	}
+
+	logger.With("Loglevel", logLevel, "Logformat", loggerVar).Info("Logger set")
+	logger.Debug("DEBUG MODE IS ACTIVE")
 	return logger
 }

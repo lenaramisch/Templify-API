@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"fmt"
-	"log/slog"
 	domain "templify/pkg/domain/model"
 )
 
@@ -23,7 +22,7 @@ func (u *Usecase) AddSMSTemplate(templateName string, SMSTemplString string) err
 func (u *Usecase) GetSMSTemplateByName(templateName string) (*domain.Template, error) {
 	template, err := u.repository.GetSMSTemplateByName(templateName)
 	if err != nil {
-		slog.With("templateName", templateName).Debug("Could not get template from repo")
+		u.log.With("templateName", templateName).Debug("Could not get template from repo")
 		return nil, err
 	}
 	return template, nil
@@ -32,7 +31,7 @@ func (u *Usecase) GetSMSTemplateByName(templateName string) (*domain.Template, e
 func (u *Usecase) GetSMSPlaceholders(templateName string) ([]string, error) {
 	domainTemplate, err := u.repository.GetSMSTemplateByName(templateName)
 	if err != nil {
-		slog.With("templateName", templateName).Debug("Could not get template from repo")
+		u.log.With("templateName", templateName).Debug("Could not get template from repo")
 		return nil, err
 	}
 	return ExtractPlaceholders(domainTemplate.TemplateStr), nil
@@ -41,15 +40,15 @@ func (u *Usecase) GetSMSPlaceholders(templateName string) ([]string, error) {
 func (u *Usecase) GetFilledSMSTemplate(templateName string, placeholders map[string]string) (string, error) {
 	domainTemplate, err := u.repository.GetSMSTemplateByName(templateName)
 	if err != nil {
-		slog.Debug("Error getting template by name")
+		u.log.Debug("Error getting template by name")
 		return "", err
 	}
-	slog.With(
+	u.log.With(
 		"templateStringUnfilled", domainTemplate.TemplateStr,
 	).Debug("Unfilled template string")
 	filledTemplate, err := FillTemplate(domainTemplate.TemplateStr, placeholders)
 	if err != nil {
-		slog.Debug("Error filling template placeholders")
+		u.log.Debug("Error filling template placeholders")
 		return "", err
 	}
 	return filledTemplate, err

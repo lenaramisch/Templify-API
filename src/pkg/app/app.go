@@ -7,9 +7,10 @@ import (
 	"templify/pkg/db"
 	"templify/pkg/domain/usecase"
 	"templify/pkg/logging"
+	"templify/pkg/router"
 	"templify/pkg/server"
+	generatedAPI "templify/pkg/server/generated"
 	"templify/pkg/server/handler/apihandler"
-	"templify/pkg/server/router"
 	emailservice "templify/pkg/service/email"
 	mjmlservice "templify/pkg/service/mjml"
 	smsservice "templify/pkg/service/sms"
@@ -27,19 +28,25 @@ func Run(cfg *Config, shutdownChannel chan os.Signal) error {
 	logger := logging.SetLogger()
 
 	sendgridEmailService := emailservice.NewSendGridService(cfg.SendgridConfig)
-	smsTwilioService := smsservice.NewTwilioSMSSender(cfg.SMSTwilioConfig)
-	mjmlService := mjmlservice.NewMJMLService(cfg.MJMLConfig)
-	repository := db.NewRepository(cfg.DBConfig)
-	typstService := typstservice.NewTypstService(cfg.TypstConfig)
+	smsTwilioService := smsservice.NewTwilioSMSSender(cfg.SMSTwilioConfig, logger)
+	mjmlService := mjmlservice.NewMJMLService(cfg.MJMLConfig, logger)
+	repository := db.NewRepository(cfg.DBConfig, logger)
+	typstService := typstservice.NewTypstService(cfg.TypstConfig, logger)
 
 	// ===== App Logic =====
-	appLogic := usecase.NewUsecase(sendgridEmailService, smsTwilioService, mjmlService, repository, typstService)
+	appLogic := usecase.NewUsecase(sendgridEmailService, smsTwilioService, mjmlService, repository, typstService, logger)
 
 	// ===== Handlers =====
 	apiHandler := apihandler.NewAPIHandler(appLogic, cfg.Info, logger, cfg.Server.BaseURL)
 
 	// ===== Router =====
-	r := router.New(apiHandler, cfg.Router)
+	handler := generatedAPI.HandlerFromMux(apiHandler, nil)
+	swagger, err := generatedAPI.GetSwagger()
+	if err != nil {
+		logger.Error("failed to get swagger", "error", err)
+		return err
+	}
+	r := router.New(handler, cfg.Router, logger, swagger)
 
 	// ===== Server =====
 	srv := server.NewServer(cfg.Server, r)
@@ -54,7 +61,7 @@ func Run(cfg *Config, shutdownChannel chan os.Signal) error {
 	<-ctx.Done()
 
 	// Stop receiving signal notifications as soon as possible.
-	err := srv.Shutdown(context.Background())
+	err = srv.Shutdown(context.Background())
 	if err != nil {
 		logger.Error("server shutdown error", "error", err)
 		return err

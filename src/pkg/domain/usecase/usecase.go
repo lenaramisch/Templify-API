@@ -2,6 +2,7 @@ package usecase
 
 import (
 	_ "embed"
+	"log/slog"
 	domain "templify/pkg/domain/model"
 )
 
@@ -44,14 +45,16 @@ type Usecase struct {
 	mjmlService  MJMLService
 	repository   Repository
 	typstService TypstService
+	log          *slog.Logger
 }
 
-func NewUsecase(emailSender EmailSender, smsSender SMSSender, mjmlService MJMLService, repository Repository, typstService TypstService) *Usecase {
+func NewUsecase(emailSender EmailSender, smsSender SMSSender, mjmlService MJMLService, repository Repository, typstService TypstService, log *slog.Logger) *Usecase {
 	return &Usecase{
 		emailSender:  emailSender,
 		smsSender:    smsSender,
 		mjmlService:  mjmlService,
 		repository:   repository,
 		typstService: typstService,
+		log:          log,
 	}
 }

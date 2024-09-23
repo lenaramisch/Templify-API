@@ -1,6 +1,9 @@
 package smsservice
 
-import "testing"
+import (
+	"log/slog"
+	"testing"
+)
 
 func Test_sendSMS(t *testing.T) {
 	// Create a new Twilio SMS sender
@@ -10,7 +13,7 @@ func Test_sendSMS(t *testing.T) {
 		FromNumber: "+14042366595",
 	}
 
-	sender := NewTwilioSMSSender(config)
+	sender := NewTwilioSMSSender(config, &slog.Logger{})
 
 	// Send a SMS
 	err := sender.SendSMS("+4915170640522", "Hello, World!")

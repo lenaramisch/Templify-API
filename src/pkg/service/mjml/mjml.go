@@ -16,9 +16,10 @@ type MJMLConfig struct {
 
 type MJMLService struct {
 	config *MJMLConfig
+	log    *slog.Logger
 }
 
-func NewMJMLService(config *MJMLConfig) *MJMLService {
+func NewMJMLService(config *MJMLConfig, log *slog.Logger) *MJMLService {
 	return &MJMLService{
 		config: config,
 	}
@@ -29,7 +30,7 @@ func (m *MJMLService) RenderMJML(MJMLString string) (string, error) {
 	url := fmt.Sprintf("%s:%d", m.config.Host, m.config.Port)
 	r, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte(MJMLString)))
 	if err != nil {
-		slog.Debug("Error creating request")
+		m.log.Debug("Error creating request")
 		return "", err
 	}
 
@@ -39,7 +40,7 @@ func (m *MJMLService) RenderMJML(MJMLString string) (string, error) {
 	client := &http.Client{}
 	resp, err := client.Do(r)
 	if err != nil {
-		slog.With("err", err.Error()).Debug("Error sending request")
+		m.log.With("err", err.Error()).Debug("Error sending request")
 		return "", err
 	}
 

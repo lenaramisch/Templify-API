@@ -1,10 +1,13 @@
 package typst
 
-import "testing"
+import (
+	"log/slog"
+	"testing"
+)
 
 // test render method
 func TestRenderTypst(T *testing.T) {
-	typstService := NewTypstService(&TypstConfig{})
+	typstService := NewTypstService(&TypstConfig{}, &slog.Logger{})
 
 	// test render method
 	PDFbytes, err := typstService.RenderTypst("= Client Name: {{.Name}}, Age: {{.Age}}")

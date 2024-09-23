@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 	domain "templify/pkg/domain/model"
 	server "templify/pkg/server/generated"
@@ -49,7 +48,7 @@ func (ah *APIHandler) SendTemplatedSMS(w http.ResponseWriter, r *http.Request, t
 
 	var filledTemplate string
 	filledTemplate, err = ah.Usecase.GetFilledSMSTemplate(templateName, smsRequest.Placeholders)
-	slog.With(
+	ah.log.With(
 		"FilledTemplate", filledTemplate,
 	).Debug("Filled template")
 	if err != nil {

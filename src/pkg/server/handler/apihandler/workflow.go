@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 	domain "templify/pkg/domain/model"
 	server "templify/pkg/server/generated"
@@ -26,7 +25,7 @@ func (ah *APIHandler) CreateWorkflow(w http.ResponseWriter, r *http.Request, wor
 		return
 	}
 
-	slog.With("addWorkflowRequest", addWorkflowRequest).Debug("AddWorkflowRequest in handler")
+	ah.log.With("addWorkflowRequest", addWorkflowRequest).Debug("AddWorkflowRequest in handler")
 
 	// Map the DTO to the domain model
 	workflowDomain := &domain.WorkflowCreateRequest{

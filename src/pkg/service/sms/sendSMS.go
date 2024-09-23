@@ -24,16 +24,17 @@ type TwilioSMSSenderConfig struct {
 
 type TwilioSMSSender struct {
 	config *TwilioSMSSenderConfig
+	log    *slog.Logger
 }
 
-func NewTwilioSMSSender(config *TwilioSMSSenderConfig) *TwilioSMSSender {
+func NewTwilioSMSSender(config *TwilioSMSSenderConfig, log *slog.Logger) *TwilioSMSSender {
 	return &TwilioSMSSender{
 		config: config,
 	}
 }
 
 func (s *TwilioSMSSender) SendSMS(toNumber string, messageBody string) error {
-	slog.With(
+	s.log.With(
 		"toNumber", toNumber,
 		"messageBody", messageBody,
 	).Debug("Trying to send SMS")
@@ -48,7 +49,7 @@ func (s *TwilioSMSSender) SendSMS(toNumber string, messageBody string) error {
 	URL := fmt.Sprintf(TWILIO_BASE_URL+TWILIO_ACCOUNTS_URL+"%s/Messages.json", s.config.AccountSID)
 	r, err := http.NewRequest("POST", URL, strings.NewReader(SMSData.Encode()))
 	if err != nil {
-		slog.Warn("Error creating request")
+		s.log.Warn("Error creating request")
 		return err
 	}
 	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -57,27 +58,27 @@ func (s *TwilioSMSSender) SendSMS(toNumber string, messageBody string) error {
 	auth := base64.StdEncoding.EncodeToString([]byte(s.config.AccountSID + ":" + s.config.AuthToken))
 	r.Header.Set("Authorization", "Basic "+auth)
 
-	slog.With(
+	s.log.With(
 		"request", r,
 	).Debug("Building request")
 	// Perform the request
 	client := &http.Client{}
 	resp, err := client.Do(r)
 	if err != nil {
-		slog.Warn("Error performing request")
+		s.log.Warn("Error performing request")
 		return err
 	}
 
 	// Read the response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		slog.Warn("Error reading response body")
+		s.log.Warn("Error reading response body")
 		return err
 	}
 
 	// Check if the response is not between 200 and 299
 	if resp.StatusCode >= 300 || resp.StatusCode < 200 {
-		slog.With(
+		s.log.With(
 			"statusCode", resp.StatusCode,
 			"response", body,
 		).Warn("Error response status code")

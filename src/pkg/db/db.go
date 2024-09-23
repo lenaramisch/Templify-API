@@ -15,6 +15,7 @@ import (
 type Repository struct {
 	config       *RepositoryConfig
 	dbConnection *sqlx.DB
+	log          *slog.Logger
 }
 
 type RepositoryConfig struct {
@@ -25,9 +26,10 @@ type RepositoryConfig struct {
 	DBName   string
 }
 
-func NewRepository(config *RepositoryConfig) *Repository {
+func NewRepository(config *RepositoryConfig, log *slog.Logger) *Repository {
 	repo := &Repository{
 		config: config,
+		log:    log,
 	}
 	repo.ConnectToDB()
 	return repo
@@ -70,7 +72,7 @@ func (r *Repository) GetEmailTemplateByName(name string) (*domain.Template, erro
 
 func (r *Repository) AddWorkflow(workflow *domain.WorkflowCreateRequest) error {
 
-	slog.With("workflow", workflow).Debug("WorkflowDomainRequest")
+	r.log.With("workflow", workflow).Debug("WorkflowDomainRequest")
 
 	var staticAttachmentNames []string
 	for _, attachment := range workflow.StaticAttachments {
@@ -86,7 +88,7 @@ func (r *Repository) AddWorkflow(workflow *domain.WorkflowCreateRequest) error {
 
 	templatedPDFNamesStr := strings.Join(templatedPDFNames, ",")
 
-	slog.With("staticAttachments", staticAttachmentNamesStr, "templatedPDFs", templatedPDFNamesStr).Debug("Attachments")
+	r.log.With("staticAttachments", staticAttachmentNamesStr, "templatedPDFs", templatedPDFNamesStr).Debug("Attachments")
 
 	//map domain model to db model
 	workflowDB := Workflow{
@@ -96,7 +98,7 @@ func (r *Repository) AddWorkflow(workflow *domain.WorkflowCreateRequest) error {
 		StaticAttachments: staticAttachmentNamesStr,
 		TemplatedPDFs:     templatedPDFNamesStr,
 	}
-	slog.With("workflowDB", workflowDB).Debug("WorkflowDB")
+	r.log.With("workflowDB", workflowDB).Debug("WorkflowDB")
 	tx := r.dbConnection.MustBegin()
 	addWorkflowQuery := "INSERT INTO workflows (name, email_template_name, email_subject, static_attachments, templated_pdfs) VALUES ($1, $2, $3, $4, $5)"
 	tx.MustExec(addWorkflowQuery, workflowDB.Name, workflowDB.EmailTemplateName, workflowDB.EmailSubject, workflowDB.StaticAttachments, workflowDB.TemplatedPDFs)

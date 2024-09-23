@@ -14,9 +14,10 @@ type TypstConfig struct {
 
 type TypstService struct {
 	config *TypstConfig
+	log    *slog.Logger
 }
 
-func NewTypstService(config *TypstConfig) *TypstService {
+func NewTypstService(config *TypstConfig, log *slog.Logger) *TypstService {
 	return &TypstService{
 		config: config,
 	}
@@ -60,7 +61,7 @@ func (t *TypstService) RenderTypst(typstString string) ([]byte, error) {
 	cmd.Dir = "/tmp"
 	err := cmd.Run()
 	if err != nil {
-		slog.With(
+		t.log.With(
 			"Error", err.Error(),
 		).Debug("Error executing typst command")
 		return nil, err
@@ -70,7 +71,7 @@ func (t *TypstService) RenderTypst(typstString string) ([]byte, error) {
 	filePath = fmt.Sprintf("/tmp/%s.pdf", randomName)
 	bytes, err := os.ReadFile(filePath)
 	if err != nil {
-		slog.With(
+		t.log.With(
 			"filePath", filePath,
 		).Debug("Error reading PDF file")
 	}

@@ -1,45 +1,43 @@
 package router
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
-	"os"
 	"strings"
-	server "templify/pkg/server/generated"
-	"templify/pkg/server/handler/apihandler"
 	"time"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	oapiMW "github.com/oapi-codegen/nethttp-middleware"
 )
 
 // New returns a new *http.ServeMux to be used for HTTP request routing.
-func New(apiHandle *apihandler.APIHandler, cfg *Config) *http.ServeMux {
+func New(apiHandle http.Handler, cfg *Config, logger *slog.Logger, swagger *openapi3.T) *http.ServeMux {
 	// Create a new ServeMux
 	mux := http.NewServeMux()
-	handler := addMiddlewares(server.HandlerFromMux(apiHandle, nil), cfg)
+	handler := addMiddlewares(apiHandle, cfg, logger, swagger)
 	mux.Handle("/", handler)
 
 	return mux
 }
 
 // addMiddleware chains together all the middleware functions.
-func addMiddlewares(handler http.Handler, cfg *Config) http.Handler {
-	handler = oapiMiddleware(handler)
+func addMiddlewares(handler http.Handler, cfg *Config, logger *slog.Logger, swagger *openapi3.T) http.Handler {
+	// The first handler is the last one to be called
+	handler = oapiMiddleware(handler, swagger)
+	// handler = tokenMiddleware(handler)
 	handler = corsMiddleware(handler, cfg.CORS)
 	handler = timeoutMiddleware(handler, cfg.Timeout)
-	handler = loggingMiddleware(handler)
+	logger.With("QuietdownRoutes", cfg.QuietdownRoutes, "HideHeaders", cfg.HideHeaders).Debug("Config for logging middleware")
+	handler = loggingMiddleware(handler, logger, cfg.QuietdownRoutes, cfg.HideHeaders)
 	return handler
 }
 
-func oapiMiddleware(handler http.Handler) http.Handler {
-	swagger, err := server.GetSwagger()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error loading swagger spec\n: %s", err)
-		os.Exit(1)
-	}
+func oapiMiddleware(handler http.Handler, swagger *openapi3.T) http.Handler {
 	// Clear out the servers array in the swagger spec, that skips validating
 	// that server names match. We don't know how this thing will be run.
 	swagger.Servers = nil
@@ -56,22 +54,11 @@ func oapiMiddleware(handler http.Handler) http.Handler {
 	return oapiMW.OapiRequestValidatorWithOptions(swagger, validatorOptions)(handler)
 }
 
-func loggingMiddleware(next http.Handler) http.Handler {
-	QuietDownRoutes := []string{
-		"/info/version",
-		"/info/status",
-		"/info/openapi.json",
-		"/info/openapi.html",
-	}
-
-	HideHeaders := []string{
-		"Authorization",
-	}
-
+func loggingMiddleware(next http.Handler, logger *slog.Logger, quietdownRoutes []string, hideHeaders []string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check if the request path is in the excludedPaths list
 		shouldExclude := false
-		for _, path := range QuietDownRoutes {
+		for _, path := range quietdownRoutes {
 			if r.URL.Path == path {
 				shouldExclude = true
 				break
@@ -80,24 +67,32 @@ func loggingMiddleware(next http.Handler) http.Handler {
 
 		// Log the request if it's not in the excluded list
 		if !shouldExclude {
+			var buf bytes.Buffer
+			tee := io.TeeReader(r.Body, &buf)
+			body, err := io.ReadAll(tee)
+			if err != nil {
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+			r.Body = io.NopCloser(&buf)
 			// create duplicate of header map
 			headers := make(http.Header)
 			for k, v := range r.Header {
 				headers[k] = v
 			}
 			// hide sensitive headers
-			for _, header := range HideHeaders {
+			for _, header := range hideHeaders {
 				// read the header value length
 				length := len(strings.Join(headers[header], ""))
 				redactedText := fmt.Sprintf("[REDACTED - %d bytes]", length)
 				headers[header] = []string{redactedText}
 			}
 
-			slog.With(
+			logger.With(
 				"Path", r.URL.Path,
 				"Method", r.Method,
 				"Header", headers,
-				"Body", r.Body,
+				"Body", string(body),
 			).Debug("Request")
 		}
 
@@ -145,4 +140,37 @@ func corsMiddleware(next http.Handler, cfg CORSConfig) http.Handler {
 // timeoutMiddleware adds timeout handling to requests.
 func timeoutMiddleware(next http.Handler, timeout time.Duration) http.Handler {
 	return http.TimeoutHandler(next, timeout, "Timeout")
+}
+
+// tokenMiddleware checks if the request has an authorization token on some routes.
+// nolint: unused
+func tokenMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Check if the request path is in the excludedPaths list
+		shouldExclude := false
+		for _, path := range []string{
+			"/info/version",
+			"/info/status",
+			"/info/openapi.json",
+			"/info/openapi.html",
+			"/auth/login",
+		} {
+			if r.URL.Path == path {
+				shouldExclude = true
+				break
+			}
+		}
+
+		if !shouldExclude {
+			// Check if the request has a valid token
+			token := r.Header.Get("Authorization")
+			if token == "" {
+				http.Error(w, "Unauthorized, add a valid Authorization header", http.StatusUnauthorized)
+				return
+			}
+		}
+
+		// Call the next handler in the chain
+		next.ServeHTTP(w, r)
+	})
 }
