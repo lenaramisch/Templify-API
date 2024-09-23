@@ -5,13 +5,7 @@ type WorkflowCreateRequest struct {
 	EmailTemplateName   string
 	EmailTemplateString string
 	IsMJML              bool
-	StaticAttachments   []struct {
-		Content  string
-		FileName string
-	}
-	TemplatedPDFs []struct {
-		TemplateName   string
-		TemplateString string
-	}
-	EmailSubject string
+	StaticAttachments   []PDF
+	TemplatedPDFs       []Template
+	EmailSubject        string
 }

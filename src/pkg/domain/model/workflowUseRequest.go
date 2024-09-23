@@ -2,14 +2,8 @@ package domain
 
 type WorkflowUseRequest struct {
 	Name          string
-	EmailTemplate struct {
-		Placeholders map[string]*string
-		TemplateName string
-	}
-	PdfTemplate *struct {
-		Placeholders map[string]*string
-		TemplateName string
-	}
-	ToEmail string
-	ToName  string
+	EmailTemplate TemplateToFill
+	PdfTemplate   TemplateToFill
+	ToEmail       string
+	ToName        string
 }

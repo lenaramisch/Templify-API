@@ -7,37 +7,9 @@ properties:
     type: string
     example: "exampleName"
   emailTemplate:
-    type: object
-    properties:
-      templateName:
-        type: string
-        example: "exampleTemplate"
-      placeholders:
-        type: object
-        additionalProperties:
-          type: string
-        example:
-          key1: "value1"
-          key2: "value2"
-    required:
-      - templateName
-      - placeholders
+    $ref: "../types/FillTemplateRequest.yml"
   pdfTemplate:
-    type: object
-    properties:
-      templateName:
-        type: string
-        example: "exampleTemplate"
-      placeholders:
-        type: object
-        additionalProperties:
-          type: string
-        example:
-          key1: "value1"
-          key2: "value2"
-    required:
-      - templateName
-      - placeholders
+    $ref: "../types/FillTemplateRequest.yml"
 required:
   - toEmail
   - toName

@@ -34,24 +34,18 @@ func (ah *APIHandler) CreateWorkflow(w http.ResponseWriter, r *http.Request, wor
 		EmailTemplateName:   addWorkflowRequest.EmailTemplate.EmailTemplateName,
 		EmailTemplateString: addWorkflowRequest.EmailTemplate.EmailTemplateString,
 		IsMJML:              addWorkflowRequest.EmailTemplate.IsMJML,
-		StaticAttachments: []struct {
-			Content  string
-			FileName string
-		}{
+		StaticAttachments: []domain.PDF{
 			{
-				Content:  addWorkflowRequest.StaticAttachments[0].Content,
 				FileName: addWorkflowRequest.StaticAttachments[0].FileName,
-			}},
-		TemplatedPDFs: []struct {
-			TemplateName   string
-			TemplateString string
-		}{
-			{
-				TemplateName:   addWorkflowRequest.TemplatedAttachments[0].TemplateName,
-				TemplateString: addWorkflowRequest.TemplatedAttachments[0].TemplateString,
+				Content:  addWorkflowRequest.StaticAttachments[0].Content,
 			},
 		},
-	}
+		TemplatedPDFs: []domain.Template{
+			{
+				Name:        addWorkflowRequest.TemplatedAttachments[0].TemplateName,
+				TemplateStr: addWorkflowRequest.TemplatedAttachments[0].TemplateString,
+			},
+		}}
 
 	err = ah.Usecase.AddWorkflow(workflowDomain)
 	if err != nil {
@@ -135,11 +129,8 @@ func (ah *APIHandler) UseWorkflow(w http.ResponseWriter, r *http.Request, workfl
 	// Map the DTO to the domain model
 	useWorkflowRequestDomain := &domain.WorkflowUseRequest{
 		Name: workflowName,
-		EmailTemplate: struct {
-			Placeholders map[string]*string
-			TemplateName string
-		}{
-			Placeholders: handler.ConvertPlaceholders(useWorkflowRequest.EmailTemplate.Placeholders),
+		EmailTemplate: domain.TemplateToFill{
+			Placeholders: useWorkflowRequest.EmailTemplate.Placeholders,
 			TemplateName: useWorkflowRequest.EmailTemplate.TemplateName,
 		},
 		ToEmail: useWorkflowRequest.ToEmail,
@@ -148,11 +139,8 @@ func (ah *APIHandler) UseWorkflow(w http.ResponseWriter, r *http.Request, workfl
 
 	//TODO How to handle multiple PDF templates?
 	if useWorkflowRequest.PdfTemplate != nil {
-		useWorkflowRequestDomain.PdfTemplate = &struct {
-			Placeholders map[string]*string
-			TemplateName string
-		}{
-			Placeholders: handler.ConvertPlaceholders(useWorkflowRequest.PdfTemplate.Placeholders),
+		useWorkflowRequestDomain.PdfTemplate = domain.TemplateToFill{
+			Placeholders: useWorkflowRequest.PdfTemplate.Placeholders,
 			TemplateName: useWorkflowRequest.PdfTemplate.TemplateName,
 		}
 	}

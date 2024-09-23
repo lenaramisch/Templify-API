@@ -1,6 +1,6 @@
 package domain
 
-type PdfTemplate struct {
+type TemplateInfo struct {
 	TemplateName string
 	Placeholders []string
 }

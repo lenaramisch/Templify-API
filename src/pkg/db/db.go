@@ -83,7 +83,7 @@ func (r *Repository) AddWorkflow(workflow *domain.WorkflowCreateRequest) error {
 
 	var templatedPDFNames []string
 	for _, templatedPDF := range workflow.TemplatedPDFs {
-		templatedPDFNames = append(templatedPDFNames, templatedPDF.TemplateName)
+		templatedPDFNames = append(templatedPDFNames, templatedPDF.Name)
 	}
 
 	templatedPDFNamesStr := strings.Join(templatedPDFNames, ",")

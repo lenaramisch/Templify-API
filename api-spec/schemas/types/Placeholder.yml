@@ -1,0 +1,9 @@
+type: object
+description: |
+  A map of placeholders and their values.
+properties:
+  additionalProperties:
+    type: string
+    description: |
+      The value of the placeholder.
+    example: "value1"

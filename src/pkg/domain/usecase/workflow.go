@@ -21,7 +21,7 @@ func (u *Usecase) AddWorkflow(workflow *domain.WorkflowCreateRequest) error {
 	}
 	//add pdf templates
 	for _, pdfTemplate := range workflow.TemplatedPDFs {
-		err = u.repository.AddPDFTemplate(pdfTemplate.TemplateName, pdfTemplate.TemplateString)
+		err = u.repository.AddPDFTemplate(pdfTemplate.Name, pdfTemplate.TemplateStr)
 		if err != nil {
 			u.log.With("workflowName", workflow.Name).Debug("Could not add pdf template to repo")
 			return err
@@ -47,16 +47,10 @@ func (u *Usecase) GetWorkflowByName(workflowName string) (*domain.WorkflowInfo, 
 	var workflowInfo = &domain.WorkflowInfo{}
 
 	workflowInfo.RequiredInputs = append(workflowInfo.RequiredInputs, struct {
-		ToEmail       string
-		ToName        string
-		EmailTemplate struct {
-			TemplateName string
-			Placeholders []string
-		}
-		PdfTemplates []struct {
-			TemplateName string
-			Placeholders []string
-		}
+		ToEmail           string
+		ToName            string
+		EmailTemplate     domain.TemplateInfo
+		PdfTemplates      []domain.TemplateInfo
 		StaticAttachments []string
 	}{})
 
@@ -69,11 +63,8 @@ func (u *Usecase) GetWorkflowByName(workflowName string) (*domain.WorkflowInfo, 
 
 	emailTemplatePlaceholders := ExtractPlaceholders(emailTemplate.TemplateStr)
 
-	workflowInfo.RequiredInputs[0].EmailTemplate = struct {
-		TemplateName string
-		Placeholders []string
-	}{
-		TemplateName: emailTemplate.Name,
+	workflowInfo.RequiredInputs[0].EmailTemplate = domain.TemplateInfo{
+		TemplateName: workflowRaw.EmailTemplateName,
 		Placeholders: emailTemplatePlaceholders,
 	}
 
@@ -94,7 +85,7 @@ func (u *Usecase) GetWorkflowByName(workflowName string) (*domain.WorkflowInfo, 
 		pdfTemplatePlaceholders := ExtractPlaceholders(pdfTemplate.TemplateStr)
 
 		// Append PDF template details to the PdfTemplates slice
-		workflowInfo.RequiredInputs[0].PdfTemplates = append(workflowInfo.RequiredInputs[0].PdfTemplates, domain.PdfTemplate{
+		workflowInfo.RequiredInputs[0].PdfTemplates = append(workflowInfo.RequiredInputs[0].PdfTemplates, domain.TemplateInfo{
 			TemplateName: templateName,
 			Placeholders: pdfTemplatePlaceholders,
 		})
@@ -115,8 +106,7 @@ func (u *Usecase) UseWorkflow(workflowUseRequest *domain.WorkflowUseRequest) err
 		return err
 	}
 	// fill pdf template
-	pdfPlaceholders := ConvertPlaceholdersToSlice(workflowUseRequest.PdfTemplate.Placeholders)
-	filledPdfTemplate, err := FillTemplate(pdfTemplate.TemplateStr, pdfPlaceholders)
+	filledPdfTemplate, err := FillTemplate(pdfTemplate.TemplateStr, workflowUseRequest.PdfTemplate.Placeholders)
 	if err != nil {
 		u.log.With("templateName", workflowUseRequest.PdfTemplate.TemplateName).Debug("Could not fill pdf template")
 		return err
@@ -146,12 +136,12 @@ func (u *Usecase) UseWorkflow(workflowUseRequest *domain.WorkflowUseRequest) err
 			Content:  content,
 		})
 	}
-	emailPlaceholders := ConvertPlaceholdersToSlice(workflowUseRequest.EmailTemplate.Placeholders)
+
 	emailRequest := &domain.EmailTemplateSendRequest{
 		ToEmail:      workflowUseRequest.ToEmail,
 		ToName:       workflowUseRequest.ToName,
 		TemplateName: workflowUseRequest.EmailTemplate.TemplateName,
-		Placeholders: emailPlaceholders,
+		Placeholders: workflowUseRequest.EmailTemplate.Placeholders,
 	}
 	attachmentData := []domain.AttachmentInfo{}
 	for _, attachment := range staticAttachments {
