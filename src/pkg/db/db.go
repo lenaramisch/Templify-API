@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
+	"strings"
 
 	domain "templify/pkg/domain/model"
 
@@ -71,25 +72,29 @@ func (r *Repository) AddWorkflow(workflow *domain.WorkflowCreateRequest) error {
 
 	slog.With("workflow", workflow).Debug("WorkflowDomainRequest")
 
-	var staticAttachments string
+	var staticAttachmentNames []string
 	for _, attachment := range workflow.StaticAttachments {
-		staticAttachments = staticAttachments + attachment.FileName + ","
+		staticAttachmentNames = append(staticAttachmentNames, attachment.FileName)
 	}
 
-	var templatedPDFs string
+	staticAttachmentNamesStr := strings.Join(staticAttachmentNames, ",")
+
+	var templatedPDFNames []string
 	for _, templatedPDF := range workflow.TemplatedPDFs {
-		templatedPDFs = templatedPDFs + templatedPDF.TemplateName + ","
+		templatedPDFNames = append(templatedPDFNames, templatedPDF.TemplateName)
 	}
 
-	slog.With("staticAttachments", staticAttachments, "templatedPDFs", templatedPDFs).Debug("Attachments")
+	templatedPDFNamesStr := strings.Join(templatedPDFNames, ",")
+
+	slog.With("staticAttachments", staticAttachmentNamesStr, "templatedPDFs", templatedPDFNamesStr).Debug("Attachments")
 
 	//map domain model to db model
 	workflowDB := Workflow{
 		Name:              workflow.Name,
 		EmailTemplateName: workflow.EmailTemplateName,
 		EmailSubject:      workflow.EmailSubject,
-		StaticAttachments: staticAttachments,
-		TemplatedPDFs:     templatedPDFs,
+		StaticAttachments: staticAttachmentNamesStr,
+		TemplatedPDFs:     templatedPDFNamesStr,
 	}
 	slog.With("workflowDB", workflowDB).Debug("WorkflowDB")
 	tx := r.dbConnection.MustBegin()

@@ -81,10 +81,7 @@ func (u *Usecase) GetWorkflowByName(workflowName string) (*domain.WorkflowInfo, 
 	// Split the PDF template names string into single names
 	var pdfTemplateNames []string
 	for _, name := range strings.Split(workflowRaw.PDFTemplateNames, ",") {
-		trimmedName := strings.TrimSpace(name) // Trim any leading/trailing spaces
-		if trimmedName != "" {
-			pdfTemplateNames = append(pdfTemplateNames, trimmedName)
-		}
+		pdfTemplateNames = append(pdfTemplateNames, name)
 	}
 	slog.With("pdfTemplateNames", pdfTemplateNames).Debug("PDF Template Names")
 	for _, templateName := range pdfTemplateNames {
