@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	domain "templify/pkg/domain/model"
 	server "templify/pkg/server/generated"
@@ -25,6 +26,8 @@ func (ah *APIHandler) CreateWorkflow(w http.ResponseWriter, r *http.Request, wor
 		return
 	}
 
+	slog.With("addWorkflowRequest", addWorkflowRequest).Debug("AddWorkflowRequest in handler")
+
 	// Map the DTO to the domain model
 	workflowDomain := &domain.WorkflowCreateRequest{
 		Name:                workflowName,
@@ -35,11 +38,20 @@ func (ah *APIHandler) CreateWorkflow(w http.ResponseWriter, r *http.Request, wor
 		StaticAttachments: []struct {
 			Content  string
 			FileName string
-		}{},
+		}{
+			{
+				Content:  addWorkflowRequest.StaticAttachments[0].Content,
+				FileName: addWorkflowRequest.StaticAttachments[0].FileName,
+			}},
 		TemplatedPDFs: []struct {
 			TemplateName   string
 			TemplateString string
-		}{},
+		}{
+			{
+				TemplateName:   addWorkflowRequest.TemplatedAttachments[0].TemplateName,
+				TemplateString: addWorkflowRequest.TemplatedAttachments[0].TemplateString,
+			},
+		},
 	}
 
 	err = ah.Usecase.AddWorkflow(workflowDomain)

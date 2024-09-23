@@ -3,6 +3,7 @@ package db
 import (
 	"fmt"
 	"log"
+	"log/slog"
 
 	domain "templify/pkg/domain/model"
 
@@ -68,6 +69,8 @@ func (r *Repository) GetEmailTemplateByName(name string) (*domain.Template, erro
 
 func (r *Repository) AddWorkflow(workflow *domain.WorkflowCreateRequest) error {
 
+	slog.With("workflow", workflow).Debug("WorkflowDomainRequest")
+
 	var staticAttachments string
 	for _, attachment := range workflow.StaticAttachments {
 		staticAttachments = staticAttachments + attachment.FileName + ","
@@ -78,6 +81,8 @@ func (r *Repository) AddWorkflow(workflow *domain.WorkflowCreateRequest) error {
 		templatedPDFs = templatedPDFs + templatedPDF.TemplateName + ","
 	}
 
+	slog.With("staticAttachments", staticAttachments, "templatedPDFs", templatedPDFs).Debug("Attachments")
+
 	//map domain model to db model
 	workflowDB := Workflow{
 		Name:              workflow.Name,
@@ -86,6 +91,7 @@ func (r *Repository) AddWorkflow(workflow *domain.WorkflowCreateRequest) error {
 		StaticAttachments: staticAttachments,
 		TemplatedPDFs:     templatedPDFs,
 	}
+	slog.With("workflowDB", workflowDB).Debug("WorkflowDB")
 	tx := r.dbConnection.MustBegin()
 	addWorkflowQuery := "INSERT INTO workflows (name, email_template_name, email_subject, static_attachments, templated_pdfs) VALUES ($1, $2, $3, $4, $5)"
 	tx.MustExec(addWorkflowQuery, workflowDB.Name, workflowDB.EmailTemplateName, workflowDB.EmailSubject, workflowDB.StaticAttachments, workflowDB.TemplatedPDFs)

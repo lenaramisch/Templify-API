@@ -35,6 +35,6 @@ CREATE TABLE "workflows" (
   "email_template_name" varchar,
   "email_subject" varchar,
   "static_attachments" varchar,
-  "templated_PDFs" varchar,
+  "templated_pdfs" varchar,
   "created_at" timestamptz DEFAULT (now())
 );

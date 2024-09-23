@@ -33,6 +33,6 @@ Table workflows {
   email_templated_name varchar [not null]
   email_subject varchar [not null]
   static_attachments varchar [not null]
-  templated_PDFs varchar [not null]
+  templated_pdfs varchar [not null]
   created_at timestamptz [default: `now()`]
 }
