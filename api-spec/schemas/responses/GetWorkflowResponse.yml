@@ -3,6 +3,9 @@ properties:
   name:
     type: string
     example: "ExampleName"
+  emailSubject:
+    type: string
+    example: "Example Subject"
   requiredInputs:
     type: array
     items:
@@ -45,4 +48,5 @@ properties:
         - pdfTemplates
 required:
   - name
+  - emailSubject
   - requiredInputs

@@ -84,7 +84,6 @@ func (u *Usecase) GetWorkflowByName(workflowName string) (*domain.WorkflowInfo, 
 
 		pdfTemplatePlaceholders := ExtractPlaceholders(pdfTemplate.TemplateStr)
 
-		// Append PDF template details to the PdfTemplates slice
 		workflowInfo.RequiredInputs[0].PdfTemplates = append(workflowInfo.RequiredInputs[0].PdfTemplates, domain.TemplateInfo{
 			TemplateName: templateName,
 			Placeholders: pdfTemplatePlaceholders,
@@ -93,7 +92,12 @@ func (u *Usecase) GetWorkflowByName(workflowName string) (*domain.WorkflowInfo, 
 
 	// Split the static attachment names string into single names
 	workflowInfo.RequiredInputs[0].StaticAttachments = []string{}
+	for _, name := range strings.Split(workflowRaw.StaticAttachments, ",") {
+		workflowInfo.RequiredInputs[0].StaticAttachments = append(workflowInfo.RequiredInputs[0].StaticAttachments, name)
+	}
+
 	workflowInfo.Name = workflowRaw.Name
+	workflowInfo.EmailSubject = workflowRaw.EmailSubject
 
 	return workflowInfo, nil
 }
@@ -105,17 +109,32 @@ func (u *Usecase) UseWorkflow(workflowUseRequest *domain.WorkflowUseRequest) err
 		u.log.With("templateName", workflowUseRequest.PdfTemplate.TemplateName).Debug("Could not get pdf template from repo")
 		return err
 	}
+
 	// fill pdf template
 	filledPdfTemplate, err := FillTemplate(pdfTemplate.TemplateStr, workflowUseRequest.PdfTemplate.Placeholders)
 	if err != nil {
 		u.log.With("templateName", workflowUseRequest.PdfTemplate.TemplateName).Debug("Could not fill pdf template")
 		return err
 	}
+
+	splitString := strings.SplitN(workflowUseRequest.PdfTemplate.TemplateName, ".", 2)
+
+	var fileName, extension string
+	if len(splitString) == 2 {
+		fileName = splitString[0]
+		extension = splitString[1]
+	} else {
+		fileName = workflowUseRequest.PdfTemplate.TemplateName
+		extension = "pdf"
+	}
+
 	pdfAttachment := domain.PDF{
-		FileName:      workflowUseRequest.PdfTemplate.TemplateName[:strings.LastIndex(workflowUseRequest.PdfTemplate.TemplateName, ".")],
-		FileExtension: "pdf",
+		FileName:      fileName,
+		FileExtension: extension,
 		Content:       filledPdfTemplate,
 	}
+
+	u.log.With("pdfAttachment", pdfAttachment).Debug("PDF Attachment")
 
 	// get workflow
 	workflowInfo, err := u.GetWorkflowByName(workflowUseRequest.Name)
@@ -123,6 +142,9 @@ func (u *Usecase) UseWorkflow(workflowUseRequest *domain.WorkflowUseRequest) err
 		u.log.With("workflowName", workflowUseRequest.Name).Debug("Could not get workflow from repo")
 		return err
 	}
+
+	u.log.With("workflowInfo", workflowInfo).Debug("Workflow Info")
+
 	var staticAttachments []domain.PDF
 	for _, attachmentName := range workflowInfo.RequiredInputs[0].StaticAttachments {
 		content, err := u.repository.GetPDF(attachmentName)
@@ -136,6 +158,8 @@ func (u *Usecase) UseWorkflow(workflowUseRequest *domain.WorkflowUseRequest) err
 			Content:  content,
 		})
 	}
+
+	u.log.With("staticAttachments", staticAttachments).Debug("Static Attachments")
 
 	emailRequest := &domain.EmailTemplateSendRequest{
 		ToEmail:      workflowUseRequest.ToEmail,
@@ -157,6 +181,8 @@ func (u *Usecase) UseWorkflow(workflowUseRequest *domain.WorkflowUseRequest) err
 		Base64Content: pdfAttachment.Content,
 	})
 	emailRequest.AttachmentInfo = attachmentData
+
+	u.log.With("emailRequest", emailRequest).Debug("Email Request")
 
 	// send email
 	err = u.SendTemplatedEmail(emailRequest)

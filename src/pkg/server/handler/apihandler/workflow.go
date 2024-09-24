@@ -70,7 +70,8 @@ func (ah *APIHandler) GetWorkflowByName(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 	dtoWorkflow := server.GetWorkflowResponse{
-		Name: workflowDomain.Name,
+		Name:         workflowDomain.Name,
+		EmailSubject: workflowDomain.EmailSubject,
 	}
 
 	for _, domainInput := range workflowDomain.RequiredInputs {
@@ -93,6 +94,9 @@ func (ah *APIHandler) GetWorkflowByName(w http.ResponseWriter, r *http.Request, 
 		dtoInput.EmailTemplate.TemplateName = handler.ToPointer(domainInput.EmailTemplate.TemplateName)
 		dtoInput.EmailTemplate.Placeholders = handler.ToSlicePointer(domainInput.EmailTemplate.Placeholders)
 
+		dtoInput.EmailTemplate.TemplateName = handler.ToPointer(domainInput.EmailTemplate.TemplateName)
+		dtoInput.EmailTemplate.Placeholders = handler.ToSlicePointer(domainInput.EmailTemplate.Placeholders)
+
 		for _, domainPdfTemplate := range domainInput.PdfTemplates {
 			dtoPdfTemplate := struct {
 				Placeholders *[]string `json:"placeholders,omitempty"`
@@ -107,8 +111,10 @@ func (ah *APIHandler) GetWorkflowByName(w http.ResponseWriter, r *http.Request, 
 
 		// Append the mapped RequiredInput to the DTO workflow
 		dtoWorkflow.RequiredInputs = append(dtoWorkflow.RequiredInputs, dtoInput)
-	}
 
+		// Append the mapped RequiredInput to the DTO workflow
+		dtoWorkflow.RequiredInputs = append(dtoWorkflow.RequiredInputs, dtoInput)
+	}
 	render.Status(r, http.StatusOK)
 	render.JSON(w, r, dtoWorkflow)
 }
@@ -130,9 +136,8 @@ func (ah *APIHandler) UseWorkflow(w http.ResponseWriter, r *http.Request, workfl
 	useWorkflowRequestDomain := &domain.WorkflowUseRequest{
 		Name: workflowName,
 		EmailTemplate: domain.TemplateToFill{
-			Placeholders: useWorkflowRequest.EmailTemplate.Placeholders,
-			TemplateName: useWorkflowRequest.EmailTemplate.TemplateName,
-		},
+			Placeholders: *useWorkflowRequest.EmailTemplate.Placeholders,
+			TemplateName: *useWorkflowRequest.EmailTemplate.TemplateName},
 		ToEmail: useWorkflowRequest.ToEmail,
 		ToName:  useWorkflowRequest.ToName,
 	}
@@ -140,13 +145,14 @@ func (ah *APIHandler) UseWorkflow(w http.ResponseWriter, r *http.Request, workfl
 	//TODO How to handle multiple PDF templates?
 	if useWorkflowRequest.PdfTemplate != nil {
 		useWorkflowRequestDomain.PdfTemplate = domain.TemplateToFill{
-			Placeholders: useWorkflowRequest.PdfTemplate.Placeholders,
-			TemplateName: useWorkflowRequest.PdfTemplate.TemplateName,
+			Placeholders: *useWorkflowRequest.PdfTemplate.Placeholders,
+			TemplateName: *useWorkflowRequest.PdfTemplate.TemplateName,
 		}
 	}
 
 	err = ah.Usecase.UseWorkflow(useWorkflowRequestDomain)
 	if err != nil {
+		ah.log.With("error", err).Debug("Error using workflow")
 		handler.HandleError(w, r, http.StatusInternalServerError, fmt.Sprintf("Using workflow with name %v failed", workflowName))
 		return
 	}

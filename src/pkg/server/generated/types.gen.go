@@ -92,11 +92,18 @@ type Error struct {
 // ErrorType The error type
 type ErrorType string
 
+// FillTemplateRequest A request to fill a template with placeholders.
+type FillTemplateRequest struct {
+	Placeholders *map[string]string `json:"placeholders,omitempty"`
+	TemplateName *string            `json:"templateName,omitempty"`
+}
+
 // FilledEmailTemplateResponse defines model for FilledEmailTemplateResponse.
 type FilledEmailTemplateResponse = string
 
 // GetWorkflowResponse defines model for GetWorkflowResponse.
 type GetWorkflowResponse struct {
+	EmailSubject   string `json:"emailSubject"`
 	Name           string `json:"name"`
 	RequiredInputs []struct {
 		EmailTemplate struct {
@@ -230,16 +237,13 @@ type WorkflowCreateRequest struct {
 
 // WorkflowSendRequest defines model for WorkflowSendRequest.
 type WorkflowSendRequest struct {
-	EmailTemplate struct {
-		Placeholders map[string]string `json:"placeholders"`
-		TemplateName string            `json:"templateName"`
-	} `json:"emailTemplate"`
-	PdfTemplate *struct {
-		Placeholders map[string]string `json:"placeholders"`
-		TemplateName string            `json:"templateName"`
-	} `json:"pdfTemplate,omitempty"`
-	ToEmail string `json:"toEmail"`
-	ToName  string `json:"toName"`
+	// EmailTemplate A request to fill a template with placeholders.
+	EmailTemplate FillTemplateRequest `json:"emailTemplate"`
+
+	// PdfTemplate A request to fill a template with placeholders.
+	PdfTemplate *FillTemplateRequest `json:"pdfTemplate,omitempty"`
+	ToEmail     string               `json:"toEmail"`
+	ToName      string               `json:"toName"`
 }
 
 // SendEmailJSONRequestBody defines body for SendEmail for application/json ContentType.

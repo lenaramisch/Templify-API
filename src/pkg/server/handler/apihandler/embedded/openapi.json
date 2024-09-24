@@ -1635,6 +1635,10 @@
             "type": "string",
             "example": "ExampleName"
           },
+          "emailSubject": {
+            "type": "string",
+            "example": "Example Subject"
+          },
           "requiredInputs": {
             "type": "array",
             "items": {
@@ -1701,6 +1705,7 @@
         },
         "required": [
           "name",
+          "emailSubject",
           "requiredInputs"
         ]
       },
@@ -1781,6 +1786,26 @@
           "emailSubject"
         ]
       },
+      "FillTemplateRequest": {
+        "type": "object",
+        "description": "A request to fill a template with placeholders.\n",
+        "properties": {
+          "templateName": {
+            "type": "string",
+            "example": "exampleTemplate"
+          },
+          "placeholders": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "Name": "Sherlock Holmes",
+              "Age": "45"
+            }
+          }
+        }
+      },
       "WorkflowSendRequest": {
         "type": "object",
         "properties": {
@@ -1793,50 +1818,10 @@
             "example": "exampleName"
           },
           "emailTemplate": {
-            "type": "object",
-            "properties": {
-              "templateName": {
-                "type": "string",
-                "example": "exampleTemplate"
-              },
-              "placeholders": {
-                "type": "object",
-                "additionalProperties": {
-                  "type": "string"
-                },
-                "example": {
-                  "key1": "value1",
-                  "key2": "value2"
-                }
-              }
-            },
-            "required": [
-              "templateName",
-              "placeholders"
-            ]
+            "$ref": "#/components/schemas/FillTemplateRequest"
           },
           "pdfTemplate": {
-            "type": "object",
-            "properties": {
-              "templateName": {
-                "type": "string",
-                "example": "exampleTemplate"
-              },
-              "placeholders": {
-                "type": "object",
-                "additionalProperties": {
-                  "type": "string"
-                },
-                "example": {
-                  "key1": "value1",
-                  "key2": "value2"
-                }
-              }
-            },
-            "required": [
-              "templateName",
-              "placeholders"
-            ]
+            "$ref": "#/components/schemas/FillTemplateRequest"
           }
         },
         "required": [

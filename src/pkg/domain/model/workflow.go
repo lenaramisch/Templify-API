@@ -5,4 +5,5 @@ type Workflow struct {
 	EmailTemplateName string
 	PDFTemplateNames  string
 	StaticAttachments string
+	EmailSubject      string
 }

@@ -124,6 +124,7 @@ func (r *Repository) GetWorkflowByName(workflowName string) (*domain.Workflow, e
 		Name:              workflowDB.Name,
 		EmailTemplateName: workflowDB.EmailTemplateName,
 		PDFTemplateNames:  workflowDB.TemplatedPDFs,
+		EmailSubject:      workflowDB.EmailSubject,
 	}
 
 	return &workflowDomain, nil
