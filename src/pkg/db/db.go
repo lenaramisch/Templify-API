@@ -72,8 +72,6 @@ func (r *Repository) GetEmailTemplateByName(name string) (*domain.Template, erro
 
 func (r *Repository) AddWorkflow(workflow *domain.WorkflowCreateRequest) error {
 
-	r.log.With("workflow", workflow).Debug("WorkflowDomainRequest")
-
 	var staticAttachmentNames []string
 	for _, attachment := range workflow.StaticAttachments {
 		staticAttachmentNames = append(staticAttachmentNames, attachment.FileName)
@@ -87,8 +85,6 @@ func (r *Repository) AddWorkflow(workflow *domain.WorkflowCreateRequest) error {
 	}
 
 	templatedPDFNamesStr := strings.Join(templatedPDFNames, ",")
-
-	r.log.With("staticAttachments", staticAttachmentNamesStr, "templatedPDFs", templatedPDFNamesStr).Debug("Attachments")
 
 	//map domain model to db model
 	workflowDB := Workflow{
@@ -124,6 +120,7 @@ func (r *Repository) GetWorkflowByName(workflowName string) (*domain.Workflow, e
 		Name:              workflowDB.Name,
 		EmailTemplateName: workflowDB.EmailTemplateName,
 		PDFTemplateNames:  workflowDB.TemplatedPDFs,
+		StaticAttachments: workflowDB.StaticAttachments,
 		EmailSubject:      workflowDB.EmailSubject,
 	}
 
@@ -142,28 +139,6 @@ func (r *Repository) AddSMSTemplate(name string, smsTemplString string) error {
 	addSMSTemplQuery := "INSERT INTO smstemplates (name, templ_string) VALUES ($1, $2)"
 	tx.MustExec(addSMSTemplQuery, name, smsTemplString)
 	return tx.Commit()
-}
-
-func (r *Repository) SavePDF(fileName string, base64Content string) error {
-	tx := r.dbConnection.MustBegin()
-	savePDFQuery := "INSERT INTO pdfs (name, content) VALUES ($1, $2)"
-	tx.MustExec(savePDFQuery, fileName, base64Content)
-	return tx.Commit()
-}
-
-func (r *Repository) GetPDF(fileName string) (string, error) {
-	tx := r.dbConnection.MustBegin()
-	getPDFQuery := "SELECT * FROM pdfs WHERE name=$1"
-	pdf := PDF{}
-	err := tx.Get(&pdf, getPDFQuery, fileName)
-	if err != nil {
-		return "", err
-	}
-	err = tx.Commit()
-	if err != nil {
-		return "", err
-	}
-	return pdf.Content, nil
 }
 
 func (r *Repository) AddPDFTemplate(name string, typstString string) error {

@@ -1,8 +1,8 @@
 package usecase
 
 import (
+	b64 "encoding/base64"
 	"strings"
-
 	domain "templify/pkg/domain/model"
 )
 
@@ -28,6 +28,7 @@ func (u *Usecase) AddWorkflow(workflow *domain.WorkflowCreateRequest) error {
 		}
 	}
 	//add static attachments
+	//TODO exchange SavePDF func with UploadFile to S3 Bucket (Minio)
 	for _, staticAttachment := range workflow.StaticAttachments {
 		err = u.repository.SavePDF(staticAttachment.FileName, staticAttachment.Content)
 		if err != nil {
@@ -73,7 +74,7 @@ func (u *Usecase) GetWorkflowByName(workflowName string) (*domain.WorkflowInfo, 
 	for _, name := range strings.Split(workflowRaw.PDFTemplateNames, ",") {
 		pdfTemplateNames = append(pdfTemplateNames, name)
 	}
-	u.log.With("pdfTemplateNames", pdfTemplateNames).Debug("PDF Template Names")
+
 	for _, templateName := range pdfTemplateNames {
 		// Get each PDF template and placeholders
 		pdfTemplate, err := u.repository.GetPDFTemplateByName(templateName)
@@ -128,13 +129,20 @@ func (u *Usecase) UseWorkflow(workflowUseRequest *domain.WorkflowUseRequest) err
 		extension = "pdf"
 	}
 
+	attachmentData := []domain.AttachmentInfo{}
+
 	pdfAttachment := domain.PDF{
 		FileName:      fileName,
 		FileExtension: extension,
 		Content:       filledPdfTemplate,
 	}
 
-	u.log.With("pdfAttachment", pdfAttachment).Debug("PDF Attachment")
+	base64Content := b64.StdEncoding.EncodeToString([]byte(pdfAttachment.Content))
+	attachmentData = append(attachmentData, domain.AttachmentInfo{
+		FileName:      pdfAttachment.FileName,
+		FileExtension: pdfAttachment.FileExtension,
+		Base64Content: base64Content,
+	})
 
 	// get workflow
 	workflowInfo, err := u.GetWorkflowByName(workflowUseRequest.Name)
@@ -143,8 +151,7 @@ func (u *Usecase) UseWorkflow(workflowUseRequest *domain.WorkflowUseRequest) err
 		return err
 	}
 
-	u.log.With("workflowInfo", workflowInfo).Debug("Workflow Info")
-
+	//TODO exchange GetPDF func with DownloadFile from S3 Bucket (Minio)
 	var staticAttachments []domain.PDF
 	for _, attachmentName := range workflowInfo.RequiredInputs[0].StaticAttachments {
 		content, err := u.repository.GetPDF(attachmentName)
@@ -152,35 +159,33 @@ func (u *Usecase) UseWorkflow(workflowUseRequest *domain.WorkflowUseRequest) err
 			u.log.With("attachmentName", attachmentName).Debug("Could not get PDF from repo")
 			return err
 		}
+
+		splitString = strings.SplitN(attachmentName, ".", 2)
+
 		//append attachment to staticAttachments
 		staticAttachments = append(staticAttachments, domain.PDF{
-			FileName: attachmentName[:strings.LastIndex(attachmentName, ".")],
-			Content:  content,
+			FileName:      splitString[0],
+			FileExtension: splitString[1],
+			Content:       content,
 		})
 	}
 
-	u.log.With("staticAttachments", staticAttachments).Debug("Static Attachments")
-
-	emailRequest := &domain.EmailTemplateSendRequest{
-		ToEmail:      workflowUseRequest.ToEmail,
-		ToName:       workflowUseRequest.ToName,
-		TemplateName: workflowUseRequest.EmailTemplate.TemplateName,
-		Placeholders: workflowUseRequest.EmailTemplate.Placeholders,
-	}
-	attachmentData := []domain.AttachmentInfo{}
 	for _, attachment := range staticAttachments {
 		attachmentData = append(attachmentData, domain.AttachmentInfo{
 			FileName:      attachment.FileName,
-			FileExtension: "pdf",
+			FileExtension: attachment.FileExtension,
 			Base64Content: attachment.Content,
 		})
 	}
-	attachmentData = append(attachmentData, domain.AttachmentInfo{
-		FileName:      pdfAttachment.FileName,
-		FileExtension: pdfAttachment.FileExtension,
-		Base64Content: pdfAttachment.Content,
-	})
-	emailRequest.AttachmentInfo = attachmentData
+
+	emailRequest := &domain.EmailTemplateSendRequest{
+		ToEmail:        workflowUseRequest.ToEmail,
+		ToName:         workflowUseRequest.ToName,
+		Subject:        workflowInfo.EmailSubject,
+		TemplateName:   workflowUseRequest.EmailTemplate.TemplateName,
+		Placeholders:   workflowUseRequest.EmailTemplate.Placeholders,
+		AttachmentInfo: attachmentData,
+	}
 
 	u.log.With("emailRequest", emailRequest).Debug("Email Request")
 

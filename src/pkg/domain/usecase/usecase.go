@@ -23,8 +23,6 @@ type Repository interface {
 	GetEmailTemplateByName(name string) (*domain.Template, error)
 	AddEmailTemplate(name string, templateStr string, isMJML bool) error
 	// PDF
-	SavePDF(fileName string, base64Content string) error
-	GetPDF(fileName string) (string, error)
 	GetPDFTemplateByName(name string) (*domain.Template, error)
 	AddPDFTemplate(name string, typstString string) error
 	// SMS

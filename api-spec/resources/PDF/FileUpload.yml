@@ -1,15 +1,15 @@
 post:
-  description: Save a static PDF to DB for later use
-  summary: Save a static PDF
-  operationId: savePDF
+  description: Upload a static file to DB for later use
+  summary: Upload a static file
+  operationId: uploadFile
   tags:
     - PDF
   requestBody:
     required: true
     content:
-      application/json:
+      multipart/form-data:
         schema: 
-          $ref: '../../schemas/_index.yml#/PDFSaveRequest'
+          $ref: '../../schemas/_index.yml#/FileSaveRequest'
   responses:
     '200':
       description: successful operation

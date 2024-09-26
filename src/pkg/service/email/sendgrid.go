@@ -6,11 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 
 	domain "templify/pkg/domain/model"
-
-	"github.com/joho/godotenv"
 )
 
 type SendgridConfig struct {
@@ -23,11 +22,13 @@ type SendgridConfig struct {
 
 type SendGridService struct {
 	config *SendgridConfig
+	log    *slog.Logger
 }
 
-func NewSendGridService(config *SendgridConfig) *SendGridService {
+func NewSendGridService(config *SendgridConfig, log *slog.Logger) *SendGridService {
 	return &SendGridService{
 		config: config,
+		log:    log,
 	}
 }
 
@@ -36,7 +37,6 @@ const (
 )
 
 func (es *SendGridService) SendEmail(emailRequest *domain.EmailRequest) error {
-	godotenv.Load()
 
 	if es.config.ApiKey == "" || es.config.FromEmail == "" || es.config.FromName == "" || es.config.ReplyToEmail == "" || es.config.ReplyToName == "" {
 		return errors.New("missing environment variables")
@@ -95,6 +95,8 @@ func (es *SendGridService) SendEmail(emailRequest *domain.EmailRequest) error {
 	if err != nil {
 		return err
 	}
+
+	es.log.With("emailData", emailData).Debug("Email Data")
 
 	// Create a new POST request
 	r, err := http.NewRequest("POST", SENDGRID_URL, bytes.NewBuffer(jsonData))

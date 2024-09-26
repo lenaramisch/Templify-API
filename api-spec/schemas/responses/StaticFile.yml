@@ -1,0 +1,12 @@
+type: object
+properties:
+  fileName:
+    type: string
+    example: "exampleFile.pdf"
+  staticFile:
+    type: string
+    format: binary
+
+required:
+  - fileName
+  - staticFile

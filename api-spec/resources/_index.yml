@@ -40,8 +40,11 @@
 /email/templates/{templateName}/fill:
   $ref: './Email/FillTemplate.yml'
 
-/pdf/basic:
-  $ref: './PDF/Basic.yml'
+/file/upload:
+  $ref: './PDF/FileUpload.yml'
+
+/file/download/{fileName}:
+  $ref: './PDF/FileDownload.yml'
 
 /pdf/templates/{templateName}:
   $ref: './PDF/TemplateByName.yml'

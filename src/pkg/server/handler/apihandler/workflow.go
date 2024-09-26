@@ -25,8 +25,6 @@ func (ah *APIHandler) CreateWorkflow(w http.ResponseWriter, r *http.Request, wor
 		return
 	}
 
-	ah.log.With("addWorkflowRequest", addWorkflowRequest).Debug("AddWorkflowRequest in handler")
-
 	// Map the DTO to the domain model
 	workflowDomain := &domain.WorkflowCreateRequest{
 		Name:                workflowName,
@@ -91,19 +89,16 @@ func (ah *APIHandler) GetWorkflowByName(w http.ResponseWriter, r *http.Request, 
 			ToName:  domainInput.ToName,
 		}
 
-		dtoInput.EmailTemplate.TemplateName = handler.ToPointer(domainInput.EmailTemplate.TemplateName)
-		dtoInput.EmailTemplate.Placeholders = handler.ToSlicePointer(domainInput.EmailTemplate.Placeholders)
-
-		dtoInput.EmailTemplate.TemplateName = handler.ToPointer(domainInput.EmailTemplate.TemplateName)
-		dtoInput.EmailTemplate.Placeholders = handler.ToSlicePointer(domainInput.EmailTemplate.Placeholders)
+		dtoInput.EmailTemplate.TemplateName = &domainInput.EmailTemplate.TemplateName
+		dtoInput.EmailTemplate.Placeholders = &domainInput.EmailTemplate.Placeholders
 
 		for _, domainPdfTemplate := range domainInput.PdfTemplates {
 			dtoPdfTemplate := struct {
 				Placeholders *[]string `json:"placeholders,omitempty"`
 				TemplateName *string   `json:"templateName,omitempty"`
 			}{
-				TemplateName: handler.ToPointer(domainPdfTemplate.TemplateName),
-				Placeholders: handler.ToSlicePointer(domainPdfTemplate.Placeholders),
+				TemplateName: &domainPdfTemplate.TemplateName,
+				Placeholders: &domainPdfTemplate.Placeholders,
 			}
 			// Append the mapped PDF template to the DTO input
 			dtoInput.PdfTemplates = append(dtoInput.PdfTemplates, dtoPdfTemplate)

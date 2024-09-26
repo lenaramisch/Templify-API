@@ -20,13 +20,6 @@ Table smstemplates {
   created_at timestamptz [default: `now()`]
 }
 
-Table pdfs {
-  id integer [primary key, increment]
-  name varchar [not null, unique]
-  content varchar [not null]
-  created_at timestamptz [default: `now()`]
-}
-
 Table workflows {
   id integer [primary key, increment]
   name varchar [not null, unique]

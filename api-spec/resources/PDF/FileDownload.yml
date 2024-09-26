@@ -1,0 +1,27 @@
+get:
+  description: Download a static file from DB
+  summary: Download a static file
+  operationId: downloadFile
+  tags:
+    - PDF
+  parameters:
+    - name: fileName
+      in: path
+      description: Name of file to download
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: successful operation
+      content:
+        multipart/form-data:
+          schema:
+            $ref: '../../schemas/_index.yml#/StaticFile'
+    '400':
+      description: Invalid name supplied
+    '404':
+      description: Can not find file (file name)
+
+  # This API has no security
+  security: []

@@ -37,11 +37,3 @@ func FillTemplate(templateStr string, placeholderValues map[string]string) (stri
 	}
 	return buf.String(), nil
 }
-
-func ConvertPlaceholdersToSlice(placeholders map[string]*string) map[string]string {
-	result := make(map[string]string)
-	for key, value := range placeholders {
-		result[key] = *value
-	}
-	return result
-}

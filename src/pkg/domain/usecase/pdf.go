@@ -5,24 +5,6 @@ import (
 	domain "templify/pkg/domain/model"
 )
 
-func (u *Usecase) SavePDF(fileName string, base64Content string) error {
-	err := u.repository.SavePDF(fileName, base64Content)
-	if err != nil {
-		u.log.With("fileName", fileName).Debug("Error saving PDF")
-		return err
-	}
-	return nil
-}
-
-func (u *Usecase) GetPDF(fileName string) (string, error) {
-	pdf, err := u.repository.GetPDF(fileName)
-	if err != nil {
-		u.log.With("fileName", fileName).Debug("Error getting PDF")
-		return "", err
-	}
-	return pdf, nil
-}
-
 func (u *Usecase) AddPDFTemplate(templateName string, typstString string) error {
 	err := u.repository.AddPDFTemplate(templateName, typstString)
 	if err != nil {

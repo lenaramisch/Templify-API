@@ -686,20 +686,20 @@
         "security": []
       }
     },
-    "/pdf/basic": {
+    "/file/upload": {
       "post": {
-        "description": "Save a static PDF to DB for later use",
-        "summary": "Save a static PDF",
-        "operationId": "savePDF",
+        "description": "Upload a static file to DB for later use",
+        "summary": "Upload a static file",
+        "operationId": "uploadFile",
         "tags": [
           "PDF"
         ],
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/PDFSaveRequest"
+                "$ref": "#/components/schemas/FileSaveRequest"
               }
             }
           }
@@ -710,6 +710,46 @@
           },
           "400": {
             "description": "Invalid name or data supplied"
+          }
+        },
+        "security": []
+      }
+    },
+    "/file/download/{fileName}": {
+      "get": {
+        "description": "Download a static file from DB",
+        "summary": "Download a static file",
+        "operationId": "downloadFile",
+        "tags": [
+          "PDF"
+        ],
+        "parameters": [
+          {
+            "name": "fileName",
+            "in": "path",
+            "description": "Name of file to download",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "$ref": "#/components/schemas/StaticFile"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid name supplied"
+          },
+          "404": {
+            "description": "Can not find file (file name)"
           }
         },
         "security": []
@@ -1500,21 +1540,38 @@
         "type": "string",
         "example": "<mjml><mj-body><mj-section><mj-column><mj-text font-size=\"20px\" color=\"#F45E43\" font-family=\"helvetica\">Hello World </mj-text></mj-column></mj-section></mj-body></mjml>"
       },
-      "PDFSaveRequest": {
+      "FileSaveRequest": {
         "type": "object",
         "properties": {
           "fileName": {
             "type": "string",
-            "example": "example.pdf"
+            "example": "exampleFile.pdf"
           },
-          "base64Content": {
+          "file": {
             "type": "string",
-            "example": "JVBERi0xLjMKJcTl8uXrp/Og0MTGCjQgMCBvYmoKPDwv"
+            "format": "binary"
           }
         },
         "required": [
           "fileName",
-          "base64Content"
+          "file"
+        ]
+      },
+      "StaticFile": {
+        "type": "object",
+        "properties": {
+          "fileName": {
+            "type": "string",
+            "example": "exampleFile.pdf"
+          },
+          "staticFile": {
+            "type": "string",
+            "format": "binary"
+          }
+        },
+        "required": [
+          "fileName",
+          "staticFile"
         ]
       },
       "PDFTemplate": {

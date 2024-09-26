@@ -89,18 +89,10 @@ func FormToCapitalPlaceholders(r *http.Request) {
 	}
 }
 
-func ToPointer(s string) *string {
-	return &s
-}
-
-func ToSlicePointer(slice []string) *[]string {
-	return &slice
-}
-
 func ConvertPlaceholders(placeholders map[string]string) map[string]*string {
 	result := make(map[string]*string)
 	for key, value := range placeholders {
-		result[key] = ToPointer(value) // Use your existing ToPointer function
+		result[key] = &value // Use your existing ToPointer function
 	}
 	return result
 }

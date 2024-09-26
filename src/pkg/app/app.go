@@ -27,7 +27,7 @@ func Run(cfg *Config, shutdownChannel chan os.Signal) error {
 	// ===== Logger =====
 	logger := logging.SetLogger()
 
-	sendgridEmailService := emailservice.NewSendGridService(cfg.SendgridConfig)
+	sendgridEmailService := emailservice.NewSendGridService(cfg.SendgridConfig, logger)
 	smsTwilioService := smsservice.NewTwilioSMSSender(cfg.SMSTwilioConfig, logger)
 	mjmlService := mjmlservice.NewMJMLService(cfg.MJMLConfig, logger)
 	repository := db.NewRepository(cfg.DBConfig, logger)
