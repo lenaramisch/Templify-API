@@ -2,6 +2,7 @@ package emailservice
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -78,8 +79,9 @@ func (es *SendGridService) SendEmail(emailRequest *domain.EmailRequest) error {
 
 		// Range over the attachments and add them to the attachments slice
 		for _, attachment := range emailRequest.AttachmentInfo {
+			base64AttachmentStr := base64.StdEncoding.EncodeToString(attachment.FileBytes)
 			attachmentData := map[string]string{
-				"content":     attachment.Base64Content,
+				"content":     base64AttachmentStr,
 				"disposition": "attachment",
 				"filename":    attachment.FileName,
 				"type":        attachment.FileExtension,
