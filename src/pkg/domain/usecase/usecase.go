@@ -4,6 +4,8 @@ import (
 	_ "embed"
 	"log/slog"
 	domain "templify/pkg/domain/model"
+
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
 
 type EmailSender interface {
@@ -16,6 +18,12 @@ type SMSSender interface {
 
 type MJMLService interface {
 	RenderMJML(MJMLString string) (string, error)
+}
+
+type FileManagerService interface {
+	UploadFile(fileUploadRequest domain.FileUploadRequest) error
+	DownloadFile(fileDownloadRequest domain.FileDownloadRequest) ([]byte, error)
+	ListBuckets() ([]types.Bucket, error)
 }
 
 type Repository interface {
@@ -38,21 +46,23 @@ type TypstService interface {
 }
 
 type Usecase struct {
-	emailSender  EmailSender
-	smsSender    SMSSender
-	mjmlService  MJMLService
-	repository   Repository
-	typstService TypstService
-	log          *slog.Logger
+	emailSender        EmailSender
+	smsSender          SMSSender
+	mjmlService        MJMLService
+	repository         Repository
+	typstService       TypstService
+	fileManagerService FileManagerService
+	log                *slog.Logger
 }
 
-func NewUsecase(emailSender EmailSender, smsSender SMSSender, mjmlService MJMLService, repository Repository, typstService TypstService, log *slog.Logger) *Usecase {
+func NewUsecase(emailSender EmailSender, smsSender SMSSender, mjmlService MJMLService, repository Repository, typstService TypstService, fileManagerService FileManagerService, log *slog.Logger) *Usecase {
 	return &Usecase{
-		emailSender:  emailSender,
-		smsSender:    smsSender,
-		mjmlService:  mjmlService,
-		repository:   repository,
-		typstService: typstService,
-		log:          log,
+		emailSender:        emailSender,
+		smsSender:          smsSender,
+		mjmlService:        mjmlService,
+		repository:         repository,
+		typstService:       typstService,
+		fileManagerService: fileManagerService,
+		log:                log,
 	}
 }

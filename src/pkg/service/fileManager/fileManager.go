@@ -14,13 +14,13 @@ import (
 )
 
 type FileManager struct {
-	config   Config
+	config   FileManagerConfig
 	log      *slog.Logger
 	s3Client *s3.Client
 }
 
 // This filemanager uses s3 as a storage
-func NewFileManager(config *Config, log *slog.Logger) *FileManager {
+func NewFileManagerService(config *FileManagerConfig, log *slog.Logger) *FileManager {
 	staticProvider := credentials.NewStaticCredentialsProvider(
 		config.AccessKeyID,
 		config.SecretKeyID,

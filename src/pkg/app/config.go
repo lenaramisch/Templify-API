@@ -7,6 +7,7 @@ import (
 	"templify/pkg/router"
 	"templify/pkg/server"
 	emailservice "templify/pkg/service/email"
+	fileManager "templify/pkg/service/fileManager"
 	mjmlservice "templify/pkg/service/mjml"
 	smsservice "templify/pkg/service/sms"
 	typstservice "templify/pkg/service/typst"
@@ -20,11 +21,12 @@ type Config struct {
 	Router *router.Config
 	Server *server.Config
 	// Custom configs below
-	SendgridConfig  *emailservice.SendgridConfig
-	SMSTwilioConfig *smsservice.TwilioSMSSenderConfig
-	MJMLConfig      *mjmlservice.MJMLConfig
-	DBConfig        *db.RepositoryConfig
-	TypstConfig     *typstservice.TypstConfig
+	SendgridConfig    *emailservice.SendgridConfig
+	SMSTwilioConfig   *smsservice.TwilioSMSSenderConfig
+	MJMLConfig        *mjmlservice.MJMLConfig
+	DBConfig          *db.RepositoryConfig
+	TypstConfig       *typstservice.TypstConfig
+	FileManagerConfig *fileManager.FileManagerConfig
 }
 
 func SetDefaults() {
@@ -94,16 +96,26 @@ func LoadConfig(
 
 	typstConfig := &typstservice.TypstConfig{}
 
+	fileManagerConfig := &fileManager.FileManagerConfig{
+		BaseURL:     viper.GetString("FILE_MANAGER_BASE_URL"),
+		Port:        viper.GetString("FILE_MANAGER_PORT"),
+		BucketName:  viper.GetString("FILE_MANAGER_BUCKET_NAME"),
+		Region:      viper.GetString("FILE_MANAGER_REGION"),
+		AccessKeyID: viper.GetString("FILE_MANAGER_ACCESS_KEY_ID"),
+		SecretKeyID: viper.GetString("FILE_MANAGER_SECRET_KEY_ID"),
+	}
+
 	cfg := &Config{
 		Info:   infoConfig,
 		Router: routerConfig,
 		Server: serverConfig,
 		// Custom configs below
-		SendgridConfig:  sendgridConfig,
-		SMSTwilioConfig: smsTwilioConfig,
-		MJMLConfig:      mjmlConfig,
-		DBConfig:        dbConfig,
-		TypstConfig:     typstConfig,
+		SendgridConfig:    sendgridConfig,
+		SMSTwilioConfig:   smsTwilioConfig,
+		MJMLConfig:        mjmlConfig,
+		DBConfig:          dbConfig,
+		TypstConfig:       typstConfig,
+		FileManagerConfig: fileManagerConfig,
 	}
 
 	slog.With(

@@ -7,7 +7,7 @@ import (
 
 func Test_listBucket(t *testing.T) {
 	// create new file manager
-	_ = NewFileManager(&Config{
+	_ = NewFileManagerService(&FileManagerConfig{
 		BaseURL:     "http://localhost",
 		Port:        "9000",
 		BucketName:  "templify-static-files",
