@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	b64 "encoding/base64"
 	"strings"
 	domain "templify/pkg/domain/model"
 )
@@ -11,6 +12,29 @@ func (u *Usecase) AddWorkflow(workflow *domain.WorkflowCreateRequest) error {
 	if err != nil {
 		u.log.With("workflowName", workflow.Name).Debug("Could not add workflow to repo")
 		return err
+	}
+	//add email template
+	err = u.repository.AddEmailTemplate(workflow.EmailTemplateName, workflow.EmailTemplateString, workflow.IsMJML)
+	if err != nil {
+		u.log.With("workflowName", workflow.Name).Debug("Could not add email template to repo")
+		return err
+	}
+	//add pdf templates
+	for _, pdfTemplate := range workflow.TemplatedPDFs {
+		err = u.repository.AddPDFTemplate(pdfTemplate.Name, pdfTemplate.TemplateStr)
+		if err != nil {
+			u.log.With("workflowName", workflow.Name).Debug("Could not add pdf template to repo")
+			return err
+		}
+	}
+	//add static attachments
+	//TODO exchange SavePDF func with UploadFile to S3 Bucket (Minio)
+	for _, staticAttachment := range workflow.StaticAttachments {
+		err = u.repository.SavePDF(staticAttachment.FileName, staticAttachment.Content)
+		if err != nil {
+			u.log.With("workflowName", workflow.Name).Debug("Could not add static attachment to repo")
+			return err
+		}
 	}
 	return nil
 }
@@ -110,13 +134,14 @@ func (u *Usecase) UseWorkflow(workflowUseRequest *domain.WorkflowUseRequest) err
 	pdfAttachment := domain.PDF{
 		FileName:      fileName,
 		FileExtension: extension,
+		Content:       filledPdfTemplate,
 	}
 
-	filledPdfFile, err := u.typstService.RenderTypst(filledPdfTemplate)
+	base64Content := b64.StdEncoding.EncodeToString([]byte(pdfAttachment.Content))
 	attachmentData = append(attachmentData, domain.AttachmentInfo{
 		FileName:      pdfAttachment.FileName,
 		FileExtension: pdfAttachment.FileExtension,
-		FileBytes:     filledPdfFile,
+		Base64Content: base64Content,
 	})
 
 	// get workflow
@@ -126,41 +151,30 @@ func (u *Usecase) UseWorkflow(workflowUseRequest *domain.WorkflowUseRequest) err
 		return err
 	}
 
-	var staticAttachments []domain.StaticFile
+	//TODO exchange GetPDF func with DownloadFile from S3 Bucket (Minio)
+	var staticAttachments []domain.PDF
 	for _, attachmentName := range workflowInfo.RequiredInputs[0].StaticAttachments {
-		// split file extrension from name
-		splitString := strings.SplitN(attachmentName, ".", 2)
-		var fileName, extension string
-		if len(splitString) == 2 {
-			fileName = splitString[0]
-			extension = splitString[1]
-		} else {
-			u.log.With("attachmentName", attachmentName).Debug("Static file name does not contain an extension")
-			return err
-		}
-		downloadFileRequest := domain.FileDownloadRequest{
-			FileName:  fileName,
-			Extension: extension,
-		}
-		file, err := u.fileManagerService.DownloadFile(downloadFileRequest)
+		content, err := u.repository.GetPDF(attachmentName)
 		if err != nil {
-			u.log.With("attachmentName", attachmentName).Debug("Downloading file failed")
+			u.log.With("attachmentName", attachmentName).Debug("Could not get PDF from repo")
 			return err
 		}
 
+		splitString = strings.SplitN(attachmentName, ".", 2)
+
 		//append attachment to staticAttachments
-		staticAttachments = append(staticAttachments, domain.StaticFile{
-			FileName:  splitString[0],
-			Extension: splitString[1],
-			Content:   file,
+		staticAttachments = append(staticAttachments, domain.PDF{
+			FileName:      splitString[0],
+			FileExtension: splitString[1],
+			Content:       content,
 		})
 	}
 
 	for _, attachment := range staticAttachments {
 		attachmentData = append(attachmentData, domain.AttachmentInfo{
 			FileName:      attachment.FileName,
-			FileExtension: attachment.Extension,
-			FileBytes:     attachment.Content,
+			FileExtension: attachment.FileExtension,
+			Base64Content: attachment.Content,
 		})
 	}
 

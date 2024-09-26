@@ -3,5 +3,5 @@ package domain
 type AttachmentInfo struct {
 	FileName      string
 	FileExtension string
-	FileBytes     []byte
+	Base64Content string
 }
