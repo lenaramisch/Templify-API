@@ -27,23 +27,12 @@ func (ah *APIHandler) CreateWorkflow(w http.ResponseWriter, r *http.Request, wor
 
 	// Map the DTO to the domain model
 	workflowDomain := &domain.WorkflowCreateRequest{
-		Name:                workflowName,
-		EmailSubject:        addWorkflowRequest.EmailSubject,
-		EmailTemplateName:   addWorkflowRequest.EmailTemplate.EmailTemplateName,
-		EmailTemplateString: addWorkflowRequest.EmailTemplate.EmailTemplateString,
-		IsMJML:              addWorkflowRequest.EmailTemplate.IsMJML,
-		StaticAttachments: []domain.PDF{
-			{
-				FileName: addWorkflowRequest.StaticAttachments[0].FileName,
-				Content:  addWorkflowRequest.StaticAttachments[0].Content,
-			},
-		},
-		TemplatedPDFs: []domain.Template{
-			{
-				Name:        addWorkflowRequest.TemplatedAttachments[0].TemplateName,
-				TemplateStr: addWorkflowRequest.TemplatedAttachments[0].TemplateString,
-			},
-		}}
+		Name:              workflowName,
+		EmailSubject:      addWorkflowRequest.EmailSubject,
+		EmailTemplateName: addWorkflowRequest.EmailTemplateName,
+		StaticAttachments: addWorkflowRequest.StaticAttachments,
+		TemplatedPDFs:     *addWorkflowRequest.TemplatedAttachmentNames,
+	}
 
 	err = ah.Usecase.AddWorkflow(workflowDomain)
 	if err != nil {

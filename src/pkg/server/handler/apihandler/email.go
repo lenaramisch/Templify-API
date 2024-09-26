@@ -1,6 +1,7 @@
 package apihandler
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -16,16 +17,21 @@ import (
 // (POST /email/basic/send)
 func (ah *APIHandler) SendEmail(w http.ResponseWriter, r *http.Request) {
 	var emailRequestAPI server.EmailSendRequest
-
 	handler.ReadRequestBody(w, r, &emailRequestAPI)
 	var attachmentInfo []domain.AttachmentInfo
 	// Check if Attachments are present and create AttachmentInfo
 	if emailRequestAPI.Attachments != nil {
 		for _, attachment := range *emailRequestAPI.Attachments {
+			// convert base64 string attachmentContent into []byte
+			bytes, err := base64.StdEncoding.DecodeString(attachment.AttachmentContent)
+			if err != nil {
+				handler.HandleError(w, r, http.StatusBadRequest, "Invalid base64 string")
+			}
+
 			attachmentInfo = append(attachmentInfo, domain.AttachmentInfo{
 				FileExtension: attachment.AttachmentExtension,
 				FileName:      attachment.AttachmentName,
-				Base64Content: attachment.AttachmentContent,
+				FileBytes:     bytes,
 			})
 		}
 	}
@@ -68,10 +74,14 @@ func (ah *APIHandler) SendTemplatedEmail(w http.ResponseWriter, r *http.Request,
 	// Check if Attachments are present and create AttachmentInfo
 	if emailTemplateSendReq.Attachments != nil {
 		for _, attachment := range *emailTemplateSendReq.Attachments {
+			bytes, err := base64.StdEncoding.DecodeString(attachment.AttachmentContent)
+			if err != nil {
+				handler.HandleError(w, r, http.StatusBadRequest, "Invalid base64 string")
+			}
 			attachmentInfo = append(attachmentInfo, domain.AttachmentInfo{
 				FileExtension: attachment.AttachmentExtension,
 				FileName:      attachment.AttachmentName,
-				Base64Content: attachment.AttachmentContent,
+				FileBytes:     bytes,
 			})
 		}
 	}

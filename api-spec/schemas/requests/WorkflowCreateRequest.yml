@@ -1,54 +1,23 @@
 type: object
 properties:
-  emailTemplate:
-    type: object
-    properties:
-      emailTemplateName:
-        type: string
-        example: "exampleTemplate"
-      emailTemplateString:
-        type: string
-        example: "Hello, {{.Name}}! You are {{.Age}} years old."
-      isMJML:
-        type: boolean
-        example: false
-    required:
-      - emailTemplateName
-      - emailTemplateString
-      - isMJML
+  emailTemplateName:
+    type: string
+    example: "exampleTemplate"
   staticAttachments:
     type: array
     items:
-      type: object
-      properties:
-        fileName:
-          type: string
-          example: "example.pdf"
-        content:
-          type: string
-          example: "base64 encoded content"
-      required:
-        - fileName
-        - content
-  templatedAttachments:
+      type: string
+      example: "example.pdf"
+  templatedAttachmentNames:
     type: array
     items:
-      type: object
-      properties:
-        templateName:
-          type: string
-          example: "exampleTemplate"
-        templateString:
-          type: string
-          example: "Hello, {{.Name}}! You are {{.Age}} years old."
-      required:
-        - templateName
-        - templateString
+      type: string
+      example: "exampleTemplate"
   emailSubject:
     type: string
     example: "Registration Confirmation"
 required:
-  - emailTemplate
+  - emailTemplateName
   - staticAttachments
   - templatedAttachments
   - emailSubject

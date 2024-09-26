@@ -229,20 +229,10 @@ type Version struct {
 
 // WorkflowCreateRequest defines model for WorkflowCreateRequest.
 type WorkflowCreateRequest struct {
-	EmailSubject  string `json:"emailSubject"`
-	EmailTemplate struct {
-		EmailTemplateName   string `json:"emailTemplateName"`
-		EmailTemplateString string `json:"emailTemplateString"`
-		IsMJML              bool   `json:"isMJML"`
-	} `json:"emailTemplate"`
-	StaticAttachments []struct {
-		Content  string `json:"content"`
-		FileName string `json:"fileName"`
-	} `json:"staticAttachments"`
-	TemplatedAttachments []struct {
-		TemplateName   string `json:"templateName"`
-		TemplateString string `json:"templateString"`
-	} `json:"templatedAttachments"`
+	EmailSubject             string    `json:"emailSubject"`
+	EmailTemplateName        string    `json:"emailTemplateName"`
+	StaticAttachments        []string  `json:"staticAttachments"`
+	TemplatedAttachmentNames *[]string `json:"templatedAttachmentNames,omitempty"`
 }
 
 // WorkflowSendRequest defines model for WorkflowSendRequest.
@@ -289,8 +279,8 @@ type AddNewSMSTemplateJSONRequestBody = SMSTemplatePostRequest
 // FillSMSTemplateJSONRequestBody defines body for FillSMSTemplate for application/json ContentType.
 type FillSMSTemplateJSONRequestBody = SMSTemplateFillRequest
 
-// CreateWorkflowJSONRequestBody defines body for CreateWorkflow for application/json ContentType.
-type CreateWorkflowJSONRequestBody = WorkflowCreateRequest
+// CreateWorkflowMultipartRequestBody defines body for CreateWorkflow for multipart/form-data ContentType.
+type CreateWorkflowMultipartRequestBody = WorkflowCreateRequest
 
 // UseWorkflowJSONRequestBody defines body for UseWorkflow for application/json ContentType.
 type UseWorkflowJSONRequestBody = WorkflowSendRequest
