@@ -1,11 +1,7 @@
 type: object
 properties:
-  fileName:
-    type: string
-    example: "exampleFile.pdf"
   file:
     type: string
     format: binary
 required:
-  - fileName
   - file

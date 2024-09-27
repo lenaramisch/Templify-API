@@ -70,6 +70,7 @@ require (
 require (
 	github.com/ajg/form v1.5.1 // indirect
 	github.com/aws/aws-sdk-go v1.55.5
+	github.com/deepmap/oapi-codegen v1.16.3
 	github.com/getkin/kin-openapi v0.126.0
 	github.com/jackc/pgx/v5 v5.6.0
 	github.com/jmoiron/sqlx v1.4.0

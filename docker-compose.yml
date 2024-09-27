@@ -66,11 +66,11 @@ services:
     ports:
       - 8888:80
     environment:
-      - CORS: "*"
-      - MJML_KEEP_COMMENTS: true
-      - MJML_VALIDATION_LEVEL: strict
-      - MJML_MINIFY: false
-      - MJML_BEAUTIFY: true
+      - CORS=*
+      - MJML_KEEP_COMMENTS=true
+      - MJML_VALIDATION_LEVEL=strict
+      - MJML_MINIFY=false
+      - MJML_BEAUTIFY=true
 
   minio:
     image: minio/minio
@@ -84,5 +84,4 @@ services:
       MINIO_ROOT_PASSWORD: changeme
       MINIO_VOLUMES: "/mnt/data"
       MINIO_OPTS: "--console-address :9001"
-
     command: minio server --console-address ":9001"

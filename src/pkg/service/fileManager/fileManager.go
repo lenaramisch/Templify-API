@@ -114,6 +114,7 @@ func (fm *FileManager) DownloadFile(fileDownloadRequest domain.FileDownloadReque
 	if fileDownloadRequest.BucketName != nil {
 		bucketName = *fileDownloadRequest.BucketName
 	}
+	fm.log.With("BucketName", bucketName).With("ObjectKey", objectKey).Debug("Downloading file")
 	// check if file exists
 	_, err := fm.s3Client.HeadObject(context.Background(), &s3.HeadObjectInput{
 		Bucket: aws.String(bucketName),

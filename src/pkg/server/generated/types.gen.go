@@ -98,8 +98,7 @@ type ErrorType string
 
 // FileSaveRequest defines model for FileSaveRequest.
 type FileSaveRequest struct {
-	File     openapi_types.File `json:"file"`
-	FileName string             `json:"fileName"`
+	File openapi_types.File `json:"file"`
 }
 
 // FillTemplateRequest A request to fill a template with placeholders.
