@@ -1,7 +1,7 @@
 package domain
 
-type FileUploadRequest struct {
+type StaticFile struct {
 	FileName  string
 	Extension string
-	FileBytes []byte
+	Content   []byte
 }

@@ -8,10 +8,20 @@ import (
 	domain "templify/pkg/domain/model"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
+
+type FileManagerConfig struct {
+	BaseURL     string
+	Port        string
+	BucketName  string
+	Region      string
+	AccessKeyID string
+	SecretKeyID string
+}
 
 type FileManager struct {
 	config   FileManagerConfig
@@ -20,22 +30,40 @@ type FileManager struct {
 }
 
 // This filemanager uses s3 as a storage
-func NewFileManagerService(config *FileManagerConfig, log *slog.Logger) *FileManager {
+func NewFileManagerService(fmCfg *FileManagerConfig, log *slog.Logger) *FileManager {
 	staticProvider := credentials.NewStaticCredentialsProvider(
-		config.AccessKeyID,
-		config.SecretKeyID,
+		fmCfg.AccessKeyID,
+		fmCfg.SecretKeyID,
 		"",
 	)
+	resolver := aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
+		return aws.Endpoint{
+			PartitionID:       "aws",
+			URL:               fmCfg.BaseURL + ":" + fmCfg.Port,
+			SigningRegion:     fmCfg.Region,
+			HostnameImmutable: true,
+		}, nil
+	})
 
-	awsCfg := aws.Config{
-		Region:       config.Region,
-		BaseEndpoint: aws.String(config.BaseURL + ":" + config.Port),
-		Credentials:  staticProvider,
+	cfg, err := config.LoadDefaultConfig(
+		context.TODO(),
+		config.WithRegion(fmCfg.Region),
+		config.WithCredentialsProvider(staticProvider),
+		config.WithEndpointResolver(resolver),
+	)
+	if err != nil {
+		log.With("Error", err.Error()).Debug("Error loading default config")
 	}
-	client := s3.NewFromConfig(awsCfg, nil)
+
+	client := s3.NewFromConfig(
+		cfg,
+		func(o *s3.Options) {
+			o.UsePathStyle = true
+		},
+	)
 
 	return &FileManager{
-		config:   *config,
+		config:   *fmCfg,
 		log:      log,
 		s3Client: client,
 	}
@@ -46,14 +74,27 @@ func (fm *FileManager) ListBuckets() ([]types.Bucket, error) {
 	result, err := fm.s3Client.ListBuckets(context.Background(), &s3.ListBucketsInput{})
 	if err != nil {
 		fm.log.With("Error", err.Error()).Debug("Error listing buckets")
+		return nil, err
 	}
 	return result.Buckets, err
+}
+
+// ListFiles lists the files in a bucket.
+func (fm *FileManager) ListFiles(bucketName string) ([]types.Object, error) {
+	result, err := fm.s3Client.ListObjectsV2(context.Background(), &s3.ListObjectsV2Input{
+		Bucket: aws.String(bucketName),
+	})
+	if err != nil {
+		fm.log.With("Error", err.Error()).Debug("Error listing files")
+		return nil, err
+	}
+	return result.Contents, err
 }
 
 // upload file to s3 using aws sdk
 func (fm *FileManager) UploadFile(fileUploadRequest domain.FileUploadRequest) error {
 	// create filereader for the file bytes
-	fileReader := bytes.NewReader(fileUploadRequest.File)
+	fileReader := bytes.NewReader(fileUploadRequest.FileBytes)
 
 	_, err := fm.s3Client.PutObject(context.Background(), &s3.PutObjectInput{
 		Bucket: aws.String(fm.config.BucketName),
@@ -62,26 +103,39 @@ func (fm *FileManager) UploadFile(fileUploadRequest domain.FileUploadRequest) er
 	})
 	if err != nil {
 		fm.log.With("Error", err.Error()).Debug("Error uploading file")
+		return err
 	}
 	return nil
 }
 
 func (fm *FileManager) DownloadFile(fileDownloadRequest domain.FileDownloadRequest) ([]byte, error) {
 	objectKey := fileDownloadRequest.FileName + "." + fileDownloadRequest.Extension
-	result, err := fm.s3Client.GetObject(context.Background(), &s3.GetObjectInput{
-		Bucket: aws.String(fm.config.BucketName),
+	bucketName := fm.config.BucketName
+	if fileDownloadRequest.BucketName != nil {
+		bucketName = *fileDownloadRequest.BucketName
+	}
+	// check if file exists
+	_, err := fm.s3Client.HeadObject(context.Background(), &s3.HeadObjectInput{
+		Bucket: aws.String(bucketName),
 		Key:    aws.String(objectKey),
 	})
+	if err != nil {
+		fm.log.With("Error", err.Error()).Debug("Error checking if file exists")
+		return nil, err
+	}
+	result, err := fm.s3Client.GetObject(context.Background(), &s3.GetObjectInput{
+		Bucket: aws.String(bucketName),
+		Key:    aws.String(objectKey),
+	})
+	defer result.Body.Close()
 	if err != nil {
 		fm.log.With("Error", err.Error()).Debug("Error downloading file")
 		return nil, err
 	}
-	downloadedFile := make([]byte, 0)
-	_, err = result.Body.Read(downloadedFile)
-	if err != nil && err != io.EOF {
+	downloadedFile, err := io.ReadAll(result.Body)
+	if err != nil {
 		fm.log.With("Error", err.Error()).Debug("Error reading file")
 		return nil, err
 	}
-	defer result.Body.Close()
 	return downloadedFile, nil
 }
