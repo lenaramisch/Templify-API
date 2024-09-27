@@ -1,5 +1,5 @@
 get:
-  description: Download a static file
+  description: Download a static file from DB
   summary: Download a static file
   operationId: downloadFile
   tags:
