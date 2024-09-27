@@ -1,4 +1,4 @@
 .env
 postgres-data
 api-spec/bundle.yml
-minio-data
+minio_data
