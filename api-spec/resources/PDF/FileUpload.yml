@@ -1,5 +1,5 @@
 post:
-  description: Upload a static file to DB for later use
+  description: Upload a static file for later use
   summary: Upload a static file
   operationId: uploadFile
   tags:

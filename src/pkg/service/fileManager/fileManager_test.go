@@ -59,7 +59,7 @@ func createNewTestFileManager(t *testing.T) *FileManager {
 	}
 	viper.AutomaticEnv()
 	fileManagerConfig := &FileManagerConfig{
-		BaseURL:     viper.GetString("FILE_MANAGER_BASE_URL"),
+		BaseURL:     "http://localhost",
 		Port:        viper.GetString("FILE_MANAGER_PORT"),
 		BucketName:  viper.GetString("FILE_MANAGER_BUCKET_NAME"),
 		Region:      viper.GetString("FILE_MANAGER_REGION"),
