@@ -48,6 +48,9 @@ WorkflowSendRequest:
   $ref: './requests/WorkflowSendRequest.yml'
 
 #Responses
+TemplateInfo:
+  $ref: './responses/TemplateInfo.yml'
+
 FilledEmailTemplateResponse:
   $ref: './responses/FilledEmailTemplateResponse.yml'
 

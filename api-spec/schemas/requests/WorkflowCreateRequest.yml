@@ -3,7 +3,7 @@ properties:
   emailTemplateName:
     type: string
     example: "exampleTemplate"
-  staticAttachments:
+  staticAttachmentNames:
     type: array
     items:
       type: string
@@ -18,6 +18,6 @@ properties:
     example: "Registration Confirmation"
 required:
   - emailTemplateName
-  - staticAttachments
-  - templatedAttachments
+  - staticAttachmentNames
+  - templatedAttachmentNames
   - emailSubject

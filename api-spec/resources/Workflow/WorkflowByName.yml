@@ -15,7 +15,7 @@ post:
   requestBody:
     required: true
     content:
-      multipart/form-data:
+      application/json:
         schema: 
           $ref: '../../schemas/_index.yml#/WorkflowCreateRequest'
   responses:

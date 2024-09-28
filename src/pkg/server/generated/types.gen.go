@@ -112,20 +112,11 @@ type FilledEmailTemplateResponse = string
 
 // GetWorkflowResponse defines model for GetWorkflowResponse.
 type GetWorkflowResponse struct {
-	EmailSubject   string `json:"emailSubject"`
-	Name           string `json:"name"`
-	RequiredInputs []struct {
-		EmailTemplate struct {
-			Placeholders *[]string `json:"placeholders,omitempty"`
-			TemplateName *string   `json:"templateName,omitempty"`
-		} `json:"emailTemplate"`
-		PdfTemplates []struct {
-			Placeholders *[]string `json:"placeholders,omitempty"`
-			TemplateName *string   `json:"templateName,omitempty"`
-		} `json:"pdfTemplates"`
-		ToEmail string `json:"toEmail"`
-		ToName  string `json:"toName"`
-	} `json:"requiredInputs"`
+	EmailSubject      string         `json:"emailSubject"`
+	EmailTemplate     TemplateInfo   `json:"emailTemplate"`
+	Name              string         `json:"name"`
+	PdfTemplates      []TemplateInfo `json:"pdfTemplates"`
+	StaticAttachments []string       `json:"staticAttachments"`
 }
 
 // PDFFilledTemplateResponse defines model for PDFFilledTemplateResponse.
@@ -208,6 +199,12 @@ type StaticFile struct {
 // Status The status of the API
 type Status string
 
+// TemplateInfo defines model for TemplateInfo.
+type TemplateInfo struct {
+	Placeholders []string `json:"placeholders"`
+	TemplateName string   `json:"templateName"`
+}
+
 // Version This object holds the API version data.
 type Version struct {
 	// BuildDate The date the code was built
@@ -228,10 +225,10 @@ type Version struct {
 
 // WorkflowCreateRequest defines model for WorkflowCreateRequest.
 type WorkflowCreateRequest struct {
-	EmailSubject             string    `json:"emailSubject"`
-	EmailTemplateName        string    `json:"emailTemplateName"`
-	StaticAttachments        []string  `json:"staticAttachments"`
-	TemplatedAttachmentNames *[]string `json:"templatedAttachmentNames,omitempty"`
+	EmailSubject             string   `json:"emailSubject"`
+	EmailTemplateName        string   `json:"emailTemplateName"`
+	StaticAttachmentNames    []string `json:"staticAttachmentNames"`
+	TemplatedAttachmentNames []string `json:"templatedAttachmentNames"`
 }
 
 // WorkflowSendRequest defines model for WorkflowSendRequest.
@@ -278,8 +275,8 @@ type AddNewSMSTemplateJSONRequestBody = SMSTemplatePostRequest
 // FillSMSTemplateJSONRequestBody defines body for FillSMSTemplate for application/json ContentType.
 type FillSMSTemplateJSONRequestBody = SMSTemplateFillRequest
 
-// CreateWorkflowMultipartRequestBody defines body for CreateWorkflow for multipart/form-data ContentType.
-type CreateWorkflowMultipartRequestBody = WorkflowCreateRequest
+// CreateWorkflowJSONRequestBody defines body for CreateWorkflow for application/json ContentType.
+type CreateWorkflowJSONRequestBody = WorkflowCreateRequest
 
 // UseWorkflowJSONRequestBody defines body for UseWorkflow for application/json ContentType.
 type UseWorkflowJSONRequestBody = WorkflowSendRequest

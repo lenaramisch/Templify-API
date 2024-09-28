@@ -15,21 +15,16 @@ func (u *Usecase) AddWorkflow(workflow *domain.WorkflowCreateRequest) error {
 	return nil
 }
 
-func (u *Usecase) GetWorkflowByName(workflowName string) (*domain.WorkflowInfo, error) {
+func (u *Usecase) GetWorkflowByName(workflowName string) (*domain.GetWorkflowResponse, error) {
 	workflowRaw, err := u.repository.GetWorkflowByName(workflowName)
 	if err != nil {
 		u.log.With("workflowName", workflowName).Debug("Could not get workflow from repo")
 		return nil, err
 	}
-	var workflowInfo = &domain.WorkflowInfo{}
+	var getWorkflowResponse = &domain.GetWorkflowResponse{}
 
-	workflowInfo.RequiredInputs = append(workflowInfo.RequiredInputs, struct {
-		ToEmail           string
-		ToName            string
-		EmailTemplate     domain.TemplateInfo
-		PdfTemplates      []domain.TemplateInfo
-		StaticAttachments []string
-	}{})
+	getWorkflowResponse.Name = workflowRaw.Name
+	getWorkflowResponse.EmailSubject = workflowRaw.EmailSubject
 
 	// Get email template and placeholders
 	emailTemplate, err := u.repository.GetEmailTemplateByName(workflowRaw.EmailTemplateName)
@@ -40,8 +35,8 @@ func (u *Usecase) GetWorkflowByName(workflowName string) (*domain.WorkflowInfo, 
 
 	emailTemplatePlaceholders := ExtractPlaceholders(emailTemplate.TemplateStr)
 
-	workflowInfo.RequiredInputs[0].EmailTemplate = domain.TemplateInfo{
-		TemplateName: workflowRaw.EmailTemplateName,
+	getWorkflowResponse.EmailTemplate = domain.TemplateInfo{
+		TemplateName: emailTemplate.Name,
 		Placeholders: emailTemplatePlaceholders,
 	}
 
@@ -61,22 +56,18 @@ func (u *Usecase) GetWorkflowByName(workflowName string) (*domain.WorkflowInfo, 
 
 		pdfTemplatePlaceholders := ExtractPlaceholders(pdfTemplate.TemplateStr)
 
-		workflowInfo.RequiredInputs[0].PdfTemplates = append(workflowInfo.RequiredInputs[0].PdfTemplates, domain.TemplateInfo{
+		getWorkflowResponse.PDFTemplates = append(getWorkflowResponse.PDFTemplates, domain.TemplateInfo{
 			TemplateName: templateName,
 			Placeholders: pdfTemplatePlaceholders,
 		})
 	}
 
 	// Split the static attachment names string into single names
-	workflowInfo.RequiredInputs[0].StaticAttachments = []string{}
 	for _, name := range strings.Split(workflowRaw.StaticAttachments, ",") {
-		workflowInfo.RequiredInputs[0].StaticAttachments = append(workflowInfo.RequiredInputs[0].StaticAttachments, name)
+		getWorkflowResponse.StaticAttachments = append(getWorkflowResponse.StaticAttachments, name)
 	}
 
-	workflowInfo.Name = workflowRaw.Name
-	workflowInfo.EmailSubject = workflowRaw.EmailSubject
-
-	return workflowInfo, nil
+	return getWorkflowResponse, nil
 }
 
 func (u *Usecase) UseWorkflow(workflowUseRequest *domain.WorkflowUseRequest) error {
@@ -127,7 +118,7 @@ func (u *Usecase) UseWorkflow(workflowUseRequest *domain.WorkflowUseRequest) err
 	}
 
 	var staticAttachments []domain.StaticFile
-	for _, attachmentName := range workflowInfo.RequiredInputs[0].StaticAttachments {
+	for _, attachmentName := range workflowInfo.StaticAttachments {
 		// split file extrension from name
 		splitString := strings.SplitN(attachmentName, ".", 2)
 		var fileName, extension string

@@ -80,11 +80,29 @@ func (es *SendGridService) SendEmail(emailRequest *domain.EmailRequest) error {
 		// Range over the attachments and add them to the attachments slice
 		for _, attachment := range emailRequest.AttachmentInfo {
 			base64AttachmentStr := base64.StdEncoding.EncodeToString(attachment.FileBytes)
+			var attachmentType string
+			// switch on file extension for type
+			switch attachment.FileExtension {
+			case "html":
+				attachmentType = "text/html"
+			case "txt":
+				attachmentType = "text/plain"
+			case "csv":
+				attachmentType = "text/csv"
+			case "pdf":
+				attachmentType = "application/pdf"
+			case "png":
+				attachmentType = "image/png"
+			case "jpg", "jpeg":
+				attachmentType = "image/jpeg"
+			default:
+				attachmentType = "application/octet-stream"
+			}
 			attachmentData := map[string]string{
 				"content":     base64AttachmentStr,
 				"disposition": "attachment",
-				"filename":    attachment.FileName,
-				"type":        attachment.FileExtension,
+				"filename":    attachment.FileName + "." + attachment.FileExtension,
+				"type":        attachmentType,
 			}
 			attachments = append(attachments, attachmentData)
 		}
@@ -93,15 +111,16 @@ func (es *SendGridService) SendEmail(emailRequest *domain.EmailRequest) error {
 		emailData["attachments"] = attachments
 	}
 
-	jsonData, err := json.Marshal(emailData)
+	jsonBytes, err := json.Marshal(emailData)
 	if err != nil {
 		return err
 	}
 
-	es.log.With("emailData", emailData).Debug("Email Data")
+	// log the json bytes as string
+	es.log.With("emailData", string(jsonBytes)).Debug("Request Data")
 
 	// Create a new POST request
-	r, err := http.NewRequest("POST", SENDGRID_URL, bytes.NewBuffer(jsonData))
+	r, err := http.NewRequest("POST", SENDGRID_URL, bytes.NewBuffer(jsonBytes))
 	if err != nil {
 		return err
 	}

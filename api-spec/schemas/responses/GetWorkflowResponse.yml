@@ -6,47 +6,20 @@ properties:
   emailSubject:
     type: string
     example: "Example Subject"
-  requiredInputs:
+  emailTemplate:
+    $ref: '../../schemas/_index.yml#/TemplateInfo'
+  pdfTemplates:
     type: array
     items:
-      type: object
-      properties:
-        toEmail:
-          type: string
-          example: "test@example.com"
-        toName:
-          type: string
-          example: "Test Name"
-        emailTemplate:
-          type: object
-          properties:
-            templateName:
-              type: string
-              example: "exampleName"
-            placeholders:
-              type: array
-              items:
-                type: string
-              example: ["examplePlaceholder1", "examplePlaceholder2"]
-        pdfTemplates:
-          type: array
-          items:
-            type: object
-            properties:
-              templateName:
-                type: string
-                example: "exampleName"
-              placeholders:
-                type: array
-                items:
-                  type: string
-                example: ["examplePlaceholder1", "examplePlaceholder2"]
-      required: 
-        - toEmail
-        - toName
-        - emailTemplate
-        - pdfTemplates
+      $ref: '../../schemas/_index.yml#/TemplateInfo'
+  staticAttachments:
+    type: array
+    items:
+      type: string
+      example: "exampleAttachment"
 required:
   - name
   - emailSubject
-  - requiredInputs
+  - emailTemplate
+  - pdfTemplates
+  - staticAttachments
