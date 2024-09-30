@@ -9,7 +9,7 @@ Table emailtemplates {
 Table pdftemplates {
   id integer [primary key, increment]
   name varchar [not null, unique]
-  typst_string varchar [not null]
+  templ_string varchar [not null]
   created_at timestamptz [default: `now()`]
 }
 

@@ -141,7 +141,7 @@ func (r *Repository) AddPDFTemplate(name string, typstString string) error {
 func (r *Repository) GetPDFTemplateByName(name string) (*domain.Template, error) {
 	tx := r.dbConnection.MustBegin()
 	getPDFTemplateByNameQuery := "SELECT * FROM pdftemplates WHERE name=$1"
-	templateDB := PDFTemplate{}
+	templateDB := Template{}
 	err := tx.Get(&templateDB, getPDFTemplateByNameQuery, name)
 	if err != nil {
 		return nil, err
@@ -154,7 +154,7 @@ func (r *Repository) GetPDFTemplateByName(name string) (*domain.Template, error)
 	// map to domain model
 	templateDomain := domain.Template{
 		Name:        templateDB.Name,
-		TemplateStr: templateDB.TypstString,
+		TemplateStr: templateDB.TemplString,
 	}
 	return &templateDomain, nil
 }
@@ -162,7 +162,7 @@ func (r *Repository) GetPDFTemplateByName(name string) (*domain.Template, error)
 func (r *Repository) GetSMSTemplateByName(name string) (*domain.Template, error) {
 	tx := r.dbConnection.MustBegin()
 	getSMSTemplateByNameQuery := "SELECT * FROM smstemplates WHERE name=$1"
-	templateDB := SMSTemplate{}
+	templateDB := Template{}
 	err := tx.Get(&templateDB, getSMSTemplateByNameQuery, name)
 	if err != nil {
 		return nil, err
