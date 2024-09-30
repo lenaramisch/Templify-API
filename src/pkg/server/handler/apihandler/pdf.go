@@ -11,6 +11,8 @@ import (
 	"github.com/go-chi/render"
 )
 
+// Get all placehholders of a PDF template
+// (GET /pdf/templates/{templateName}/placeholders)
 func (ah *APIHandler) GetPDFTemplatePlaceholdersByName(w http.ResponseWriter, r *http.Request, templateName string) {
 
 	if templateName == "" {
@@ -31,6 +33,8 @@ func (ah *APIHandler) GetPDFTemplatePlaceholdersByName(w http.ResponseWriter, r 
 	render.JSON(w, r, templatePlaceholders)
 }
 
+// Add new PDF template
+// (POST /pdf/templates/{templateName})
 func (ah *APIHandler) AddNewPDFTemplate(w http.ResponseWriter, r *http.Request, templateName string) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -59,6 +63,8 @@ func (ah *APIHandler) AddNewPDFTemplate(w http.ResponseWriter, r *http.Request, 
 	render.PlainText(w, r, resultString)
 }
 
+// Get PDF template by name
+// (GET /pdf/templates/{templateName})
 func (ah *APIHandler) GetPDFTemplateByName(w http.ResponseWriter, r *http.Request, templateName string) {
 	if templateName == "" {
 		http.Error(w, "URL Param templateName empty", http.StatusBadRequest)
@@ -78,6 +84,8 @@ func (ah *APIHandler) GetPDFTemplateByName(w http.ResponseWriter, r *http.Reques
 	render.JSON(w, r, templateDomain)
 }
 
+// Fill placeholders of PDF template
+// (POST /pdf/templates/{templateName}/fill)
 func (ah *APIHandler) FillPDFTemplate(w http.ResponseWriter, r *http.Request, templateName string) {
 	if templateName == "" {
 		http.Error(w, "URL Param templateName empty", http.StatusBadRequest)

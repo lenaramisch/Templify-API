@@ -11,6 +11,8 @@ import (
 	"github.com/go-chi/render"
 )
 
+// Download file from S3 bucket
+// (GET /file/download/{fileName})
 func (ah *APIHandler) DownloadFile(w http.ResponseWriter, r *http.Request, fileName string) {
 	splitString := strings.Split(fileName, ".")
 	if len(splitString) != 2 {
@@ -32,6 +34,8 @@ func (ah *APIHandler) DownloadFile(w http.ResponseWriter, r *http.Request, fileN
 	render.Data(w, r, fileBytes)
 }
 
+// Upload file to S3 bucket for later use
+// (POST /file/upload)
 func (ah *APIHandler) UploadFile(w http.ResponseWriter, r *http.Request) {
 	file, handler, err := r.FormFile("file")
 	if err != nil {

@@ -12,6 +12,8 @@ import (
 	"github.com/go-chi/render"
 )
 
+// Create a new workflow
+// (POST /workflow/{workflowName})
 func (ah *APIHandler) CreateWorkflow(w http.ResponseWriter, r *http.Request, workflowName string) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -44,6 +46,8 @@ func (ah *APIHandler) CreateWorkflow(w http.ResponseWriter, r *http.Request, wor
 	render.PlainText(w, r, resultString)
 }
 
+// Get a workflow by name
+// (GET /workflow/{workflowName})
 func (ah *APIHandler) GetWorkflowByName(w http.ResponseWriter, r *http.Request, workflowName string) {
 	workflowDomain, err := ah.Usecase.GetWorkflowByName(workflowName)
 	if err != nil {
@@ -85,6 +89,8 @@ func (ah *APIHandler) GetWorkflowByName(w http.ResponseWriter, r *http.Request, 
 	render.JSON(w, r, getWorkflowResponse)
 }
 
+// Use a workflow by name
+// (POST /workflow/{workflowName}/send)
 func (ah *APIHandler) UseWorkflow(w http.ResponseWriter, r *http.Request, workflowName string) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
