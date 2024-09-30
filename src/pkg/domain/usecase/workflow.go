@@ -98,15 +98,15 @@ func (u *Usecase) UseWorkflow(workflowUseRequest *domain.WorkflowUseRequest) err
 
 	attachmentData := []domain.AttachmentInfo{}
 
-	pdfAttachment := domain.PDF{
-		FileName:      fileName,
-		FileExtension: extension,
+	pdfAttachment := domain.StaticFile{
+		FileName:  fileName,
+		Extension: extension,
 	}
 
 	filledPdfFile, err := u.typstService.RenderTypst(filledPdfTemplate)
 	attachmentData = append(attachmentData, domain.AttachmentInfo{
 		FileName:      pdfAttachment.FileName,
-		FileExtension: pdfAttachment.FileExtension,
+		FileExtension: pdfAttachment.Extension,
 		FileBytes:     filledPdfFile,
 	})
 
