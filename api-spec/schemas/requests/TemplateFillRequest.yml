@@ -1,10 +1,6 @@
 type: object
 properties:
-  receiverPhoneNumber:
-    type: string
-    example: "+4915170640522"
   placeholders:
     $ref: "../_index.yml#/Placeholder"
 required:
-  - receiverPhoneNumber
   - placeholders

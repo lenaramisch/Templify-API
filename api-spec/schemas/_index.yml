@@ -2,17 +2,11 @@
 SMSSendRequest:
   $ref: './requests/SMSSendRequest.yml'
 
-SMSTemplate:
-  $ref: './responses/SMSTemplate.yml'
-
 SMSTemplateSendRequest:
   $ref: './requests/SMSTemplateSendRequest.yml'
 
 SMSTemplatePostRequest:
   $ref: './requests/SMSTemplatePostRequest.yml'
-
-SMSTemplateFillRequest:
-  $ref: './requests/SMSTemplateFillRequest.yml'
 
 SMSFilledTemplateResponse:
   $ref: './responses/SMSFilledTemplateResponse.yml'
@@ -23,20 +17,20 @@ SMSPlaceholders:
 EmailSendRequest:
   $ref: './requests/EmailSendRequest.yml'
 
-EmailTemplateSendRequest:
-  $ref: './requests/EmailTemplateSendRequest.yml'
+EmailTemplateFillSendRequest:
+  $ref: './requests/EmailTemplateFillSendRequest.yml'
 
 EmailTemplatePostRequest:
   $ref: './requests/EmailTemplatePostRequest.yml'
 
 EmailTemplateFillRequest:
-  $ref: './requests/EmailTemplateFillRequest.yml'
+  $ref: './requests/TemplateFillRequest.yml'
 
 FileSaveRequest:
   $ref: './requests/FileSaveRequest.yml'
 
 PDFTemplateFillRequest:
-  $ref: './requests/PDFTemplateFillRequest.yml'
+  $ref: './requests/TemplateFillRequest.yml'
 
 PDFTemplatePostRequest:
   $ref: './requests/PDFTemplatePostRequest.yml'
@@ -50,6 +44,9 @@ WorkflowSendRequest:
 #Responses
 TemplateInfo:
   $ref: './responses/TemplateInfo.yml'
+
+SMSTemplate:
+  $ref: './responses/SMSTemplate.yml'
 
 FilledEmailTemplateResponse:
   $ref: './responses/FilledEmailTemplateResponse.yml'
@@ -78,6 +75,15 @@ GetWorkflowResponse:
 #Types
 Version:
   $ref: './types/Version.yml'
+
+FillTemplate:
+  $ref: './types/FillTemplate.yml'
+
+Placeholder:
+  $ref: './types/Placeholder.yml'
+
+Attachments:
+  $ref: './types/Attachments.yml'
 
 #Errors
 Error:

@@ -17,7 +17,7 @@ post:
     content:
       application/json:
         schema: 
-          $ref: '../../schemas/_index.yml#/EmailTemplateSendRequest'
+          $ref: '../../schemas/_index.yml#/EmailTemplateFillSendRequest'
   responses:
     '200':
       description: Email sent

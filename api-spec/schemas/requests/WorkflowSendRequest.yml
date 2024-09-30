@@ -7,9 +7,9 @@ properties:
     type: string
     example: "exampleName"
   emailTemplate:
-    $ref: "../types/FillTemplateRequest.yml"
+    $ref: "../_index.yml#/FillTemplate"
   pdfTemplate:
-    $ref: "../types/FillTemplateRequest.yml"
+    $ref: "../_index.yml#/FillTemplate"
 required:
   - toEmail
   - toName

@@ -51,19 +51,8 @@ type EmailTemplate struct {
 	TemplateMJMLCode string `json:"templateMJMLCode"`
 }
 
-// EmailTemplateFillRequest defines model for EmailTemplateFillRequest.
-type EmailTemplateFillRequest struct {
-	Placeholders map[string]string `json:"placeholders"`
-}
-
-// EmailTemplatePostRequest defines model for EmailTemplatePostRequest.
-type EmailTemplatePostRequest struct {
-	IsMJML         bool   `json:"isMJML"`
-	TemplateString string `json:"templateString"`
-}
-
-// EmailTemplateSendRequest defines model for EmailTemplateSendRequest.
-type EmailTemplateSendRequest struct {
+// EmailTemplateFillSendRequest defines model for EmailTemplateFillSendRequest.
+type EmailTemplateFillSendRequest struct {
 	Attachments *[]struct {
 		AttachmentContent   string `json:"attachmentContent"`
 		AttachmentExtension string `json:"attachmentExtension"`
@@ -73,6 +62,12 @@ type EmailTemplateSendRequest struct {
 	Subject      string            `json:"subject"`
 	ToEmail      string            `json:"toEmail"`
 	ToName       string            `json:"toName"`
+}
+
+// EmailTemplatePostRequest defines model for EmailTemplatePostRequest.
+type EmailTemplatePostRequest struct {
+	IsMJML         bool   `json:"isMJML"`
+	TemplateString string `json:"templateString"`
 }
 
 // Error This object holds the error response data.
@@ -101,8 +96,8 @@ type FileSaveRequest struct {
 	File openapi_types.File `json:"file"`
 }
 
-// FillTemplateRequest A request to fill a template with placeholders.
-type FillTemplateRequest struct {
+// FillTemplate A request to fill a template with placeholders.
+type FillTemplate struct {
 	Placeholders *map[string]string `json:"placeholders,omitempty"`
 	TemplateName *string            `json:"templateName,omitempty"`
 }
@@ -138,15 +133,13 @@ type PDFTemplate struct {
 	TemplateString string `json:"templateString"`
 }
 
-// PDFTemplateFillRequest defines model for PDFTemplateFillRequest.
-type PDFTemplateFillRequest struct {
-	Placeholders map[string]string `json:"placeholders"`
-}
-
 // PDFTemplatePostRequest defines model for PDFTemplatePostRequest.
 type PDFTemplatePostRequest struct {
 	TemplateString string `json:"templateString"`
 }
+
+// Placeholder defines model for Placeholder.
+type Placeholder map[string]string
 
 // SMSFilledTemplateResponse defines model for SMSFilledTemplateResponse.
 type SMSFilledTemplateResponse = string
@@ -173,12 +166,6 @@ type SMSTemplate struct {
 	TemplateString string `json:"templateString"`
 }
 
-// SMSTemplateFillRequest defines model for SMSTemplateFillRequest.
-type SMSTemplateFillRequest struct {
-	Placeholders        map[string]string `json:"placeholders"`
-	ReceiverPhoneNumber string            `json:"receiverPhoneNumber"`
-}
-
 // SMSTemplatePostRequest defines model for SMSTemplatePostRequest.
 type SMSTemplatePostRequest struct {
 	TemplateString string `json:"templateString"`
@@ -186,8 +173,8 @@ type SMSTemplatePostRequest struct {
 
 // SMSTemplateSendRequest defines model for SMSTemplateSendRequest.
 type SMSTemplateSendRequest struct {
-	Placeholders        map[string]string `json:"placeholders"`
-	ReceiverPhoneNumber string            `json:"receiverPhoneNumber"`
+	Placeholders        Placeholder `json:"placeholders"`
+	ReceiverPhoneNumber string      `json:"receiverPhoneNumber"`
 }
 
 // StaticFile defines model for StaticFile.
@@ -198,6 +185,11 @@ type StaticFile struct {
 
 // Status The status of the API
 type Status string
+
+// TemplateFillRequest defines model for TemplateFillRequest.
+type TemplateFillRequest struct {
+	Placeholders Placeholder `json:"placeholders"`
+}
 
 // TemplateInfo defines model for TemplateInfo.
 type TemplateInfo struct {
@@ -234,12 +226,12 @@ type WorkflowCreateRequest struct {
 // WorkflowSendRequest defines model for WorkflowSendRequest.
 type WorkflowSendRequest struct {
 	// EmailTemplate A request to fill a template with placeholders.
-	EmailTemplate FillTemplateRequest `json:"emailTemplate"`
+	EmailTemplate FillTemplate `json:"emailTemplate"`
 
 	// PdfTemplate A request to fill a template with placeholders.
-	PdfTemplate *FillTemplateRequest `json:"pdfTemplate,omitempty"`
-	ToEmail     string               `json:"toEmail"`
-	ToName      string               `json:"toName"`
+	PdfTemplate *FillTemplate `json:"pdfTemplate,omitempty"`
+	ToEmail     string        `json:"toEmail"`
+	ToName      string        `json:"toName"`
 }
 
 // SendEmailJSONRequestBody defines body for SendEmail for application/json ContentType.
@@ -249,10 +241,10 @@ type SendEmailJSONRequestBody = EmailSendRequest
 type AddNewTemplateJSONRequestBody = EmailTemplatePostRequest
 
 // FillTemplateJSONRequestBody defines body for FillTemplate for application/json ContentType.
-type FillTemplateJSONRequestBody = EmailTemplateFillRequest
+type FillTemplateJSONRequestBody = TemplateFillRequest
 
 // SendTemplatedEmailJSONRequestBody defines body for SendTemplatedEmail for application/json ContentType.
-type SendTemplatedEmailJSONRequestBody = EmailTemplateSendRequest
+type SendTemplatedEmailJSONRequestBody = EmailTemplateFillSendRequest
 
 // UploadFileMultipartRequestBody defines body for UploadFile for multipart/form-data ContentType.
 type UploadFileMultipartRequestBody = FileSaveRequest
@@ -261,7 +253,7 @@ type UploadFileMultipartRequestBody = FileSaveRequest
 type AddNewPDFTemplateJSONRequestBody = PDFTemplatePostRequest
 
 // FillPDFTemplateJSONRequestBody defines body for FillPDFTemplate for application/json ContentType.
-type FillPDFTemplateJSONRequestBody = PDFTemplateFillRequest
+type FillPDFTemplateJSONRequestBody = TemplateFillRequest
 
 // SendBasicSMSJSONRequestBody defines body for SendBasicSMS for application/json ContentType.
 type SendBasicSMSJSONRequestBody = SMSSendRequest
@@ -273,7 +265,7 @@ type SendTemplatedSMSJSONRequestBody = SMSTemplateSendRequest
 type AddNewSMSTemplateJSONRequestBody = SMSTemplatePostRequest
 
 // FillSMSTemplateJSONRequestBody defines body for FillSMSTemplate for application/json ContentType.
-type FillSMSTemplateJSONRequestBody = SMSTemplateFillRequest
+type FillSMSTemplateJSONRequestBody = SMSTemplateSendRequest
 
 // CreateWorkflowJSONRequestBody defines body for CreateWorkflow for application/json ContentType.
 type CreateWorkflowJSONRequestBody = WorkflowCreateRequest

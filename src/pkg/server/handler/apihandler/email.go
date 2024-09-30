@@ -62,7 +62,7 @@ func (ah *APIHandler) SendTemplatedEmail(w http.ResponseWriter, r *http.Request,
 	}
 
 	// Create EmailTemplateSendRequest
-	var emailTemplateSendReq server.EmailTemplateSendRequest
+	var emailTemplateSendReq server.EmailTemplateFillSendRequest
 
 	// Read the request body and unmarshal it into emailTemplateSendReq
 	if err := json.Unmarshal(body, &emailTemplateSendReq); err != nil {
@@ -179,7 +179,7 @@ func (ah *APIHandler) FillTemplate(w http.ResponseWriter, r *http.Request, templ
 		http.Error(w, "Reading request body failed", http.StatusInternalServerError)
 	}
 
-	var templateFillRequest server.EmailTemplateFillRequest
+	var templateFillRequest server.EmailTemplateFillSendRequest
 
 	if err := json.Unmarshal(body, &templateFillRequest); err != nil {
 		http.Error(w, "Invalid JSON format", http.StatusBadRequest)

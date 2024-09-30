@@ -16,7 +16,7 @@ post:
     content:
       application/json:
         schema: 
-          $ref: '../../schemas/_index.yml#/SMSTemplateFillRequest'
+          $ref: '../../schemas/_index.yml#/SMSTemplateSendRequest'
   responses:
     '200':
       description: successful operation

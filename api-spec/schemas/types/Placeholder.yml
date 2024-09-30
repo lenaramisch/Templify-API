@@ -1,9 +1,6 @@
 type: object
-description: |
-  A map of placeholders and their values.
-properties:
-  additionalProperties:
+additionalProperties:
     type: string
-    description: |
-      The value of the placeholder.
-    example: "value1"
+example:
+  Name: "Sherlock Holmes"
+  Age: "45"

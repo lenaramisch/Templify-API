@@ -425,7 +425,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SMSTemplateFillRequest"
+                "$ref": "#/components/schemas/SMSTemplateSendRequest"
               }
             }
           }
@@ -582,7 +582,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/EmailTemplateSendRequest"
+                "$ref": "#/components/schemas/EmailTemplateFillSendRequest"
               }
             }
           }
@@ -663,7 +663,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/EmailTemplateFillRequest"
+                "$ref": "#/components/schemas/TemplateFillRequest"
               }
             }
           }
@@ -900,7 +900,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PDFTemplateFillRequest"
+                "$ref": "#/components/schemas/TemplateFillRequest"
               }
             }
           }
@@ -1174,6 +1174,16 @@
           "message"
         ]
       },
+      "Placeholder": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "string"
+        },
+        "example": {
+          "Name": "Sherlock Holmes",
+          "Age": "45"
+        }
+      },
       "SMSTemplateSendRequest": {
         "type": "object",
         "properties": {
@@ -1182,14 +1192,7 @@
             "example": "+4915170640522"
           },
           "placeholders": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            },
-            "example": {
-              "Name": "Sherlock Holmes",
-              "Age": "45"
-            }
+            "$ref": "#/components/schemas/Placeholder"
           }
         },
         "required": [
@@ -1286,30 +1289,6 @@
           ]
         }
       },
-      "SMSTemplateFillRequest": {
-        "type": "object",
-        "properties": {
-          "receiverPhoneNumber": {
-            "type": "string",
-            "example": "+4915170640522"
-          },
-          "placeholders": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            },
-            "example": {
-              "FirstName": "Sherlock",
-              "LastName": "Holmes",
-              "Age": "45"
-            }
-          }
-        },
-        "required": [
-          "receiverPhoneNumber",
-          "placeholders"
-        ]
-      },
       "SMSFilledTemplateResponse": {
         "type": "string",
         "example": "Hello Sherlock Holmes, you are 45 years old."
@@ -1400,7 +1379,7 @@
           "isMJML"
         ]
       },
-      "EmailTemplateSendRequest": {
+      "EmailTemplateFillSendRequest": {
         "type": "object",
         "properties": {
           "toEmail": {
@@ -1518,18 +1497,11 @@
           ]
         }
       },
-      "EmailTemplateFillRequest": {
+      "TemplateFillRequest": {
         "type": "object",
         "properties": {
           "placeholders": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            },
-            "example": {
-              "Name": "Sherlock Holmes",
-              "Age": "45"
-            }
+            "$ref": "#/components/schemas/Placeholder"
           }
         },
         "required": [
@@ -1658,24 +1630,6 @@
           ]
         }
       },
-      "PDFTemplateFillRequest": {
-        "type": "object",
-        "properties": {
-          "placeholders": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            },
-            "example": {
-              "Name": "Sherlock Holmes",
-              "Age": "45"
-            }
-          }
-        },
-        "required": [
-          "placeholders"
-        ]
-      },
       "PDFFilledTemplateResponse": {
         "type": "string",
         "example": "base64 encoded PDF file"
@@ -1772,7 +1726,7 @@
           "emailSubject"
         ]
       },
-      "FillTemplateRequest": {
+      "FillTemplate": {
         "type": "object",
         "description": "A request to fill a template with placeholders.\n",
         "properties": {
@@ -1804,10 +1758,10 @@
             "example": "exampleName"
           },
           "emailTemplate": {
-            "$ref": "#/components/schemas/FillTemplateRequest"
+            "$ref": "#/components/schemas/FillTemplate"
           },
           "pdfTemplate": {
-            "$ref": "#/components/schemas/FillTemplateRequest"
+            "$ref": "#/components/schemas/FillTemplate"
           }
         },
         "required": [
@@ -1815,6 +1769,37 @@
           "toName",
           "emailTemplate"
         ]
+      },
+      "Attachments": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "attachmentContent": {
+              "type": "string",
+              "example": "base64 encoded attachment"
+            },
+            "attachmentName": {
+              "type": "string",
+              "example": "attachment"
+            },
+            "attachmentExtension": {
+              "type": "string",
+              "example": "txt"
+            }
+          },
+          "required": [
+            "attachmentContent",
+            "attachmentName",
+            "attachmentExtension"
+          ]
+        }
+      },
+      "EmailTemplateFillRequest": {
+        "$ref": "#/components/schemas/TemplateFillRequest"
+      },
+      "PDFTemplateFillRequest": {
+        "$ref": "#/components/schemas/TemplateFillRequest"
       }
     }
   }

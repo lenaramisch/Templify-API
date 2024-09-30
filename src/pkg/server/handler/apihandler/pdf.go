@@ -89,7 +89,7 @@ func (ah *APIHandler) FillPDFTemplate(w http.ResponseWriter, r *http.Request, te
 		http.Error(w, "Reading request body failed", http.StatusInternalServerError)
 	}
 
-	var pdfFillReq server.PDFTemplateFillRequest
+	var pdfFillReq server.TemplateFillRequest
 	if err := json.Unmarshal(body, &pdfFillReq); err != nil {
 		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
 		return
