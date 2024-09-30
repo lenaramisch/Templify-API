@@ -21,7 +21,12 @@ func (ah *APIHandler) SendBasicSMS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := ah.Usecase.SendSMS(smsRequest.ReceiverPhoneNumber, smsRequest.Message)
+	domainSmsRequest := domain.SmsRequest{
+		ToNumber:    smsRequest.ReceiverPhoneNumber,
+		MessageBody: smsRequest.Message,
+	}
+
+	err := ah.Usecase.SendSMS(domainSmsRequest)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, err.Error())
 		return
@@ -30,7 +35,6 @@ func (ah *APIHandler) SendBasicSMS(w http.ResponseWriter, r *http.Request) {
 	render.PlainText(w, r, "SMS sent successfully")
 }
 
-// TODO handler should only call one usecase method!
 // Send a SMS with template
 // (POST /sms/templates/{templateName}/send)
 func (ah *APIHandler) SendTemplatedSMS(w http.ResponseWriter, r *http.Request, templateName string) {
@@ -46,17 +50,12 @@ func (ah *APIHandler) SendTemplatedSMS(w http.ResponseWriter, r *http.Request, t
 		return
 	}
 
-	var filledTemplate string
-	filledTemplate, err = ah.Usecase.GetFilledSMSTemplate(templateName, smsRequest.Placeholders)
-	ah.log.With(
-		"FilledTemplate", filledTemplate,
-	).Debug("Filled template")
-	if err != nil {
-		handler.HandleError(w, r, http.StatusInternalServerError, "Error filling template")
-		return
+	smsFillRequest := domain.SMSTemplateFillRequest{
+		ReceiverPhoneNumber: smsRequest.ReceiverPhoneNumber,
+		Placeholders:        smsRequest.Placeholders,
 	}
 
-	err = ah.Usecase.SendSMS(smsRequest.ReceiverPhoneNumber, filledTemplate)
+	err = ah.Usecase.SendTemplatedSMS(smsFillRequest, templateName)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, err.Error())
 		return

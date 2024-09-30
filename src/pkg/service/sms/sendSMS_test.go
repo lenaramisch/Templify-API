@@ -2,6 +2,7 @@ package smsservice
 
 import (
 	"log/slog"
+	domain "templify/pkg/domain/model"
 	"testing"
 )
 
@@ -16,7 +17,10 @@ func Test_sendSMS(t *testing.T) {
 	sender := NewTwilioSMSSender(config, &slog.Logger{})
 
 	// Send a SMS
-	err := sender.SendSMS("+4915170640522", "Hello, World!")
+	err := sender.SendSMS(domain.SmsRequest{
+		ToNumber:    "+49123456789",
+		MessageBody: "Hello, World!",
+	})
 	if err != nil {
 		t.Errorf("Error sending SMS: %v", err)
 	}

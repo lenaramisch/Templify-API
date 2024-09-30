@@ -13,7 +13,7 @@ type EmailSender interface {
 }
 
 type SMSSender interface {
-	SendSMS(toNumber string, messageBody string) error
+	SendSMS(smsRequest domain.SmsRequest) error
 }
 
 type MJMLService interface {

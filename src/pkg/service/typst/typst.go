@@ -23,7 +23,6 @@ func NewTypstService(config *TypstConfig, log *slog.Logger) *TypstService {
 	}
 }
 
-// TODO make general write String to file method that uses path instead of filename
 func writeStringToFile(filledTemplStr string, filePath string) (string, error) {
 	// Create the file
 	f, err := os.Create(filePath)

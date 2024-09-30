@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	domain "templify/pkg/domain/model"
 )
 
 const (
@@ -30,20 +31,22 @@ type TwilioSMSSender struct {
 func NewTwilioSMSSender(config *TwilioSMSSenderConfig, log *slog.Logger) *TwilioSMSSender {
 	return &TwilioSMSSender{
 		config: config,
+		log:    log,
 	}
 }
 
-func (s *TwilioSMSSender) SendSMS(toNumber string, messageBody string) error {
+func (s *TwilioSMSSender) SendSMS(smsRequest domain.SmsRequest) error {
 	s.log.With(
-		"toNumber", toNumber,
-		"messageBody", messageBody,
+		"toNumber", smsRequest.ToNumber,
+		"messageBody", smsRequest.MessageBody,
 	).Debug("Trying to send SMS")
 	// Create SMS data
-	SMSData := url.Values{
-		"To":   {toNumber},
-		"From": {s.config.FromNumber},
-		"Body": {messageBody},
-	}
+	SMSData := url.Values{}
+	SMSData.Set("To", smsRequest.ToNumber)
+	SMSData.Set("From", s.config.FromNumber)
+	SMSData.Set("Body", smsRequest.MessageBody)
+
+	s.log.With("SMSData", SMSData).Debug("SMS data")
 
 	// Create a new POST request
 	URL := fmt.Sprintf(TWILIO_BASE_URL+TWILIO_ACCOUNTS_URL+"%s/Messages.json", s.config.AccountSID)
@@ -58,9 +61,6 @@ func (s *TwilioSMSSender) SendSMS(toNumber string, messageBody string) error {
 	auth := base64.StdEncoding.EncodeToString([]byte(s.config.AccountSID + ":" + s.config.AuthToken))
 	r.Header.Set("Authorization", "Basic "+auth)
 
-	s.log.With(
-		"request", r,
-	).Debug("Building request")
 	// Perform the request
 	client := &http.Client{}
 	resp, err := client.Do(r)
