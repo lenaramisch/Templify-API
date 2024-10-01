@@ -79,6 +79,36 @@ func (fm *FileManager) ListBuckets() ([]types.Bucket, error) {
 	return result.Buckets, err
 }
 
+func (fm *FileManager) GetFileDownloadURL(fileName string) (string, error) {
+	psClient := s3.NewPresignClient(fm.s3Client)
+	req, err := psClient.PresignGetObject(context.TODO(), &s3.GetObjectInput{
+		Bucket: aws.String(fm.config.BucketName),
+		Key:    aws.String(fileName),
+	}, s3.WithPresignExpires(5*60))
+
+	if err != nil {
+		fm.log.With("Error", err.Error()).Debug("Failed to sign request")
+		return "", err
+	}
+
+	return req.URL, nil
+}
+
+func (fm *FileManager) GetFileUploadURL(fileName string) (string, error) {
+	psClient := s3.NewPresignClient(fm.s3Client)
+	req, err := psClient.PresignGetObject(context.TODO(), &s3.GetObjectInput{
+		Bucket: aws.String(fm.config.BucketName),
+		Key:    aws.String(fileName),
+	}, s3.WithPresignExpires(5*60))
+
+	if err != nil {
+		fm.log.With("Error", err.Error()).Debug("Failed to sign request")
+		return "", err
+	}
+
+	return req.URL, nil
+}
+
 // ListFiles lists the files in a bucket.
 func (fm *FileManager) ListFiles(bucketName string) ([]types.Object, error) {
 	result, err := fm.s3Client.ListObjectsV2(context.Background(), &s3.ListObjectsV2Input{

@@ -8,8 +8,10 @@ properties:
     example: "exampleName"
   emailTemplate:
     $ref: "../_index.yml#/FillTemplate"
-  pdfTemplate:
-    $ref: "../_index.yml#/FillTemplate"
+  pdfTemplates:
+    type: array
+    items:
+      $ref: "../_index.yml#/FillTemplate"
 required:
   - toEmail
   - toName

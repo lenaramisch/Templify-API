@@ -43,6 +43,7 @@ func oapiMiddleware(handler http.Handler, swagger *openapi3.T) http.Handler {
 	swagger.Servers = nil
 
 	// Validate requests against OpenAPI spec
+	// openapi3filter.RegisterBodyDecoder("multipart/form-data", openapi3filter.FileBodyDecoder)
 	validatorOptions := &oapiMW.Options{
 		Options: openapi3filter.Options{
 			AuthenticationFunc: func(c context.Context, input *openapi3filter.AuthenticationInput) error {

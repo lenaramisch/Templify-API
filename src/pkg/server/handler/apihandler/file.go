@@ -1,9 +1,6 @@
 package apihandler
 
 import (
-	"io"
-	"strings"
-	domain "templify/pkg/domain/model"
 	"templify/pkg/server/handler"
 
 	"net/http"
@@ -13,60 +10,26 @@ import (
 
 // Download file from S3 bucket
 // (GET /file/download/{fileName})
-func (ah *APIHandler) DownloadFile(w http.ResponseWriter, r *http.Request, fileName string) {
-	splitString := strings.Split(fileName, ".")
-	if len(splitString) != 2 {
-		handler.HandleError(w, r, http.StatusBadRequest, "Invalid file name")
-		return
-	}
-	fileDownloadRequest := domain.FileDownloadRequest{
-		FileName:  splitString[0],
-		Extension: splitString[1],
-	}
-
-	fileBytes, err := ah.Usecase.DownloadFile(fileDownloadRequest)
+func (ah *APIHandler) GetDownloadFileURL(w http.ResponseWriter, r *http.Request, fileName string) {
+	downloadURL, err := ah.Usecase.GetFileDownloadURL(fileName)
 	if err != nil {
-		handler.HandleError(w, r, http.StatusInternalServerError, "Download File failed")
+		handler.HandleInternalServerError(w, r, err, "Error getting download URL")
 		return
 	}
 
 	render.Status(r, http.StatusOK)
-	render.Data(w, r, fileBytes)
+	render.JSON(w, r, downloadURL)
 }
 
 // Upload file to S3 bucket for later use
 // (POST /file/upload)
-func (ah *APIHandler) UploadFile(w http.ResponseWriter, r *http.Request) {
-	file, handler, err := r.FormFile("file")
+func (ah *APIHandler) GetUploadFileURL(w http.ResponseWriter, r *http.Request, fileName string) {
+	uploadURL, err := ah.Usecase.GetFileUploadURL(fileName)
 	if err != nil {
-		http.Error(w, "Error retrieving the file", http.StatusBadRequest)
-		return
-	}
-	defer file.Close()
-
-	// split fileName from extension
-	splitString := strings.Split(handler.Filename, ".")
-
-	// read file bytes
-	fileBytes, err := io.ReadAll(file)
-	if err != nil {
-		http.Error(w, "Error reading the file", http.StatusBadRequest)
-		return
-	}
-
-	domainFileUploadRequest := domain.FileUploadRequest{
-		FileName:  splitString[0],
-		Extension: splitString[1],
-		FileBytes: fileBytes,
-	}
-
-	//call domain function
-	err = ah.Usecase.UploadFile(domainFileUploadRequest)
-	if err != nil {
-		http.Error(w, "Error uploading the file", http.StatusInternalServerError)
+		handler.HandleInternalServerError(w, r, err, "Error getting upload URL")
 		return
 	}
 
 	render.Status(r, http.StatusOK)
-	render.PlainText(w, r, "File uploaded successfully")
+	render.JSON(w, r, uploadURL)
 }

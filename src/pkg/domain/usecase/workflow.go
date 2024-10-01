@@ -71,44 +71,46 @@ func (u *Usecase) GetWorkflowByName(workflowName string) (*domain.GetWorkflowRes
 }
 
 func (u *Usecase) UseWorkflow(workflowUseRequest *domain.WorkflowUseRequest) error {
-	// get pdf template by name
-	pdfTemplate, err := u.repository.GetPDFTemplateByName(workflowUseRequest.PdfTemplate.TemplateName)
-	if err != nil {
-		u.log.With("templateName", workflowUseRequest.PdfTemplate.TemplateName).Debug("Could not get pdf template from repo")
-		return err
+	// get pdf templates by name
+	var pdfTemplates []domain.Template
+	var pdfTemplatePlaceholders []map[string]string
+	for _, pdfTemplate := range workflowUseRequest.PdfTemplates {
+		pdfTemplatePlaceholders = append(pdfTemplatePlaceholders, pdfTemplate.Placeholders)
+		pdfTemplate, err := u.repository.GetPDFTemplateByName(pdfTemplate.TemplateName)
+		if err != nil {
+			u.log.With("templateName", pdfTemplate.Name).Debug("Could not get pdf template from repo")
+			return err
+		}
+		pdfTemplates = append(pdfTemplates, *pdfTemplate)
 	}
 
 	// fill pdf template
-	filledPdfTemplate, err := FillTemplate(pdfTemplate.TemplateStr, workflowUseRequest.PdfTemplate.Placeholders)
-	if err != nil {
-		u.log.With("templateName", workflowUseRequest.PdfTemplate.TemplateName).Debug("Could not fill pdf template")
-		return err
-	}
-
-	splitString := strings.SplitN(workflowUseRequest.PdfTemplate.TemplateName, ".", 2)
-
-	var fileName, extension string
-	if len(splitString) == 2 {
-		fileName = splitString[0]
-		extension = splitString[1]
-	} else {
-		fileName = workflowUseRequest.PdfTemplate.TemplateName
-		extension = "pdf"
+	// range over the pdf templates and fill them
+	var filledPDFTemplates []string
+	for i, pdfTemplate := range pdfTemplates {
+		filledPdfTemplate, err := FillTemplate(pdfTemplate.TemplateStr, pdfTemplatePlaceholders[i])
+		if err != nil {
+			u.log.With("templateName", pdfTemplate.Name).Debug("Could not fill pdf template")
+			return err
+		}
+		filledPDFTemplates = append(filledPDFTemplates, filledPdfTemplate)
 	}
 
 	attachmentData := []domain.AttachmentInfo{}
 
-	pdfAttachment := domain.StaticFile{
-		FileName:  fileName,
-		Extension: extension,
+	for i, pdfTemplate := range pdfTemplates {
+		filledTemplate := filledPDFTemplates[i]
+		filledPdfFile, err := u.typstService.RenderTypst(filledTemplate)
+		if err != nil {
+			u.log.With("templateName", pdfTemplate.Name).Debug("Could not render pdf template")
+			return err
+		}
+		attachmentData = append(attachmentData, domain.AttachmentInfo{
+			FileName:      pdfTemplate.Name,
+			FileExtension: "pdf",
+			FileBytes:     filledPdfFile,
+		})
 	}
-
-	filledPdfFile, err := u.typstService.RenderTypst(filledPdfTemplate)
-	attachmentData = append(attachmentData, domain.AttachmentInfo{
-		FileName:      pdfAttachment.FileName,
-		FileExtension: pdfAttachment.Extension,
-		FileBytes:     filledPdfFile,
-	})
 
 	// get workflow
 	workflowInfo, err := u.GetWorkflowByName(workflowUseRequest.Name)
@@ -117,6 +119,7 @@ func (u *Usecase) UseWorkflow(workflowUseRequest *domain.WorkflowUseRequest) err
 		return err
 	}
 
+	//TODO how to get static attachments from minio for workflow?
 	var staticAttachments []domain.StaticFile
 	for _, attachmentName := range workflowInfo.StaticAttachments {
 		// split file extrension from name

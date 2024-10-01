@@ -1,11 +1,10 @@
 package usecase
 
-import domain "templify/pkg/domain/model"
-
-func (u *Usecase) UploadFile(fileUploadRequest domain.FileUploadRequest) error {
-	return u.fileManagerService.UploadFile(fileUploadRequest)
+func (u *Usecase) GetFileUploadURL(fileName string) (string, error) {
+	//TODO check if file already exists
+	return u.fileManagerService.GetFileUploadURL(fileName)
 }
 
-func (u *Usecase) DownloadFile(fileDownloadRequest domain.FileDownloadRequest) ([]byte, error) {
-	return u.fileManagerService.DownloadFile(fileDownloadRequest)
+func (u *Usecase) GetFileDownloadURL(fileName string) (string, error) {
+	return u.fileManagerService.GetFileDownloadURL(fileName)
 }

@@ -1,13 +1,14 @@
 get:
-  description: Download a static file
-  summary: Download a static file
-  operationId: downloadFile
+  description: Get a presigned URL to download a static file
+  summary: Get download url for a static file
+  operationId: GetDownloadFileURL
   tags:
     - PDF
   parameters:
     - name: fileName
       in: path
       description: Name of file to download
+      example: 'example.pdf'
       required: true
       schema:
         type: string
@@ -15,11 +16,11 @@ get:
     '200':
       description: successful operation
       content:
-        multipart/form-data:
+        application/json:
           schema:
-            $ref: '../../schemas/_index.yml#/StaticFile'
+            $ref: '../../schemas/_index.yml#/PresignedURL'
     '400':
-      description: Invalid name supplied
+      description: Invalid file or bucket name supplied
     '404':
       description: Can not find file (file name)
 

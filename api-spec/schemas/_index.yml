@@ -26,9 +26,6 @@ EmailTemplatePostRequest:
 EmailTemplateFillRequest:
   $ref: './requests/TemplateFillRequest.yml'
 
-FileSaveRequest:
-  $ref: './requests/FileSaveRequest.yml'
-
 PDFTemplateFillRequest:
   $ref: './requests/TemplateFillRequest.yml'
 
@@ -44,6 +41,9 @@ WorkflowSendRequest:
 #Responses
 TemplateInfo:
   $ref: './responses/TemplateInfo.yml'
+
+PresignedURL:
+  $ref: './responses/PresignedURL.yml'
 
 SMSTemplate:
   $ref: './responses/SMSTemplate.yml'
@@ -65,9 +65,6 @@ PDFFilledTemplateResponse:
 
 PDFPlaceholders:
   $ref: './responses/PDFPlaceholders.yml'
-
-StaticFile:
-  $ref: './responses/StaticFile.yml'
 
 GetWorkflowResponse:
   $ref: './responses/GetWorkflowResponse.yml'

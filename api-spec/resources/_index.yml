@@ -40,7 +40,7 @@
 /email/templates/{templateName}/fill:
   $ref: './Email/FillTemplate.yml'
 
-/file/upload:
+/file/upload/{fileName}:
   $ref: './PDF/FileUpload.yml'
 
 /file/download/{fileName}:

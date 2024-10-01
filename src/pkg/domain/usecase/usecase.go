@@ -21,8 +21,10 @@ type MJMLService interface {
 }
 
 type FileManagerService interface {
-	UploadFile(fileUploadRequest domain.FileUploadRequest) error
+	GetFileUploadURL(fileName string) (string, error)
+	GetFileDownloadURL(fileName string) (string, error)
 	DownloadFile(fileDownloadRequest domain.FileDownloadRequest) ([]byte, error)
+	UploadFile(fileUploafRequest domain.FileUploadRequest) error
 	ListBuckets() ([]types.Bucket, error)
 }
 

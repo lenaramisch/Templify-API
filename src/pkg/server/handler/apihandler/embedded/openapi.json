@@ -686,40 +686,11 @@
         "security": []
       }
     },
-    "/file/upload": {
-      "post": {
-        "description": "Upload a static file for later use",
-        "summary": "Upload a static file",
-        "operationId": "uploadFile",
-        "tags": [
-          "PDF"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "$ref": "#/components/schemas/FileSaveRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "successful operation"
-          },
-          "400": {
-            "description": "Invalid name or data supplied"
-          }
-        },
-        "security": []
-      }
-    },
-    "/file/download/{fileName}": {
+    "/file/upload/{fileName}": {
       "get": {
-        "description": "Download a static file",
-        "summary": "Download a static file",
-        "operationId": "downloadFile",
+        "description": "Get a presigned URL to upload a static file for later use",
+        "summary": "Get upload url for a static file",
+        "operationId": "GetUploadFileURL",
         "tags": [
           "PDF"
         ],
@@ -727,7 +698,8 @@
           {
             "name": "fileName",
             "in": "path",
-            "description": "Name of file to download",
+            "description": "Name of file to upload",
+            "example": "example.pdf",
             "required": true,
             "schema": {
               "type": "string"
@@ -738,15 +710,53 @@
           "200": {
             "description": "successful operation",
             "content": {
-              "multipart/form-data": {
+              "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/StaticFile"
+                  "$ref": "#/components/schemas/PresignedURL"
                 }
               }
             }
           },
           "400": {
-            "description": "Invalid name supplied"
+            "description": "Invalid file or bucket name supplied"
+          }
+        },
+        "security": []
+      }
+    },
+    "/file/download/{fileName}": {
+      "get": {
+        "description": "Get a presigned URL to download a static file",
+        "summary": "Get download url for a static file",
+        "operationId": "GetDownloadFileURL",
+        "tags": [
+          "PDF"
+        ],
+        "parameters": [
+          {
+            "name": "fileName",
+            "in": "path",
+            "description": "Name of file to download",
+            "example": "example.pdf",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PresignedURL"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid file or bucket name supplied"
           },
           "404": {
             "description": "Can not find file (file name)"
@@ -1512,33 +1522,16 @@
         "type": "string",
         "example": "<mjml><mj-body><mj-section><mj-column><mj-text font-size=\"20px\" color=\"#F45E43\" font-family=\"helvetica\">Hello World </mj-text></mj-column></mj-section></mj-body></mjml>"
       },
-      "FileSaveRequest": {
+      "PresignedURL": {
         "type": "object",
         "properties": {
-          "file": {
+          "url": {
             "type": "string",
-            "format": "binary"
+            "example": "example.url/1234567890"
           }
         },
         "required": [
-          "file"
-        ]
-      },
-      "StaticFile": {
-        "type": "object",
-        "properties": {
-          "fileName": {
-            "type": "string",
-            "example": "exampleFile.pdf"
-          },
-          "staticFile": {
-            "type": "string",
-            "format": "binary"
-          }
-        },
-        "required": [
-          "fileName",
-          "staticFile"
+          "url"
         ]
       },
       "PDFTemplate": {
@@ -1760,8 +1753,11 @@
           "emailTemplate": {
             "$ref": "#/components/schemas/FillTemplate"
           },
-          "pdfTemplate": {
-            "$ref": "#/components/schemas/FillTemplate"
+          "pdfTemplates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FillTemplate"
+            }
           }
         },
         "required": [

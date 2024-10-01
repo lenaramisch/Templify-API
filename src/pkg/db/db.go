@@ -133,7 +133,7 @@ func (r *Repository) AddSMSTemplate(name string, smsTemplString string) error {
 
 func (r *Repository) AddPDFTemplate(name string, typstString string) error {
 	tx := r.dbConnection.MustBegin()
-	addPDFTemplateQuery := "INSERT INTO pdftemplates (name, typst_string) VALUES ($1, $2)"
+	addPDFTemplateQuery := "INSERT INTO pdftemplates (name, templ_string) VALUES ($1, $2)"
 	tx.MustExec(addPDFTemplateQuery, name, typstString)
 	return tx.Commit()
 }
