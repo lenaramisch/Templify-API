@@ -1,0 +1,12 @@
+# From golang, install typst
+FROM alpine:3.20
+RUN apk add --no-cache git make musl-dev go
+
+# Configure Go
+ENV GOROOT /usr/lib/go
+ENV GOPATH /go
+ENV PATH /go/bin:$PATH
+
+# Install typst
+RUN apk --no-cache add curl
+RUN apk --no-cache add typst

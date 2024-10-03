@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: sms-sender-app
+    image: golang-typst
+    build:
+      context: .
+      dockerfile: ./build/dockerfiles/Dockerfile.quick
+    ports:
+      - '8080:8080'
+    env_file:
+      - .env
+    volumes:
+      - ${PWD}/src/:/app
+      - .gitconfig:/root/.gitconfig
+      - ~/.ssh:/root/.ssh
+      - ~/go/pkg/mod/cache:/go/pkg/mod/cache
+    working_dir: /app
+    command: go run main.go
+
+    restart: on-failure
+    depends_on:
+      - db
+    # healthcheck:
+    #   test: curl --fail -s localhost:8080/info/status || exit 1
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 5
+
+  db:
+    container_name: sms_service_db
+    image: postgres:alpine3.18
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      PGDATA: /data/postgres
+      TZ: Europe/Berlin
+    volumes:
+      - ./postgres-data:/data/postgres
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'pg_isready',
+          '-U',
+          '${POSTGRES_USER:-postgres}',
+          '-d',
+          'postgres',
+        ]
+      interval: 3s
+      timeout: 5s
+      retries: 5
+
+  dbmigration:
+    container_name: sms_service_migration
+    build:
+      context: .
+      dockerfile: ./database/build/migrate.dockerfile
+    restart: on-failure
+    environment:
+      APP_DATABASE_HOST: db
+      APP_DATABASE_PORT: 5432
+      APP_DATABASE_NAME: postgres
+      APP_DATABASE_USER: ${POSTGRES_USER:-postgres}
+      APP_DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    depends_on:
+      - db
+
+  mjml:
+    image: adrianrudnik/mjml-server
+    ports:
+      - 8888:80
+    environment:
+      - CORS:=*
+      - MJML_KEEP_COMMENTS=true
+      - MJML_VALIDATION_LEVEL=strict
+      - MJML_MINIFY=false
+      - MJML_BEAUTIFY=true
+
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - ./minio_data:/mnt/data
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: changeme
+      MINIO_VOLUMES: "/mnt/data"
+      MINIO_OPTS: "--console-address :9001"
+
+    command: minio server --console-address ":9001"

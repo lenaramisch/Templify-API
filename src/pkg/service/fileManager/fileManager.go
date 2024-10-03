@@ -6,6 +6,7 @@ import (
 	"io"
 	"log/slog"
 	domain "templify/pkg/domain/model"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -24,9 +25,10 @@ type FileManagerConfig struct {
 }
 
 type FileManager struct {
-	config   FileManagerConfig
-	log      *slog.Logger
-	s3Client *s3.Client
+	config     FileManagerConfig
+	log        *slog.Logger
+	s3Client   *s3.Client
+	s3psClient *s3.PresignClient
 }
 
 // This filemanager uses s3 as a storage
@@ -63,9 +65,10 @@ func NewFileManagerService(fmCfg *FileManagerConfig, log *slog.Logger) *FileMana
 	)
 
 	return &FileManager{
-		config:   *fmCfg,
-		log:      log,
-		s3Client: client,
+		config:     *fmCfg,
+		log:        log,
+		s3Client:   client,
+		s3psClient: s3.NewPresignClient(client),
 	}
 }
 
@@ -80,11 +83,11 @@ func (fm *FileManager) ListBuckets() ([]types.Bucket, error) {
 }
 
 func (fm *FileManager) GetFileDownloadURL(fileName string) (string, error) {
-	psClient := s3.NewPresignClient(fm.s3Client)
-	req, err := psClient.PresignGetObject(context.TODO(), &s3.GetObjectInput{
+
+	req, err := fm.s3psClient.PresignGetObject(context.TODO(), &s3.GetObjectInput{
 		Bucket: aws.String(fm.config.BucketName),
 		Key:    aws.String(fileName),
-	}, s3.WithPresignExpires(5*60))
+	}, s3.WithPresignExpires(time.Hour*12))
 
 	if err != nil {
 		fm.log.With("Error", err.Error()).Debug("Failed to sign request")
@@ -95,11 +98,10 @@ func (fm *FileManager) GetFileDownloadURL(fileName string) (string, error) {
 }
 
 func (fm *FileManager) GetFileUploadURL(fileName string) (string, error) {
-	psClient := s3.NewPresignClient(fm.s3Client)
-	req, err := psClient.PresignGetObject(context.TODO(), &s3.GetObjectInput{
+	req, err := fm.s3psClient.PresignGetObject(context.TODO(), &s3.GetObjectInput{
 		Bucket: aws.String(fm.config.BucketName),
 		Key:    aws.String(fileName),
-	}, s3.WithPresignExpires(5*60))
+	}, s3.WithPresignExpires(time.Hour*12))
 
 	if err != nil {
 		fm.log.With("Error", err.Error()).Debug("Failed to sign request")
