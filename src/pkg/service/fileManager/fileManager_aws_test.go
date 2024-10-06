@@ -64,14 +64,14 @@ func createNewTestFileManagerAWS(t *testing.T) *FileManagerAWS {
 	}
 
 	viper.AutomaticEnv()
-	fileManagerConfig := &FileManagerConfig{
+	filemanagerConfig := &FileManagerConfig{
 		BucketName:  viper.GetString("FILE_MANAGER_BUCKET_NAME"),
 		Region:      viper.GetString("FILE_MANAGER_REGION"),
 		AccessKeyID: viper.GetString("FILE_MANAGER_ACCESS_KEY_ID"),
 		SecretKeyID: viper.GetString("FILE_MANAGER_SECRET_KEY_ID"),
 	}
 
-	return NewFileManagerAWSService(fileManagerConfig, slog.Default())
+	return NewFileManagerAWSService(filemanagerConfig, slog.Default())
 }
 
 func Test_UploadFile(t *testing.T) {
