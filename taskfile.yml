@@ -10,17 +10,17 @@ tasks:
   silent: true
 
   start:
-    desc: "Run the docker-compose file"
+    desc: "Run the docker composefile"
     cmds:
       - echo "Starting the application with docker"
-      - docker-compose up --build
+      - docker compose up --build
     silent: true
   
   start-quick:
-    desc: "Run the quick starting docker-compose file"
+    desc: "Run the quick starting docker composefile"
     cmds:
       - echo "Starting the application with docker"
-      - docker-compose -f docker-compose.quick.yml up --build
+      - docker compose -f docker-compose.quick.yml up --build
     silent: true
   
   gen-embedded-api:

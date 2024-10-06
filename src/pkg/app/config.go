@@ -7,7 +7,7 @@ import (
 	"templify/pkg/router"
 	"templify/pkg/server"
 	emailservice "templify/pkg/service/email"
-	fileManager "templify/pkg/service/fileManager"
+	filemanager "templify/pkg/service/filemanager"
 	mjmlservice "templify/pkg/service/mjml"
 	smsservice "templify/pkg/service/sms"
 	typstservice "templify/pkg/service/typst"
@@ -26,7 +26,7 @@ type Config struct {
 	MJMLConfig        *mjmlservice.MJMLConfig
 	DBConfig          *db.RepositoryConfig
 	TypstConfig       *typstservice.TypstConfig
-	FileManagerConfig *fileManager.FileManagerConfig
+	FileManagerConfig *filemanager.FileManagerConfig
 }
 
 func SetDefaults() {
@@ -95,16 +95,15 @@ func LoadConfig(
 	}
 
 	typstConfig := &typstservice.TypstConfig{}
-	baseURL := viper.GetString("FILE_MANAGER_BASE_URL")
-	bucketName := viper.GetString("FILE_MANAGER_BUCKET_NAME")
 
-	fileManagerConfig := &fileManager.FileManagerConfig{
-		BaseURL:     "http://" + bucketName + baseURL,
+	fileManagerConfig := &filemanager.FileManagerConfig{
+		BaseURL:     viper.GetString("FILE_MANAGER_BASE_URL"),
 		Port:        viper.GetString("FILE_MANAGER_PORT"),
-		BucketName:  bucketName,
+		BucketName:  viper.GetString("FILE_MANAGER_BUCKET_NAME"),
 		Region:      viper.GetString("FILE_MANAGER_REGION"),
 		AccessKeyID: viper.GetString("FILE_MANAGER_ACCESS_KEY_ID"),
 		SecretKeyID: viper.GetString("FILE_MANAGER_SECRET_KEY_ID"),
+		IsAWS:       viper.GetBool("FILE_MANAGER_IS_AWS"),
 	}
 
 	cfg := &Config{

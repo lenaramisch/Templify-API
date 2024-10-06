@@ -1,10 +1,7 @@
 package filemanager
 
 import (
-	"bytes"
-	"io"
 	"log/slog"
-	"net/http"
 	domain "templify/pkg/domain/model"
 	"testing"
 
@@ -19,7 +16,7 @@ var example_pdf []byte
 
 func Test_listBucketContent(t *testing.T) {
 	// create new file manager
-	fm := createNewTestFileManager(t)
+	fm := createNewTestFileManagerAWS(t)
 
 	t.Log("Listing bucket content")
 
@@ -31,7 +28,7 @@ func Test_listBucketContent(t *testing.T) {
 	t.Log("Bucket content:")
 	if len(objects) > 0 {
 		for _, object := range objects {
-			t.Log(*object.Key)
+			t.Log(object)
 		}
 	} else {
 		t.Log("No objects found")
@@ -41,7 +38,7 @@ func Test_listBucketContent(t *testing.T) {
 
 func Test_listBuckets(t *testing.T) {
 	// create new file manager
-	fm := createNewTestFileManager(t)
+	fm := createNewTestFileManagerAWS(t)
 	t.Log("Listing buckets")
 
 	// list buckets
@@ -52,7 +49,7 @@ func Test_listBuckets(t *testing.T) {
 	t.Log("Buckets:")
 	if len(buckets) > 0 {
 		for _, bucket := range buckets {
-			t.Log(*bucket.Name)
+			t.Log(bucket)
 		}
 	} else {
 		t.Log("No buckets found")
@@ -60,7 +57,7 @@ func Test_listBuckets(t *testing.T) {
 	t.FailNow()
 }
 
-func createNewTestFileManager(t *testing.T) *FileManager {
+func createNewTestFileManagerAWS(t *testing.T) *FileManagerAWS {
 	err := godotenv.Load("../../../../.env")
 	if err != nil {
 		t.Logf("Error loading .env file: %v", err)
@@ -68,44 +65,18 @@ func createNewTestFileManager(t *testing.T) *FileManager {
 
 	viper.AutomaticEnv()
 	fileManagerConfig := &FileManagerConfig{
-		BaseURL:     "http://localhost",
-		Port:        viper.GetString("FILE_MANAGER_PORT"),
 		BucketName:  viper.GetString("FILE_MANAGER_BUCKET_NAME"),
 		Region:      viper.GetString("FILE_MANAGER_REGION"),
 		AccessKeyID: viper.GetString("FILE_MANAGER_ACCESS_KEY_ID"),
 		SecretKeyID: viper.GetString("FILE_MANAGER_SECRET_KEY_ID"),
 	}
 
-	fm := NewFileManagerService(fileManagerConfig, slog.Default())
-	return fm
-}
-
-func Test_APIUploadFile(t *testing.T) {
-	// create request to upload file to localhost using octet-stream
-	r, err := http.NewRequest("POST", "http://localhost:8080/file/upload", bytes.NewReader(example_pdf))
-	if err != nil {
-		t.Errorf("Error creating request: %v", err)
-	}
-	r.Header.Set("Content-Type", "multipart/octet-stream")
-
-	// send request
-	client := &http.Client{}
-	resp, err := client.Do(r)
-	if err != nil {
-		t.Errorf("Error sending request: %v", err)
-	}
-	t.Logf("Response status: %s", resp.Status)
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		t.Errorf("Error reading response body: %v", err)
-	}
-	t.Logf("Response body: %v", string(body))
-	t.FailNow()
+	return NewFileManagerAWSService(fileManagerConfig, slog.Default())
 }
 
 func Test_UploadFile(t *testing.T) {
 	// create new file manager
-	fm := createNewTestFileManager(t)
+	fm := createNewTestFileManagerAWS(t)
 
 	t.Log("Uploading file")
 
@@ -123,7 +94,7 @@ func Test_UploadFile(t *testing.T) {
 
 func Test_DownloadFile(t *testing.T) {
 	// create new file manager
-	fm := createNewTestFileManager(t)
+	fm := createNewTestFileManagerAWS(t)
 
 	t.Log("Downloading file")
 
@@ -135,7 +106,6 @@ func Test_DownloadFile(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error downloading file: %v", err)
 	}
-	t.Logf("File content: %s", string(file))
 	t.Logf("File size: %d", len(file))
 	t.Log("File downloaded")
 	t.FailNow()
@@ -143,7 +113,7 @@ func Test_DownloadFile(t *testing.T) {
 
 func Test_AWSGetObjectPresignedURL(t *testing.T) {
 	// create new file manager
-	fm := createNewTestFileManager(t)
+	fm := createNewTestFileManagerAWS(t)
 
 	t.Log("Getting presigned URL")
 
@@ -163,7 +133,7 @@ func Test_AWSGetObjectPresignedURL(t *testing.T) {
 }
 
 func Test_AWSPostObjectPresignedURL(t *testing.T) {
-	fm := createNewTestFileManager(t)
+	fm := createNewTestFileManagerAWS(t)
 
 	t.Log("Getting presigned URL")
 
@@ -172,7 +142,8 @@ func Test_AWSPostObjectPresignedURL(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error getting presigned URL: %v", err)
 	}
-	t.Logf("Presigned URL: %s", url)
+	t.Logf("Presigned URL: %s", url.UploadURL)
+	t.Logf("Presigned URL values: %v", url.Values)
 
 	t.Log("Presigned URL retrieved")
 	t.FailNow()

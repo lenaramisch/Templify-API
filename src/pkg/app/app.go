@@ -12,7 +12,7 @@ import (
 	generatedAPI "templify/pkg/server/generated"
 	"templify/pkg/server/handler/apihandler"
 	emailservice "templify/pkg/service/email"
-	fileManagerService "templify/pkg/service/fileManager"
+	filemanager "templify/pkg/service/filemanager"
 	mjmlservice "templify/pkg/service/mjml"
 	smsservice "templify/pkg/service/sms"
 	typstservice "templify/pkg/service/typst"
@@ -33,8 +33,13 @@ func Run(cfg *Config, shutdownChannel chan os.Signal) error {
 	mjmlService := mjmlservice.NewMJMLService(cfg.MJMLConfig, logger)
 	repository := db.NewRepository(cfg.DBConfig, logger)
 	typstService := typstservice.NewTypstService(cfg.TypstConfig, logger)
-	fileManagerService := fileManagerService.NewFileManagerService(cfg.FileManagerConfig, logger)
 
+	var fileManagerService usecase.FileManagerService
+	if cfg.FileManagerConfig.IsAWS {
+		fileManagerService = filemanager.NewFileManagerAWSService(cfg.FileManagerConfig, logger)
+	} else {
+		fileManagerService = filemanager.NewFileManagerMinioService(cfg.FileManagerConfig, logger)
+	}
 	// ===== App Logic =====
 	appLogic := usecase.NewUsecase(sendgridEmailService, smsTwilioService, mjmlService, repository, typstService, fileManagerService, logger)
 

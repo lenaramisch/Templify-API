@@ -1,6 +1,8 @@
 package usecase
 
-func (u *Usecase) GetFileUploadURL(fileName string) (string, error) {
+import domain "templify/pkg/domain/model"
+
+func (u *Usecase) GetFileUploadURL(fileName string) (*domain.FileUploadResponse, error) {
 	//TODO check if file already exists
 	return u.fileManagerService.GetFileUploadURL(fileName)
 }

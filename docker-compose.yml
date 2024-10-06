@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   app:
     container_name: sms-sender-app
@@ -83,6 +81,7 @@ services:
       MINIO_ROOT_USER: admin
       MINIO_ROOT_PASSWORD: changeme
       MINIO_VOLUMES: "/mnt/data"
+      MINIO_REGION_NAME: "eu-central-1"
       MINIO_OPTS: "--console-address :9001"
 
     command: minio server --console-address ":9001"

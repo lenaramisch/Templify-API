@@ -4,8 +4,6 @@ import (
 	_ "embed"
 	"log/slog"
 	domain "templify/pkg/domain/model"
-
-	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
 
 type EmailSender interface {
@@ -21,11 +19,12 @@ type MJMLService interface {
 }
 
 type FileManagerService interface {
-	GetFileUploadURL(fileName string) (string, error)
+	GetFileUploadURL(fileName string) (*domain.FileUploadResponse, error)
 	GetFileDownloadURL(fileName string) (string, error)
 	DownloadFile(fileDownloadRequest domain.FileDownloadRequest) ([]byte, error)
 	UploadFile(fileUploafRequest domain.FileUploadRequest) error
-	ListBuckets() ([]types.Bucket, error)
+	ListBuckets() ([]string, error)
+	ListFiles(bucketName string) ([]string, error)
 }
 
 type Repository interface {
