@@ -1,0 +1,56 @@
+name: Lint, Build, and Test main branch
+on:
+  push:
+    branches:
+      - main
+jobs:
+  lint-go:
+    name: lint-go
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: 'src/go.mod'
+          cache-dependency-path: '**/go.sum'
+      - run: go mod download
+      - uses: golangci/golangci-lint-action@v5
+        with:
+          version: latest
+          args: --timeout 5m
+          working-directory: src
+
+  lint-api:
+    name: lint-api
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install -g @redocly/cli
+      - run: redocly lint --generate-ignore-file api-spec/bundle.yml
+
+  build-go:
+    name: build-go
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: 'src/go.mod'
+          cache-dependency-path: '**/go.sum'
+      - run: go mod download
+      - run: cd src && go build -o app
+
+  test-go:
+    name: test-go
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: 'src/go.mod'
+          cache-dependency-path: '**/go.sum'
+      - run: go mod download
+      - run: cd src && go test ./...
