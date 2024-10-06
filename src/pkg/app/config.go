@@ -7,7 +7,7 @@ import (
 	"templify/pkg/router"
 	"templify/pkg/server"
 	emailservice "templify/pkg/service/email"
-	filemanager "templify/pkg/service/filemanager"
+	"templify/pkg/service/filemanager"
 	mjmlservice "templify/pkg/service/mjml"
 	smsservice "templify/pkg/service/sms"
 	typstservice "templify/pkg/service/typst"

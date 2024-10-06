@@ -64,7 +64,7 @@ func createNewTestFileManagerMinio(t *testing.T) *FileManagerMinio {
 	}
 
 	viper.AutomaticEnv()
-	fileManagerConfig := &FileManagerConfig{
+	filemanagerConfig := &FileManagerConfig{
 		BaseURL:     "localhost",
 		Port:        viper.GetString("FILE_MANAGER_PORT"),
 		BucketName:  viper.GetString("FILE_MANAGER_BUCKET_NAME"),
@@ -73,7 +73,7 @@ func createNewTestFileManagerMinio(t *testing.T) *FileManagerMinio {
 		SecretKeyID: viper.GetString("FILE_MANAGER_SECRET_KEY_ID"),
 	}
 
-	return NewFileManagerMinioService(fileManagerConfig, slog.Default())
+	return NewFileManagerMinioService(filemanagerConfig, slog.Default())
 }
 
 func Test_UploadFileMinio(t *testing.T) {
