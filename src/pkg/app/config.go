@@ -96,7 +96,7 @@ func LoadConfig(
 
 	typstConfig := &typstservice.TypstConfig{}
 
-	fileManagerConfig := &filemanager.FileManagerConfig{
+	filemanagerConfig := &filemanager.FileManagerConfig{
 		BaseURL:     viper.GetString("FILE_MANAGER_BASE_URL"),
 		Port:        viper.GetString("FILE_MANAGER_PORT"),
 		BucketName:  viper.GetString("FILE_MANAGER_BUCKET_NAME"),
@@ -116,7 +116,7 @@ func LoadConfig(
 		MJMLConfig:        mjmlConfig,
 		DBConfig:          dbConfig,
 		TypstConfig:       typstConfig,
-		FileManagerConfig: fileManagerConfig,
+		FileManagerConfig: filemanagerConfig,
 	}
 
 	slog.With(

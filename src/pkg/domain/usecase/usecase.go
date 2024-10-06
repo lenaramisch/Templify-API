@@ -52,18 +52,18 @@ type Usecase struct {
 	mjmlService        MJMLService
 	repository         Repository
 	typstService       TypstService
-	fileManagerService FileManagerService
+	filemanagerService FileManagerService
 	log                *slog.Logger
 }
 
-func NewUsecase(emailSender EmailSender, smsSender SMSSender, mjmlService MJMLService, repository Repository, typstService TypstService, fileManagerService FileManagerService, log *slog.Logger) *Usecase {
+func NewUsecase(emailSender EmailSender, smsSender SMSSender, mjmlService MJMLService, repository Repository, typstService TypstService, filemanagerService FileManagerService, log *slog.Logger) *Usecase {
 	return &Usecase{
 		emailSender:        emailSender,
 		smsSender:          smsSender,
 		mjmlService:        mjmlService,
 		repository:         repository,
 		typstService:       typstService,
-		fileManagerService: fileManagerService,
+		filemanagerService: filemanagerService,
 		log:                log,
 	}
 }

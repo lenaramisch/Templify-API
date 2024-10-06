@@ -34,14 +34,14 @@ func Run(cfg *Config, shutdownChannel chan os.Signal) error {
 	repository := db.NewRepository(cfg.DBConfig, logger)
 	typstService := typstservice.NewTypstService(cfg.TypstConfig, logger)
 
-	var fileManagerService usecase.FileManagerService
+	var filemanagerService usecase.FileManagerService
 	if cfg.FileManagerConfig.IsAWS {
-		fileManagerService = filemanager.NewFileManagerAWSService(cfg.FileManagerConfig, logger)
+		filemanagerService = filemanager.NewFileManagerAWSService(cfg.FileManagerConfig, logger)
 	} else {
-		fileManagerService = filemanager.NewFileManagerMinioService(cfg.FileManagerConfig, logger)
+		filemanagerService = filemanager.NewFileManagerMinioService(cfg.FileManagerConfig, logger)
 	}
 	// ===== App Logic =====
-	appLogic := usecase.NewUsecase(sendgridEmailService, smsTwilioService, mjmlService, repository, typstService, fileManagerService, logger)
+	appLogic := usecase.NewUsecase(sendgridEmailService, smsTwilioService, mjmlService, repository, typstService, filemanagerService, logger)
 
 	// ===== Handlers =====
 	apiHandler := apihandler.NewAPIHandler(appLogic, cfg.Info, logger, cfg.Server.BaseURL)

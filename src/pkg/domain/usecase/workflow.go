@@ -136,7 +136,7 @@ func (u *Usecase) UseWorkflow(workflowUseRequest *domain.WorkflowUseRequest) err
 			FileName:  fileName,
 			Extension: extension,
 		}
-		file, err := u.fileManagerService.DownloadFile(downloadFileRequest)
+		file, err := u.filemanagerService.DownloadFile(downloadFileRequest)
 		if err != nil {
 			u.log.With("attachmentName", attachmentName).Debug("Downloading file failed")
 			return err
