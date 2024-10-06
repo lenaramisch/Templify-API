@@ -5,6 +5,7 @@ import (
 	"context"
 	"io"
 	"log/slog"
+	"net/url"
 	domain "templify/pkg/domain/model"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	smithyendpoints "github.com/aws/smithy-go/endpoints"
 )
 
 type FileManagerConfig struct {
@@ -31,6 +33,21 @@ type FileManager struct {
 	s3psClient *s3.PresignClient
 }
 
+type minioResolver struct {
+	BaseURL string
+	Port    string
+}
+
+func (mr *minioResolver) ResolveEndpoint(ctx context.Context, params s3.EndpointParameters) (smithyendpoints.Endpoint, error) {
+	u, err := url.Parse(mr.BaseURL + ":" + mr.Port)
+	if err != nil {
+		return smithyendpoints.Endpoint{}, err
+	}
+	return smithyendpoints.Endpoint{
+		URI: *u,
+	}, nil
+}
+
 // This filemanager uses s3 as a storage
 func NewFileManagerService(fmCfg *FileManagerConfig, log *slog.Logger) *FileManager {
 	staticProvider := credentials.NewStaticCredentialsProvider(
@@ -38,29 +55,26 @@ func NewFileManagerService(fmCfg *FileManagerConfig, log *slog.Logger) *FileMana
 		fmCfg.SecretKeyID,
 		"",
 	)
-	resolver := aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
-		return aws.Endpoint{
-			PartitionID:       "aws",
-			URL:               fmCfg.BaseURL + ":" + fmCfg.Port,
-			SigningRegion:     fmCfg.Region,
-			HostnameImmutable: true,
-		}, nil
-	})
 
 	cfg, err := config.LoadDefaultConfig(
 		context.TODO(),
 		config.WithRegion(fmCfg.Region),
 		config.WithCredentialsProvider(staticProvider),
-		config.WithEndpointResolver(resolver),
 	)
 	if err != nil {
 		log.With("Error", err.Error()).Debug("Error loading default config")
+	}
+
+	minioResolver := &minioResolver{
+		BaseURL: fmCfg.BaseURL,
+		Port:    fmCfg.Port,
 	}
 
 	client := s3.NewFromConfig(
 		cfg,
 		func(o *s3.Options) {
 			o.UsePathStyle = true
+			o.EndpointResolverV2 = minioResolver
 		},
 	)
 
@@ -70,6 +84,33 @@ func NewFileManagerService(fmCfg *FileManagerConfig, log *slog.Logger) *FileMana
 		s3Client:   client,
 		s3psClient: s3.NewPresignClient(client),
 	}
+}
+
+func (fm *FileManager) GetFileDownloadURL(fileName string) (string, error) {
+	request, err := fm.s3psClient.PresignGetObject(context.TODO(), &s3.GetObjectInput{
+		Bucket: aws.String(fm.config.BucketName),
+		Key:    aws.String(fileName),
+	}, func(opts *s3.PresignOptions) {
+		opts.Expires = time.Duration(60 * 60 * 12 * (time.Second))
+	})
+	if err != nil {
+		fm.log.Debug("Couldn't get a presigned request to get %v:%v. Here's why: %v\n",
+			fm.config.BucketName, fileName, slog.Any("error", err))
+	}
+	return request.URL, err
+}
+
+func (fm *FileManager) GetFileUploadURL(fileName string) (string, error) {
+	request, err := fm.s3psClient.PresignPostObject(context.TODO(), &s3.PutObjectInput{
+		Bucket: aws.String(fm.config.BucketName),
+		Key:    aws.String(fileName),
+	}, func(options *s3.PresignPostOptions) {
+		options.Expires = time.Duration(60*60*12) * time.Second
+	})
+	if err != nil {
+		fm.log.Debug("Couldn't get a presigned post request to put %v:%v. Here's why: %v\n", fm.config.BucketName, fileName, slog.Any("error", err))
+	}
+	return request.URL, nil
 }
 
 // ListBuckets lists the buckets in the current account.
@@ -82,34 +123,34 @@ func (fm *FileManager) ListBuckets() ([]types.Bucket, error) {
 	return result.Buckets, err
 }
 
-func (fm *FileManager) GetFileDownloadURL(fileName string) (string, error) {
+// func (fm *FileManager) GetFileDownloadURL(fileName string) (string, error) {
 
-	req, err := fm.s3psClient.PresignGetObject(context.TODO(), &s3.GetObjectInput{
-		Bucket: aws.String(fm.config.BucketName),
-		Key:    aws.String(fileName),
-	}, s3.WithPresignExpires(time.Hour*12))
+// 	req, err := fm.s3psClient.PresignGetObject(context.TODO(), &s3.GetObjectInput{
+// 		Bucket: aws.String(fm.config.BucketName),
+// 		Key:    aws.String(fileName),
+// 	}, s3.WithPresignExpires(time.Hour*12))
 
-	if err != nil {
-		fm.log.With("Error", err.Error()).Debug("Failed to sign request")
-		return "", err
-	}
+// 	if err != nil {
+// 		fm.log.With("Error", err.Error()).Debug("Failed to sign request")
+// 		return "", err
+// 	}
 
-	return req.URL, nil
-}
+// 	return req.URL, nil
+// }
 
-func (fm *FileManager) GetFileUploadURL(fileName string) (string, error) {
-	req, err := fm.s3psClient.PresignGetObject(context.TODO(), &s3.GetObjectInput{
-		Bucket: aws.String(fm.config.BucketName),
-		Key:    aws.String(fileName),
-	}, s3.WithPresignExpires(time.Hour*12))
+// func (fm *FileManager) GetFileUploadURL(fileName string) (string, error) {
+// 	req, err := fm.s3psClient.PresignGetObject(context.TODO(), &s3.GetObjectInput{
+// 		Bucket: aws.String(fm.config.BucketName),
+// 		Key:    aws.String(fileName),
+// 	}, s3.WithPresignExpires(time.Hour*12))
 
-	if err != nil {
-		fm.log.With("Error", err.Error()).Debug("Failed to sign request")
-		return "", err
-	}
+// 	if err != nil {
+// 		fm.log.With("Error", err.Error()).Debug("Failed to sign request")
+// 		return "", err
+// 	}
 
-	return req.URL, nil
-}
+// 	return req.URL, nil
+// }
 
 // ListFiles lists the files in a bucket.
 func (fm *FileManager) ListFiles(bucketName string) ([]types.Object, error) {

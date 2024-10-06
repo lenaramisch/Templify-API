@@ -93,4 +93,4 @@ services:
       MINIO_VOLUMES: "/mnt/data"
       MINIO_OPTS: "--console-address :9001"
 
-    command: minio server --console-address ":9001"
+    command: minio server --console-address ":9001" --address :9000

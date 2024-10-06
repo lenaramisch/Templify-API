@@ -65,6 +65,7 @@ func createNewTestFileManager(t *testing.T) *FileManager {
 	if err != nil {
 		t.Logf("Error loading .env file: %v", err)
 	}
+
 	viper.AutomaticEnv()
 	fileManagerConfig := &FileManagerConfig{
 		BaseURL:     "http://localhost",
@@ -74,6 +75,7 @@ func createNewTestFileManager(t *testing.T) *FileManager {
 		AccessKeyID: viper.GetString("FILE_MANAGER_ACCESS_KEY_ID"),
 		SecretKeyID: viper.GetString("FILE_MANAGER_SECRET_KEY_ID"),
 	}
+
 	fm := NewFileManagerService(fileManagerConfig, slog.Default())
 	return fm
 }
@@ -121,7 +123,6 @@ func Test_UploadFile(t *testing.T) {
 
 func Test_DownloadFile(t *testing.T) {
 	// create new file manager
-	// create new file manager
 	fm := createNewTestFileManager(t)
 
 	t.Log("Downloading file")
@@ -137,5 +138,42 @@ func Test_DownloadFile(t *testing.T) {
 	t.Logf("File content: %s", string(file))
 	t.Logf("File size: %d", len(file))
 	t.Log("File downloaded")
+	t.FailNow()
+}
+
+func Test_AWSGetObjectPresignedURL(t *testing.T) {
+	// create new file manager
+	fm := createNewTestFileManager(t)
+
+	t.Log("Getting presigned URL")
+
+	// get presigned URL
+	url, err := fm.GetFileDownloadURL("example.pdf")
+	if err != nil {
+		t.Errorf("Error getting presigned URL: %v", err)
+	}
+	t.Logf("Bucket name: %s", fm.config.BucketName)
+	t.Logf("AWS credentials: ")
+	t.Logf("Access key ID: %s", fm.config.AccessKeyID)
+	t.Logf("Secret access key: %s", fm.config.SecretKeyID)
+	t.Logf("Region: %s", fm.config.Region)
+	t.Logf("====================")
+	t.Logf("Presigned URL: %s", url)
+	t.FailNow()
+}
+
+func Test_AWSPostObjectPresignedURL(t *testing.T) {
+	fm := createNewTestFileManager(t)
+
+	t.Log("Getting presigned URL")
+
+	// get presigned URL
+	url, err := fm.GetFileUploadURL("example.pdf")
+	if err != nil {
+		t.Errorf("Error getting presigned URL: %v", err)
+	}
+	t.Logf("Presigned URL: %s", url)
+
+	t.Log("Presigned URL retrieved")
 	t.FailNow()
 }

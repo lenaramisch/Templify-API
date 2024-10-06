@@ -95,11 +95,13 @@ func LoadConfig(
 	}
 
 	typstConfig := &typstservice.TypstConfig{}
+	baseURL := viper.GetString("FILE_MANAGER_BASE_URL")
+	bucketName := viper.GetString("FILE_MANAGER_BUCKET_NAME")
 
 	fileManagerConfig := &fileManager.FileManagerConfig{
-		BaseURL:     viper.GetString("FILE_MANAGER_BASE_URL"),
+		BaseURL:     "http://" + bucketName + baseURL,
 		Port:        viper.GetString("FILE_MANAGER_PORT"),
-		BucketName:  viper.GetString("FILE_MANAGER_BUCKET_NAME"),
+		BucketName:  bucketName,
 		Region:      viper.GetString("FILE_MANAGER_REGION"),
 		AccessKeyID: viper.GetString("FILE_MANAGER_ACCESS_KEY_ID"),
 		SecretKeyID: viper.GetString("FILE_MANAGER_SECRET_KEY_ID"),
