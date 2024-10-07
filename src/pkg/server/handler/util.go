@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"net/http"
 	"time"
-	"unicode"
 
 	"github.com/go-chi/render"
 	"github.com/google/uuid"
@@ -77,14 +76,4 @@ func ReadRequestBody(w http.ResponseWriter, r *http.Request, v any) error {
 func HandleError(w http.ResponseWriter, r *http.Request, statusCode int, message string) {
 	render.Status(r, statusCode)
 	render.PlainText(w, r, message)
-}
-
-func FormToCapitalPlaceholders(r *http.Request) {
-	form := r.MultipartForm
-	placeholders := map[string]string{}
-	for key, values := range form.Value {
-		if len(key) > 0 && unicode.IsUpper(rune(key[0])) {
-			placeholders[key] = values[0]
-		}
-	}
 }

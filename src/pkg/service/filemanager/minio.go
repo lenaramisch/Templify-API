@@ -7,7 +7,7 @@ import (
 	domain "templify/pkg/domain/model"
 	"time"
 
-	"github.com/minio/minio-go/v7"
+	minio "github.com/minio/minio-go/v7"
 	minioCreds "github.com/minio/minio-go/v7/pkg/credentials"
 )
 
