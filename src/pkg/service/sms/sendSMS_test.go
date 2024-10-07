@@ -24,6 +24,4 @@ func Test_sendSMS(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error sending SMS: %v", err)
 	}
-
-	t.FailNow()
 }

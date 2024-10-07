@@ -33,7 +33,6 @@ func Test_listBucketContent(t *testing.T) {
 	} else {
 		t.Log("No objects found")
 	}
-	t.FailNow()
 }
 
 func Test_listBuckets(t *testing.T) {
@@ -54,7 +53,6 @@ func Test_listBuckets(t *testing.T) {
 	} else {
 		t.Log("No buckets found")
 	}
-	t.FailNow()
 }
 
 func createNewTestFileManagerAWS(t *testing.T) *FileManagerAWS {
@@ -89,7 +87,6 @@ func Test_UploadFile(t *testing.T) {
 		t.Errorf("Error uploading file: %v", err)
 	}
 	t.Log("File uploaded")
-	t.FailNow()
 }
 
 func Test_DownloadFile(t *testing.T) {
@@ -108,7 +105,6 @@ func Test_DownloadFile(t *testing.T) {
 	}
 	t.Logf("File size: %d", len(file))
 	t.Log("File downloaded")
-	t.FailNow()
 }
 
 func Test_AWSGetObjectPresignedURL(t *testing.T) {
@@ -129,7 +125,6 @@ func Test_AWSGetObjectPresignedURL(t *testing.T) {
 	t.Logf("Region: %s", fm.config.Region)
 	t.Logf("====================")
 	t.Logf("Presigned URL: %s", url)
-	t.FailNow()
 }
 
 func Test_AWSPostObjectPresignedURL(t *testing.T) {
@@ -146,5 +141,4 @@ func Test_AWSPostObjectPresignedURL(t *testing.T) {
 	t.Logf("Presigned URL values: %v", url.Values)
 
 	t.Log("Presigned URL retrieved")
-	t.FailNow()
 }
