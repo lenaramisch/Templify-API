@@ -6,7 +6,7 @@ import (
 )
 
 // test render method
-func TestRenderTypst(T *testing.T) {
+func Test_RenderTypst(T *testing.T) {
 	typstService := NewTypstService(&TypstConfig{}, &slog.Logger{})
 
 	// test render method
