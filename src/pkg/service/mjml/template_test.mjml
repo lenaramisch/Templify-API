@@ -1,9 +1,0 @@
-<mjml>
-  <mj-body>
-    <mj-section>
-      <mj-column>
-        <mj-text font-size="20px" color="black" font-family="helvetica">Your name: {{ .FirstName }} {{ .LastName }}. Age: {{ .Age }}</mj-text>
-      </mj-column>
-    </mj-section>
-  </mj-body>
-</mjml>
