@@ -11,7 +11,7 @@ import (
 	"templify/pkg/server"
 	generatedAPI "templify/pkg/server/generated"
 	"templify/pkg/server/handler/apihandler"
-	emailservice "templify/pkg/service/email"
+	"templify/pkg/service/email/sendgrid"
 	"templify/pkg/service/filemanager"
 	mjmlservice "templify/pkg/service/mjml"
 	smsservice "templify/pkg/service/sms"
@@ -28,7 +28,7 @@ func Run(cfg *Config, shutdownChannel chan os.Signal) error {
 	// ===== Logger =====
 	logger := logging.SetLogger()
 
-	sendgridEmailService := emailservice.NewSendGridService(cfg.SendgridConfig, logger)
+	sendgridEmailService := sendgrid.NewSendGridService(cfg.SendgridConfig, logger)
 	smsTwilioService := smsservice.NewTwilioSMSSender(cfg.SMSTwilioConfig, logger)
 	mjmlService := mjmlservice.NewMJMLService(cfg.MJMLConfig, logger)
 	repository := db.NewRepository(cfg.DBConfig, logger)

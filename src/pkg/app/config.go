@@ -6,7 +6,7 @@ import (
 	domain "templify/pkg/domain/model"
 	"templify/pkg/router"
 	"templify/pkg/server"
-	emailservice "templify/pkg/service/email"
+	emailservice "templify/pkg/service/email/sendgrid"
 	"templify/pkg/service/filemanager"
 	mjmlservice "templify/pkg/service/mjml"
 	smsservice "templify/pkg/service/sms"

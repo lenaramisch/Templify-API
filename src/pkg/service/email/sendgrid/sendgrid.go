@@ -1,4 +1,4 @@
-package emailservice
+package sendgrid
 
 import (
 	"bytes"
