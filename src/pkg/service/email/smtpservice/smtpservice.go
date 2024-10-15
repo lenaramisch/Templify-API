@@ -1,4 +1,4 @@
-package smptservice
+package smtpservice
 
 import (
 	"io"
@@ -55,7 +55,7 @@ func (es *SMTPService) CreateEmailData(emailRequest *domain.EmailRequest) *gomai
 	return message
 }
 
-func (es *SMTPService) SendEmail(emailRequest *domain.EmailRequest) {
+func (es *SMTPService) SendEmail(emailRequest *domain.EmailRequest) error {
 	// Create email data
 	message := es.CreateEmailData(emailRequest)
 
@@ -65,7 +65,8 @@ func (es *SMTPService) SendEmail(emailRequest *domain.EmailRequest) {
 	// Send the email
 	if err := dialer.DialAndSend(message); err != nil {
 		es.log.With("Error", err.Error()).Error("Error sending email")
-	} else {
-		es.log.Debug("Email sent successfully")
+		return err
 	}
+	es.log.Debug("Email sent successfully")
+	return nil
 }

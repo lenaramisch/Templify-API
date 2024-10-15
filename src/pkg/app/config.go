@@ -6,7 +6,8 @@ import (
 	domain "templify/pkg/domain/model"
 	"templify/pkg/router"
 	"templify/pkg/server"
-	emailservice "templify/pkg/service/email/sendgrid"
+	"templify/pkg/service/email/sendgrid"
+	"templify/pkg/service/email/smtpservice"
 	"templify/pkg/service/filemanager"
 	mjmlservice "templify/pkg/service/mjml"
 	smsservice "templify/pkg/service/sms"
@@ -21,7 +22,9 @@ type Config struct {
 	Router *router.Config
 	Server *server.Config
 	// Custom configs below
-	SendgridConfig    *emailservice.SendgridConfig
+	EmailService      string
+	SendgridConfig    *sendgrid.SendgridConfig
+	SMTPServiceConfig *smtpservice.SMTPServiceConfig
 	SMSTwilioConfig   *smsservice.TwilioSMSSenderConfig
 	MJMLConfig        *mjmlservice.MJMLConfig
 	DBConfig          *db.RepositoryConfig
@@ -80,12 +83,20 @@ func LoadConfig(
 		DBName:   viper.GetString("DB_NAME"),
 	}
 
-	sendgridConfig := &emailservice.SendgridConfig{
+	sendgridConfig := &sendgrid.SendgridConfig{
 		ApiKey:       viper.GetString("SENDGRID_API_KEY"),
 		FromEmail:    viper.GetString("SENDGRID_FROM_EMAIL"),
 		FromName:     viper.GetString("SENDGRID_FROM_NAME"),
 		ReplyToEmail: viper.GetString("SENDGRID_REPLY_TO_EMAIL"),
 		ReplyToName:  viper.GetString("SENDGRID_REPLY_TO_NAME"),
+	}
+
+	smtpConfig := &smtpservice.SMTPServiceConfig{
+		Host:      viper.GetString("SMTP_HOST"),
+		Port:      viper.GetInt("SMTP_PORT"),
+		Username:  viper.GetString("SMTP_USERNAME"),
+		Password:  viper.GetString("SMTP_PASSWORD"),
+		FromEmail: viper.GetString("SMTP_FROM_EMAIL"),
 	}
 
 	smsTwilioConfig := &smsservice.TwilioSMSSenderConfig{
@@ -107,9 +118,10 @@ func LoadConfig(
 	}
 
 	cfg := &Config{
-		Info:   infoConfig,
-		Router: routerConfig,
-		Server: serverConfig,
+		Info:         infoConfig,
+		Router:       routerConfig,
+		Server:       serverConfig,
+		EmailService: viper.GetString("EMAIL_SERVICE"),
 		// Custom configs below
 		SendgridConfig:    sendgridConfig,
 		SMSTwilioConfig:   smsTwilioConfig,
@@ -117,6 +129,7 @@ func LoadConfig(
 		DBConfig:          dbConfig,
 		TypstConfig:       typstConfig,
 		FileManagerConfig: filemanagerConfig,
+		SMTPServiceConfig: smtpConfig,
 	}
 
 	slog.With(
