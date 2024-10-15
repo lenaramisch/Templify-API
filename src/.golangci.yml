@@ -33,5 +33,11 @@ linters-settings:
       - pattern: 'interface{}'
         replacement: 'any'
 
+issues:
+  exclude-rules:
+    - linters:
+      - stylecheck
+      text: "ST1003:"
+
 run:
   timeout: 5m
