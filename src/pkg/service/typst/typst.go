@@ -53,12 +53,18 @@ func writeStringToFile(filledTemplStr string, filePath string) (string, error) {
 func (t *TypstService) RenderTypst(typstString string) ([]byte, error) {
 	randomName := uuid.New().String()
 	filePath := fmt.Sprintf("/tmp/%s.typ", randomName)
-	writeStringToFile(typstString, filePath)
+	_, err := writeStringToFile(typstString, filePath)
+	if err != nil {
+		t.log.With(
+			"Error", err.Error(),
+		).Debug("Error writing typst string to file")
+		return nil, err
+	}
 	defer os.Remove(filePath)
 	completeTypstFileName := fmt.Sprintf("%s.typ", randomName)
 	cmd := exec.Command("typst", "compile", completeTypstFileName)
 	cmd.Dir = "/tmp"
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
 		t.log.With(
 			"Error", err.Error(),

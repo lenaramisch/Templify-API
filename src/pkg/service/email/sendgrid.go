@@ -37,15 +37,10 @@ const (
 	SENDGRID_URL = "https://api.sendgrid.com/v3/mail/send"
 )
 
-func (es *SendGridService) SendEmail(emailRequest *domain.EmailRequest) error {
-
-	if es.config.ApiKey == "" || es.config.FromEmail == "" || es.config.FromName == "" || es.config.ReplyToEmail == "" || es.config.ReplyToName == "" {
-		return errors.New("missing environment variables")
-	}
-
+func (es *SendGridService) CreateEmailData(emailRequest *domain.EmailRequest) map[string]any {
 	//Create Email Data
-	emailData := map[string]interface{}{
-		"personalizations": []map[string]interface{}{
+	emailData := map[string]any{
+		"personalizations": []map[string]any{
 			{
 				"to": []map[string]string{
 					{
@@ -111,6 +106,17 @@ func (es *SendGridService) SendEmail(emailRequest *domain.EmailRequest) error {
 		emailData["attachments"] = attachments
 	}
 
+	return emailData
+}
+
+func (es *SendGridService) SendEmail(emailRequest *domain.EmailRequest) error {
+	if es.config.ApiKey == "" || es.config.FromEmail == "" || es.config.FromName == "" || es.config.ReplyToEmail == "" || es.config.ReplyToName == "" {
+		return errors.New("missing environment variables")
+	}
+
+	// Create Email Data
+	emailData := es.CreateEmailData(emailRequest)
+
 	jsonBytes, err := json.Marshal(emailData)
 	if err != nil {
 		return err
@@ -133,12 +139,14 @@ func (es *SendGridService) SendEmail(emailRequest *domain.EmailRequest) error {
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 
 	// Check HTTP status code
 	if resp.StatusCode >= 400 {
 		body, _ := io.ReadAll(resp.Body)
 		fmt.Println("Error response from SendGrid:", string(body))
-		return fmt.Errorf(fmt.Sprintf("SendGrid returned status code %d", resp.StatusCode))
+		es.log.With("statusCode", resp.StatusCode, "errorResponse", body).Debug("Error response from SendGrid")
+		return fmt.Errorf("error response from SendGrid")
 	}
 
 	return nil

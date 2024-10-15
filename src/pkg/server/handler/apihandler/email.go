@@ -17,7 +17,11 @@ import (
 // (POST /email/basic/send)
 func (ah *APIHandler) SendEmail(w http.ResponseWriter, r *http.Request) {
 	var emailRequestAPI server.EmailSendRequest
-	handler.ReadRequestBody(w, r, &emailRequestAPI)
+	err := handler.ReadRequestBody(w, r, &emailRequestAPI)
+	if err != nil {
+		ah.log.Debug("Error reading request body")
+		return
+	}
 	var attachmentInfo []domain.AttachmentInfo
 	// Check if Attachments are present and create AttachmentInfo
 	if emailRequestAPI.Attachments != nil {
@@ -44,7 +48,7 @@ func (ah *APIHandler) SendEmail(w http.ResponseWriter, r *http.Request) {
 		MessageBody:    emailRequestAPI.Message,
 	}
 
-	err := ah.Usecase.SendRawEmail(emailRequestDomain)
+	err = ah.Usecase.SendRawEmail(emailRequestDomain)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, err.Error())
 		return
@@ -109,9 +113,7 @@ func (ah *APIHandler) SendTemplatedEmail(w http.ResponseWriter, r *http.Request,
 // Get Template by Name
 // (GET /email/templates/{templateName})
 func (ah *APIHandler) GetTemplateByName(w http.ResponseWriter, r *http.Request, templateName string) {
-	templateDomain := &domain.Template{}
-	var err error
-	templateDomain, err = ah.Usecase.GetEmailTemplateByName(templateName)
+	templateDomain, err := ah.Usecase.GetEmailTemplateByName(templateName)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, "Error getting template")
 		return

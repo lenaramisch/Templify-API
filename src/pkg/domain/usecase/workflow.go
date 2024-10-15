@@ -42,9 +42,7 @@ func (u *Usecase) GetWorkflowByName(workflowName string) (*domain.GetWorkflowRes
 
 	// Split the PDF template names string into single names
 	var pdfTemplateNames []string
-	for _, name := range strings.Split(workflowRaw.PDFTemplateNames, ",") {
-		pdfTemplateNames = append(pdfTemplateNames, name)
-	}
+	pdfTemplateNames = append(pdfTemplateNames, strings.Split(workflowRaw.PDFTemplateNames, ",")...)
 
 	for _, templateName := range pdfTemplateNames {
 		// Get each PDF template and placeholders
@@ -63,9 +61,7 @@ func (u *Usecase) GetWorkflowByName(workflowName string) (*domain.GetWorkflowRes
 	}
 
 	// Split the static attachment names string into single names
-	for _, name := range strings.Split(workflowRaw.StaticAttachments, ",") {
-		getWorkflowResponse.StaticAttachments = append(getWorkflowResponse.StaticAttachments, name)
-	}
+	getWorkflowResponse.StaticAttachments = append(getWorkflowResponse.StaticAttachments, strings.Split(workflowRaw.StaticAttachments, ",")...)
 
 	return getWorkflowResponse, nil
 }

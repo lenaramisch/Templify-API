@@ -97,6 +97,10 @@ func (fm *FileManagerMinio) DownloadFile(fileDownloadRequest domain.FileDownload
 	}
 	defer object.Close()
 	buf := new(bytes.Buffer)
-	buf.ReadFrom(object)
+	_, err = buf.ReadFrom(object)
+	if err != nil {
+		fm.log.With("Error", err.Error()).Debug("Error reading file")
+		return nil, err
+	}
 	return buf.Bytes(), nil
 }

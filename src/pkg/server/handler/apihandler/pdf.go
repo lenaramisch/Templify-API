@@ -14,7 +14,6 @@ import (
 // Get all placehholders of a PDF template
 // (GET /pdf/templates/{templateName}/placeholders)
 func (ah *APIHandler) GetPDFTemplatePlaceholdersByName(w http.ResponseWriter, r *http.Request, templateName string) {
-
 	if templateName == "" {
 		http.Error(w, "URL Param templateName empty", http.StatusBadRequest)
 		return

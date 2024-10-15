@@ -68,6 +68,7 @@ func (s *TwilioSMSSender) SendSMS(smsRequest domain.SmsRequest) error {
 		s.log.Warn("Error performing request")
 		return err
 	}
+	defer resp.Body.Close()
 
 	// Read the response body
 	body, err := io.ReadAll(resp.Body)
@@ -82,7 +83,7 @@ func (s *TwilioSMSSender) SendSMS(smsRequest domain.SmsRequest) error {
 			"statusCode", resp.StatusCode,
 			"response", body,
 		).Warn("Error response status code")
-		return fmt.Errorf("Error response status code: %d", resp.StatusCode)
+		return fmt.Errorf("error response status code: %d", resp.StatusCode)
 	}
 
 	return nil

@@ -43,12 +43,14 @@ func (m *MJMLService) RenderMJML(MJMLString string) (string, error) {
 		m.log.With("err", err.Error()).Debug("Error sending request")
 		return "", err
 	}
+	defer resp.Body.Close()
 
 	body, _ := io.ReadAll(resp.Body)
 
 	if resp.StatusCode >= 400 {
 		fmt.Println("Error response from MJML Service:", string(body))
-		return "", fmt.Errorf(fmt.Sprintf("MJML Service returned status code %d", resp.StatusCode))
+		m.log.With("statusCode", resp.StatusCode).Debug("Error response from MJML Service")
+		return "", fmt.Errorf("error response from MJML Service")
 	}
 
 	htmlString := string(body)

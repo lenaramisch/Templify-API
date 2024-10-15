@@ -18,19 +18,19 @@ var openapiHTMLStoplight []byte
 
 // Get status
 // (GET /info/status)
-func (a APIHandler) GetStatus(w http.ResponseWriter, r *http.Request) {
+func (ah *APIHandler) GetStatus(w http.ResponseWriter, r *http.Request) {
 	handler.RespondWithJSON(w, r, http.StatusOK, map[string]string{"status": "HEALTHY"})
 }
 
 // Get version
 // (GET /info/version)
-func (a APIHandler) GetVersion(w http.ResponseWriter, r *http.Request) {
-	handler.RespondWithJSON(w, r, http.StatusOK, a.Info)
+func (ah *APIHandler) GetVersion(w http.ResponseWriter, r *http.Request) {
+	handler.RespondWithJSON(w, r, http.StatusOK, ah.Info)
 }
 
 // Get openapi JSON
 // (GET /info/openapi.json)
-func (a APIHandler) GetOpenAPIJSON(w http.ResponseWriter, r *http.Request) {
+func (ah *APIHandler) GetOpenAPIJSON(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	_, err := w.Write(openapiJSON)
 	if err != nil {
@@ -41,7 +41,7 @@ func (a APIHandler) GetOpenAPIJSON(w http.ResponseWriter, r *http.Request) {
 
 // Get openapi HTML
 // (GET /info/openapi.html)
-func (a APIHandler) GetOpenAPIHTML(w http.ResponseWriter, r *http.Request) {
+func (ah *APIHandler) GetOpenAPIHTML(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	var templateString = string(openapiHTMLStoplight)
 
@@ -55,7 +55,7 @@ func (a APIHandler) GetOpenAPIHTML(w http.ResponseWriter, r *http.Request) {
 	// with the actual base URL of the server
 	// and render to the response writer
 	err = t.Execute(w, map[string]string{
-		"BaseURL": a.BaseURL,
+		"BaseURL": ah.BaseURL,
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

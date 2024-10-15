@@ -116,9 +116,7 @@ func (ah *APIHandler) FillSMSTemplate(w http.ResponseWriter, r *http.Request, te
 // Get SMS template by name
 // (GET /sms/templates/{templateName})
 func (ah *APIHandler) GetSMSTemplateByName(w http.ResponseWriter, r *http.Request, templateName string) {
-	templateDomain := &domain.Template{}
-	var err error
-	templateDomain, err = ah.Usecase.GetSMSTemplateByName(templateName)
+	templateDomain, err := ah.Usecase.GetSMSTemplateByName(templateName)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, "Error getting template")
 		return

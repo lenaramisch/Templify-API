@@ -100,7 +100,6 @@ func loggingMiddleware(next http.Handler, logger *slog.Logger, quietdownRoutes [
 		// Call the next handler in the chain
 		next.ServeHTTP(w, r)
 	})
-
 }
 
 // corsMiddleware adds CORS headers based on the provided configuration.
@@ -145,33 +144,33 @@ func timeoutMiddleware(next http.Handler, timeout time.Duration) http.Handler {
 
 // tokenMiddleware checks if the request has an authorization token on some routes.
 // nolint: unused
-func tokenMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Check if the request path is in the excludedPaths list
-		shouldExclude := false
-		for _, path := range []string{
-			"/info/version",
-			"/info/status",
-			"/info/openapi.json",
-			"/info/openapi.html",
-			"/auth/login",
-		} {
-			if r.URL.Path == path {
-				shouldExclude = true
-				break
-			}
-		}
+// func tokenMiddleware(next http.Handler) http.Handler {
+// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// 		Check if the request path is in the excludedPaths list
+// 		shouldExclude := false
+// 		for _, path := range []string{
+// 			"/info/version",
+// 			"/info/status",
+// 			"/info/openapi.json",
+// 			"/info/openapi.html",
+// 			"/auth/login",
+// 		} {
+// 			if r.URL.Path == path {
+// 				shouldExclude = true
+// 				break
+// 			}
+// 		}
 
-		if !shouldExclude {
-			// Check if the request has a valid token
-			token := r.Header.Get("Authorization")
-			if token == "" {
-				http.Error(w, "Unauthorized, add a valid Authorization header", http.StatusUnauthorized)
-				return
-			}
-		}
+// 		if !shouldExclude {
+// 			Check if the request has a valid token
+// 			token := r.Header.Get("Authorization")
+// 			if token == "" {
+// 				http.Error(w, "Unauthorized, add a valid Authorization header", http.StatusUnauthorized)
+// 				return
+// 			}
+// 		}
 
-		// Call the next handler in the chain
-		next.ServeHTTP(w, r)
-	})
-}
+// 		Call the next handler in the chain
+// 		next.ServeHTTP(w, r)
+// 	})
+// }

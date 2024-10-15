@@ -151,11 +151,11 @@ func (fm *FileManagerAWS) DownloadFile(fileDownloadRequest domain.FileDownloadRe
 		Bucket: aws.String(bucketName),
 		Key:    aws.String(objectKey),
 	})
-	defer result.Body.Close()
 	if err != nil {
 		fm.log.With("Error", err.Error()).Debug("Error downloading file")
 		return nil, err
 	}
+	defer result.Body.Close()
 	downloadedFile, err := io.ReadAll(result.Body)
 	if err != nil {
 		fm.log.With("Error", err.Error()).Debug("Error reading file")

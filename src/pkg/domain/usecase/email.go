@@ -97,31 +97,6 @@ func (u *Usecase) SendTemplatedEmail(r *domain.EmailTemplateSendRequest) error {
 	return nil
 }
 
-func (u *Usecase) prepareMJMLBody(templateName string, values map[string]string) (*string, error) {
-	// Get template and fill placeholders
-	mjml, err := FillTemplate(templateName, values)
-	if err != nil {
-		u.log.
-			With(
-				"TemplateName", templateName,
-				"Values", values,
-				"Error", err.Error(),
-			).
-			Debug("Error filling mjml template with values")
-		return nil, err
-	}
-
-	htmlString, err := u.mjmlService.RenderMJML(mjml)
-	if err != nil {
-		u.log.With(
-			"MJML", mjml,
-			"Error", err.Error(),
-		).Debug("Error rendering mjml template")
-		return nil, err
-	}
-	return &htmlString, nil
-}
-
 func (u *Usecase) GetEmailTemplateByName(templateName string) (*domain.Template, error) {
 	templateDomain, err := u.repository.GetEmailTemplateByName(templateName)
 	if err != nil {

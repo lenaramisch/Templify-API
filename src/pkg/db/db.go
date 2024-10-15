@@ -71,7 +71,6 @@ func (r *Repository) GetEmailTemplateByName(name string) (*domain.Template, erro
 }
 
 func (r *Repository) AddWorkflow(workflow *domain.WorkflowCreateRequest) error {
-
 	staticAttachmentNamesStr := strings.Join(workflow.StaticAttachments, ",")
 
 	templatedPDFNamesStr := strings.Join(workflow.TemplatedPDFs, ",")
