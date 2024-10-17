@@ -12,6 +12,7 @@ import (
 	generatedAPI "templify/pkg/server/generated"
 	"templify/pkg/server/handler/apihandler"
 	"templify/pkg/service/email/sendgrid"
+	"templify/pkg/service/email/smtpservice"
 	"templify/pkg/service/filemanager"
 	mjmlservice "templify/pkg/service/mjml"
 	smsservice "templify/pkg/service/sms"
@@ -28,7 +29,16 @@ func Run(cfg *Config, shutdownChannel chan os.Signal) error {
 	// ===== Logger =====
 	logger := logging.SetLogger()
 
-	sendgridEmailService := sendgrid.NewSendGridService(cfg.SendgridConfig, logger)
+	// ===== Services =====
+	var emailService usecase.EmailSender
+	if cfg.EmailService == "sendgrid" {
+		logger.Info("using sendgrid email service")
+		emailService = sendgrid.NewSendGridService(cfg.SendgridConfig, logger)
+	} else {
+		logger.Info("using smtp email service")
+		emailService = smtpservice.NewSMTPService(cfg.SMTPServiceConfig, logger)
+	}
+
 	smsTwilioService := smsservice.NewTwilioSMSSender(cfg.SMSTwilioConfig, logger)
 	mjmlService := mjmlservice.NewMJMLService(cfg.MJMLConfig, logger)
 	repository := db.NewRepository(cfg.DBConfig, logger)
@@ -41,7 +51,7 @@ func Run(cfg *Config, shutdownChannel chan os.Signal) error {
 		filemanagerService = filemanager.NewFileManagerMinioService(cfg.FileManagerConfig, logger)
 	}
 	// ===== App Logic =====
-	appLogic := usecase.NewUsecase(sendgridEmailService, smsTwilioService, mjmlService, repository, typstService, filemanagerService, logger)
+	appLogic := usecase.NewUsecase(emailService, smsTwilioService, mjmlService, repository, typstService, filemanagerService, logger)
 
 	// ===== Handlers =====
 	apiHandler := apihandler.NewAPIHandler(appLogic, cfg.Info, logger, cfg.Server.BaseURL)
