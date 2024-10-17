@@ -79,7 +79,7 @@ services:
       - MJML_BEAUTIFY=true
 
   minio:
-    image: minio/minio
+    image: minio/minio:latest
     ports:
       - "9000:9000"
       - "9001:9001"

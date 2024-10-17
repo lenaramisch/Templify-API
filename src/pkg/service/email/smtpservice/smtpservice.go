@@ -61,7 +61,6 @@ func (es *SMTPService) SendEmail(emailRequest *domain.EmailRequest) error {
 
 	// Set up the SMTP dialer
 	dialer := gomail.NewDialer(es.config.Host, es.config.Port, es.config.Username, es.config.Password)
-
 	// Send the email
 	if err := dialer.DialAndSend(message); err != nil {
 		es.log.With("Error", err.Error()).Error("Error sending email")
