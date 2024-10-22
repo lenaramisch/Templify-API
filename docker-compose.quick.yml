@@ -20,11 +20,11 @@ services:
     restart: on-failure
     depends_on:
       - db
-    # healthcheck:
-    #   test: curl --fail -s localhost:8080/info/status || exit 1
-    #   interval: 30s
-    #   timeout: 10s
-    #   retries: 5
+    healthcheck:
+      test: curl --fail -s localhost:8080/info/status || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   db:
     container_name: sms_service_db
@@ -92,3 +92,9 @@ services:
       MINIO_OPTS: "--console-address :9001"
 
     command: minio server --console-address ":9001" --address :9000
+
+    healthcheck:
+      test: curl --fail -s localhost:9000/minio/health/live || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
