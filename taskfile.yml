@@ -22,6 +22,16 @@ tasks:
       - echo "Starting the application with docker"
       - docker compose -f docker-compose.quick.yml up --build
     silent: true
+
+  gen-sqlc:
+    desc: 'Generate the sql queries using sqlc'
+    cmds:
+      - echo "Generating the sqlc"
+      - docker run --rm -v ./database:/src -w /src sqlc/sqlc generate
+      - rm -rf ./src/pkg/db/gen-sqlc
+      - mkdir ./src/pkg/db/gen-sqlc
+      - mv ./database/generated ./src/pkg/db/gen-sqlc
+    silent: true
   
   gen-embedded-api:
     desc: 'Generate the embedded json for the api'

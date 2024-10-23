@@ -56,7 +56,7 @@ services:
     container_name: sms_service_migration
     build:
       context: .
-      dockerfile: ./database/build/migrate.dockerfile
+      dockerfile: ./build/migrate.dockerfile
     restart: on-failure
     environment:
       APP_DATABASE_HOST: db
