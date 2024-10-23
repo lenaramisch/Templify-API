@@ -55,7 +55,7 @@ func (ah *APIHandler) SendTemplatedSMS(w http.ResponseWriter, r *http.Request, t
 		Placeholders:        smsRequest.Placeholders,
 	}
 
-	err = ah.Usecase.SendTemplatedSMS(smsFillRequest, templateName)
+	err = ah.Usecase.SendTemplatedSMS(r.Context(), smsFillRequest, templateName)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, err.Error())
 		return
@@ -77,7 +77,13 @@ func (ah *APIHandler) AddNewSMSTemplate(w http.ResponseWriter, r *http.Request, 
 		handler.HandleError(w, r, http.StatusBadRequest, "Invalid JSON format")
 		return
 	}
-	err = ah.Usecase.AddSMSTemplate(templateName, SMSTempl.TemplateString)
+
+	templateDomain := &domain.Template{
+		Name:        templateName,
+		TemplateStr: SMSTempl.TemplateString,
+	}
+
+	err = ah.Usecase.AddSMSTemplate(r.Context(), templateDomain)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, fmt.Sprintf("Adding SMS template with name %v failed", templateName))
 		return
@@ -103,7 +109,7 @@ func (ah *APIHandler) FillSMSTemplate(w http.ResponseWriter, r *http.Request, te
 	}
 
 	placeholders := templateFillRequest.Placeholders
-	filledTemplate, err := ah.Usecase.GetFilledSMSTemplate(templateName, placeholders)
+	filledTemplate, err := ah.Usecase.GetFilledSMSTemplate(r.Context(), templateName, placeholders)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, "Error filling template")
 		return
@@ -116,7 +122,7 @@ func (ah *APIHandler) FillSMSTemplate(w http.ResponseWriter, r *http.Request, te
 // Get SMS template by name
 // (GET /sms/templates/{templateName})
 func (ah *APIHandler) GetSMSTemplateByName(w http.ResponseWriter, r *http.Request, templateName string) {
-	templateDomain, err := ah.Usecase.GetSMSTemplateByName(templateName)
+	templateDomain, err := ah.Usecase.GetSMSTemplateByName(r.Context(), templateName)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, "Error getting template")
 		return
@@ -132,7 +138,7 @@ func (ah *APIHandler) GetSMSTemplateByName(w http.ResponseWriter, r *http.Reques
 // Get SMS template placeholders by name
 // (GET /sms/templates/{templateName}/placeholders)
 func (ah *APIHandler) GetSMSTemplatePlaceholdersByName(w http.ResponseWriter, r *http.Request, templateName string) {
-	templatePlaceholders, err := ah.Usecase.GetSMSPlaceholders(templateName)
+	templatePlaceholders, err := ah.Usecase.GetSMSPlaceholders(r.Context(), templateName)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, fmt.Sprintf("Getting placeholders for template %s failed", templateName))
 		return

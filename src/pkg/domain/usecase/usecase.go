@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"context"
 	_ "embed"
 	"log/slog"
 	domain "templify/pkg/domain/model"
@@ -29,17 +30,17 @@ type FileManagerService interface {
 
 type Repository interface {
 	// Email
-	GetEmailTemplateByName(name string) (*domain.Template, error)
-	AddEmailTemplate(name string, templateStr string, isMJML bool) error
+	GetEmailTemplateByName(ctx context.Context, name string) (*domain.Template, error)
+	AddEmailTemplate(ctx context.Context, template *domain.Template) error
 	// PDF
-	GetPDFTemplateByName(name string) (*domain.Template, error)
-	AddPDFTemplate(name string, typstString string) error
+	GetPDFTemplateByName(ctx context.Context, name string) (*domain.Template, error)
+	AddPDFTemplate(ctx context.Context, template *domain.Template) error
 	// SMS
-	AddSMSTemplate(name string, smsTemplString string) error
-	GetSMSTemplateByName(name string) (*domain.Template, error)
+	AddSMSTemplate(ctx context.Context, template *domain.Template) error
+	GetSMSTemplateByName(ctx context.Context, name string) (*domain.Template, error)
 	// Workflow
-	AddWorkflow(workflow *domain.WorkflowCreateRequest) error
-	GetWorkflowByName(workflowName string) (*domain.Workflow, error)
+	AddWorkflow(ctx context.Context, workflow *domain.WorkflowCreateRequest) error
+	GetWorkflowByName(ctx context.Context, workflowName string) (*domain.Workflow, error)
 }
 
 type TypstService interface {

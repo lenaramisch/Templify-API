@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"log/slog"
@@ -8,14 +9,18 @@ import (
 
 	domain "templify/pkg/domain/model"
 
+	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/jmoiron/sqlx"
+
+	gensqlc "templify/pkg/db/gen-sqlc/generated"
 )
 
 type Repository struct {
 	config       *RepositoryConfig
-	dbConnection *sqlx.DB
+	dbConnection *pgxpool.Pool
 	log          *slog.Logger
+	queries      *gensqlc.Queries
 }
 
 type RepositoryConfig struct {
@@ -32,47 +37,66 @@ func NewRepository(config *RepositoryConfig, log *slog.Logger) *Repository {
 		log:    log,
 	}
 	repo.ConnectToDB()
+	repo.queries = gensqlc.New(repo.dbConnection)
 	return repo
 }
 
-func (r *Repository) ConnectToDB() {
+func (r *Repository) ConnectToDB() error {
+	// Connection string in the pgx format
 	connectionString := fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		r.config.Host, r.config.Port, r.config.User, r.config.Password, r.config.DBName,
+		"postgresql://%s:%s@%s:%d/%s?sslmode=disable",
+		r.config.User, r.config.Password, r.config.Host, r.config.Port, r.config.DBName,
 	)
-	db, err := sqlx.Connect("pgx", connectionString)
+
+	ctx := context.Background()
+
+	// Parse the connection string and create a connection pool
+	config, err := pgxpool.ParseConfig(connectionString)
 	if err != nil {
-		log.Fatal("Connecting to DB failed", err)
+		return fmt.Errorf("unable to parse connection string: %w", err)
 	}
 
-	r.dbConnection = db
+	// Connect to the database using pgxpool
+	dbpool, err := pgxpool.NewWithConfig(ctx, config)
+	if err != nil {
+		return fmt.Errorf("unable to create connection pool: %w", err)
+	}
+
+	// Storing the connection pool in the repository struct
+	r.dbConnection = dbpool
+
+	if err := r.dbConnection.Ping(ctx); err != nil {
+		r.log.With("error", err).Error("Failed to ping DB")
+		return err
+	}
+
+	// You may want to log successful connection
+	log.Println("Connected to DB successfully")
+	return nil
 }
 
-func (r *Repository) GetEmailTemplateByName(name string) (*domain.Template, error) {
-	tx := r.dbConnection.MustBegin()
-	getTemplateByNameQuery := "SELECT * FROM emailtemplates WHERE name=$1"
-	templateDB := Template{}
-	err := tx.Get(&templateDB, getTemplateByNameQuery, name)
-	if err != nil {
-		return nil, err
+func (r *Repository) GetEmailTemplateByName(ctx context.Context, name string) (*domain.Template, error) {
+	pgx_name := pgtype.Text{
+		String: name,
+		Valid:  true,
 	}
-	err = tx.Commit()
+	templateDB, err := r.queries.GetEmailTemplateByName(ctx, pgx_name)
 	if err != nil {
+		r.log.With("error", err).Error("Failed to get email template by name")
 		return nil, err
 	}
 
 	// map to domain model
 	templateDomain := domain.Template{
-		Name:        templateDB.Name,
-		TemplateStr: templateDB.TemplString,
-		IsMJML:      templateDB.IsMJML,
+		Name:        templateDB.Name.String,
+		TemplateStr: templateDB.TemplString.String,
+		IsMJML:      templateDB.IsMjml.Bool,
 	}
 	return &templateDomain, nil
 }
 
-func (r *Repository) AddWorkflow(workflow *domain.WorkflowCreateRequest) error {
+func (r *Repository) AddWorkflow(ctx context.Context, workflow *domain.WorkflowCreateRequest) error {
 	staticAttachmentNamesStr := strings.Join(workflow.StaticAttachments, ",")
-
 	templatedPDFNamesStr := strings.Join(workflow.TemplatedPDFs, ",")
 
 	//map domain model to db model
@@ -84,97 +108,129 @@ func (r *Repository) AddWorkflow(workflow *domain.WorkflowCreateRequest) error {
 		TemplatedPDFs:     templatedPDFNamesStr,
 	}
 	r.log.With("workflowDB", workflowDB).Debug("WorkflowDB")
-	tx := r.dbConnection.MustBegin()
-	addWorkflowQuery := "INSERT INTO workflows (name, email_template_name, email_subject, static_attachments, templated_pdfs) VALUES ($1, $2, $3, $4, $5)"
-	tx.MustExec(addWorkflowQuery, workflowDB.Name, workflowDB.EmailTemplateName, workflowDB.EmailSubject, workflowDB.StaticAttachments, workflowDB.TemplatedPDFs)
-	//tx.MustExec(addWorkflowQuery, workflowDB)
-	return tx.Commit()
+	_, err := r.queries.AddWorkflow(ctx, gensqlc.AddWorkflowParams{
+		Name:              pgtype.Text{String: workflowDB.Name, Valid: true},
+		EmailTemplateName: pgtype.Text{String: workflowDB.EmailTemplateName, Valid: true},
+		EmailSubject:      pgtype.Text{String: workflowDB.EmailSubject, Valid: true},
+		StaticAttachments: pgtype.Text{String: workflowDB.StaticAttachments, Valid: true},
+		TemplatedPdfs:     pgtype.Text{String: workflowDB.TemplatedPDFs, Valid: true},
+	})
+	if err != nil {
+		r.log.With("error", err).Error("Failed to add workflow")
+		return err
+	}
+	return nil
 }
 
-func (r *Repository) GetWorkflowByName(workflowName string) (*domain.Workflow, error) {
-	tx := r.dbConnection.MustBegin()
-	getWorkflowByNameQuery := "SELECT * FROM workflows WHERE name=$1"
-	workflowDB := Workflow{}
-	err := tx.Get(&workflowDB, getWorkflowByNameQuery, workflowName)
-	if err != nil {
-		return nil, err
+func (r *Repository) GetWorkflowByName(ctx context.Context, workflowName string) (*domain.Workflow, error) {
+	pgx_name := pgtype.Text{
+		String: workflowName,
+		Valid:  true,
 	}
-	err = tx.Commit()
+	workflowDB, err := r.queries.GetWorkflowByName(ctx, pgx_name)
 	if err != nil {
+		r.log.With("error", err).Error("Failed to get workflow by name")
 		return nil, err
 	}
 
 	// map to domain model
 	workflowDomain := domain.Workflow{
-		Name:              workflowDB.Name,
-		EmailTemplateName: workflowDB.EmailTemplateName,
-		PDFTemplateNames:  workflowDB.TemplatedPDFs,
-		StaticAttachments: workflowDB.StaticAttachments,
-		EmailSubject:      workflowDB.EmailSubject,
+		Name:              workflowDB.Name.String,
+		EmailTemplateName: workflowDB.EmailTemplateName.String,
+		PDFTemplateNames:  workflowDB.TemplatedPdfs.String,
+		StaticAttachments: workflowDB.StaticAttachments.String,
+		EmailSubject:      workflowDB.EmailSubject.String,
 	}
-
 	return &workflowDomain, nil
 }
 
-func (r *Repository) AddEmailTemplate(name string, templStr string, isMJML bool) error {
-	tx := r.dbConnection.MustBegin()
-	addTemplateQuery := "INSERT INTO emailtemplates (name, templ_string, is_mjml) VALUES ($1, $2, $3)"
-	tx.MustExec(addTemplateQuery, name, templStr, isMJML)
-	return tx.Commit()
-}
-
-func (r *Repository) AddSMSTemplate(name string, smsTemplString string) error {
-	tx := r.dbConnection.MustBegin()
-	addSMSTemplQuery := "INSERT INTO smstemplates (name, templ_string) VALUES ($1, $2)"
-	tx.MustExec(addSMSTemplQuery, name, smsTemplString)
-	return tx.Commit()
-}
-
-func (r *Repository) AddPDFTemplate(name string, typstString string) error {
-	tx := r.dbConnection.MustBegin()
-	addPDFTemplateQuery := "INSERT INTO pdftemplates (name, templ_string) VALUES ($1, $2)"
-	tx.MustExec(addPDFTemplateQuery, name, typstString)
-	return tx.Commit()
-}
-
-func (r *Repository) GetPDFTemplateByName(name string) (*domain.Template, error) {
-	tx := r.dbConnection.MustBegin()
-	getPDFTemplateByNameQuery := "SELECT * FROM pdftemplates WHERE name=$1"
-	templateDB := Template{}
-	err := tx.Get(&templateDB, getPDFTemplateByNameQuery, name)
-	if err != nil {
-		return nil, err
+func (r *Repository) AddEmailTemplate(ctx context.Context, template *domain.Template) error {
+	// map domain model to db model
+	templateDB := Template{
+		Name:        template.Name,
+		TemplString: template.TemplateStr,
+		IsMJML:      template.IsMJML,
 	}
-	err = tx.Commit()
+	_, err := r.queries.AddEmailTemplate(ctx, gensqlc.AddEmailTemplateParams{
+		Name:        pgtype.Text{String: templateDB.Name, Valid: true},
+		TemplString: pgtype.Text{String: templateDB.TemplString, Valid: true},
+		IsMjml:      pgtype.Bool{Bool: templateDB.IsMJML, Valid: true},
+	})
 	if err != nil {
+		r.log.With("error", err, "templateName", template.Name).Error("Failed to add email template")
+		return err
+	}
+	return nil
+}
+
+func (r *Repository) AddSMSTemplate(ctx context.Context, template *domain.Template) error {
+	// map domain model to db model
+	templateDB := Template{
+		Name:        template.Name,
+		TemplString: template.TemplateStr,
+	}
+	_, err := r.queries.AddSMSTemplate(ctx, gensqlc.AddSMSTemplateParams{
+		Name:        pgtype.Text{String: templateDB.Name, Valid: true},
+		TemplString: pgtype.Text{String: templateDB.TemplString, Valid: true},
+	})
+	if err != nil {
+		r.log.With("error", err, "templateName", template.Name).Error("Failed to add sms template")
+		return err
+	}
+	return nil
+}
+
+func (r *Repository) AddPDFTemplate(ctx context.Context, template *domain.Template) error {
+	// map domain model to db model
+	templateDB := Template{
+		Name:        template.Name,
+		TemplString: template.TemplateStr,
+	}
+	_, err := r.queries.AddPDFTemplate(ctx, gensqlc.AddPDFTemplateParams{
+		Name:        pgtype.Text{String: templateDB.Name, Valid: true},
+		TemplString: pgtype.Text{String: templateDB.TemplString, Valid: true},
+	})
+	if err != nil {
+		r.log.With("error", err, "templateName", template.Name).Error("Failed to add pdf template")
+		return err
+	}
+	return nil
+}
+
+func (r *Repository) GetPDFTemplateByName(ctx context.Context, name string) (*domain.Template, error) {
+	pgx_name := pgtype.Text{
+		String: name,
+		Valid:  true,
+	}
+	templateDB, err := r.queries.GetPDFTemplateByName(ctx, pgx_name)
+	if err != nil {
+		r.log.With("error", err, "templateName", name).Error("Failed to get PDF template by name")
 		return nil, err
 	}
 
 	// map to domain model
 	templateDomain := domain.Template{
-		Name:        templateDB.Name,
-		TemplateStr: templateDB.TemplString,
+		Name:        templateDB.Name.String,
+		TemplateStr: templateDB.TemplString.String,
 	}
 	return &templateDomain, nil
 }
 
-func (r *Repository) GetSMSTemplateByName(name string) (*domain.Template, error) {
-	tx := r.dbConnection.MustBegin()
-	getSMSTemplateByNameQuery := "SELECT * FROM smstemplates WHERE name=$1"
-	templateDB := Template{}
-	err := tx.Get(&templateDB, getSMSTemplateByNameQuery, name)
-	if err != nil {
-		return nil, err
+func (r *Repository) GetSMSTemplateByName(ctx context.Context, name string) (*domain.Template, error) {
+	pgx_name := pgtype.Text{
+		String: name,
+		Valid:  true,
 	}
-	err = tx.Commit()
+	templateDB, err := r.queries.GetSMSTemplateByName(ctx, pgx_name)
 	if err != nil {
+		r.log.With("error", err, "templateName", name).Error("Failed to get SMS template by name")
 		return nil, err
 	}
 
 	// map to domain model
 	templateDomain := domain.Template{
-		Name:        templateDB.Name,
-		TemplateStr: templateDB.TemplString,
+		Name:        templateDB.Name.String,
+		TemplateStr: templateDB.TemplString.String,
 	}
 	return &templateDomain, nil
 }

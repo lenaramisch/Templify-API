@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	domain "templify/pkg/domain/model"
 	server "templify/pkg/server/generated"
 	"templify/pkg/server/handler"
 
@@ -19,7 +20,7 @@ func (ah *APIHandler) GetPDFTemplatePlaceholdersByName(w http.ResponseWriter, r 
 		return
 	}
 
-	templatePlaceholders, err := ah.Usecase.GetPDFPlaceholders(templateName)
+	templatePlaceholders, err := ah.Usecase.GetPDFPlaceholders(r.Context(), templateName)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, fmt.Sprintf("Getting placeholders for template %s failed", templateName))
 		return
@@ -52,7 +53,12 @@ func (ah *APIHandler) AddNewPDFTemplate(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
-	err = ah.Usecase.AddPDFTemplate(templateName, addTemplateRequest.TemplateString)
+	templateDomain := &domain.Template{
+		Name:        templateName,
+		TemplateStr: addTemplateRequest.TemplateString,
+	}
+
+	err = ah.Usecase.AddPDFTemplate(r.Context(), templateDomain)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, fmt.Sprintf("Adding template with name %v failed", templateName))
 		return
@@ -70,7 +76,7 @@ func (ah *APIHandler) GetPDFTemplateByName(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	var err error
-	templateDomain, err := ah.Usecase.GetPDFTemplateByName(templateName)
+	templateDomain, err := ah.Usecase.GetPDFTemplateByName(r.Context(), templateName)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, "Error getting template")
 		return
@@ -102,7 +108,7 @@ func (ah *APIHandler) FillPDFTemplate(w http.ResponseWriter, r *http.Request, te
 		return
 	}
 
-	pdfBytes, err := ah.Usecase.GeneratePDF(templateName, pdfFillReq.Placeholders)
+	pdfBytes, err := ah.Usecase.GeneratePDF(r.Context(), templateName, pdfFillReq.Placeholders)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, "Error generating PDF")
 		return

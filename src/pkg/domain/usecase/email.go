@@ -1,22 +1,22 @@
 package usecase
 
 import (
+	"context"
 	"fmt"
 	domain "templify/pkg/domain/model"
 )
 
-func (u *Usecase) AddEmailTemplate(r *domain.Template) error {
-	err := u.repository.AddEmailTemplate(r.Name, r.TemplateStr, r.IsMJML)
+func (u *Usecase) AddEmailTemplate(ctx context.Context, template *domain.Template) error {
+	err := u.repository.AddEmailTemplate(ctx, template)
 	if err != nil {
-		fmt.Println("=== Error ===")
-		fmt.Println(err.Error())
+		u.log.With("error", err).Error("Error adding email template")
 		return err
 	}
 	return nil
 }
 
-func (u *Usecase) GetEmailPlaceholders(templateName string) ([]string, error) {
-	domainTemplate, err := u.repository.GetEmailTemplateByName(templateName)
+func (u *Usecase) GetEmailPlaceholders(ctx context.Context, templateName string) ([]string, error) {
+	domainTemplate, err := u.repository.GetEmailTemplateByName(ctx, templateName)
 	if err != nil {
 		u.log.With("templateName", templateName).Debug("Could not get template from repo")
 		return nil, err
@@ -24,8 +24,8 @@ func (u *Usecase) GetEmailPlaceholders(templateName string) ([]string, error) {
 	return ExtractPlaceholders(domainTemplate.TemplateStr), nil
 }
 
-func (u *Usecase) GetFilledTemplateString(templateName string, values map[string]string) (string, error) {
-	domainTemplate, err := u.repository.GetEmailTemplateByName(templateName)
+func (u *Usecase) GetFilledTemplateString(ctx context.Context, templateName string, values map[string]string) (string, error) {
+	domainTemplate, err := u.repository.GetEmailTemplateByName(ctx, templateName)
 	if err != nil {
 		u.log.Debug("Error getting template by name")
 		return "", err
@@ -54,9 +54,9 @@ func (u *Usecase) SendRawEmail(r *domain.EmailRequest) error {
 	return u.emailSender.SendEmail(r)
 }
 
-func (u *Usecase) SendTemplatedEmail(r *domain.EmailTemplateSendRequest) error {
+func (u *Usecase) SendTemplatedEmail(ctx context.Context, r *domain.EmailTemplateSendRequest) error {
 	// Get template by name
-	templateDomain, err := u.GetEmailTemplateByName(r.TemplateName)
+	templateDomain, err := u.GetEmailTemplateByName(ctx, r.TemplateName)
 	if err != nil {
 		u.log.Debug("Error getting template by name")
 		return err
@@ -97,8 +97,8 @@ func (u *Usecase) SendTemplatedEmail(r *domain.EmailTemplateSendRequest) error {
 	return nil
 }
 
-func (u *Usecase) GetEmailTemplateByName(templateName string) (*domain.Template, error) {
-	templateDomain, err := u.repository.GetEmailTemplateByName(templateName)
+func (u *Usecase) GetEmailTemplateByName(ctx context.Context, templateName string) (*domain.Template, error) {
+	templateDomain, err := u.repository.GetEmailTemplateByName(ctx, templateName)
 	if err != nil {
 		fmt.Println("=== Error ===")
 		fmt.Println(err.Error())

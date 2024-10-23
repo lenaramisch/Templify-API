@@ -1,13 +1,14 @@
 package usecase
 
 import (
+	"context"
 	"strings"
 	domain "templify/pkg/domain/model"
 )
 
-func (u *Usecase) AddWorkflow(workflow *domain.WorkflowCreateRequest) error {
+func (u *Usecase) AddWorkflow(ctx context.Context, workflow *domain.WorkflowCreateRequest) error {
 	//add workflow
-	err := u.repository.AddWorkflow(workflow)
+	err := u.repository.AddWorkflow(ctx, workflow)
 	if err != nil {
 		u.log.With("workflowName", workflow.Name).Debug("Could not add workflow to repo")
 		return err
@@ -15,8 +16,8 @@ func (u *Usecase) AddWorkflow(workflow *domain.WorkflowCreateRequest) error {
 	return nil
 }
 
-func (u *Usecase) GetWorkflowByName(workflowName string) (*domain.GetWorkflowResponse, error) {
-	workflowRaw, err := u.repository.GetWorkflowByName(workflowName)
+func (u *Usecase) GetWorkflowByName(ctx context.Context, workflowName string) (*domain.GetWorkflowResponse, error) {
+	workflowRaw, err := u.repository.GetWorkflowByName(ctx, workflowName)
 	if err != nil {
 		u.log.With("workflowName", workflowName).Debug("Could not get workflow from repo")
 		return nil, err
@@ -27,7 +28,7 @@ func (u *Usecase) GetWorkflowByName(workflowName string) (*domain.GetWorkflowRes
 	getWorkflowResponse.EmailSubject = workflowRaw.EmailSubject
 
 	// Get email template and placeholders
-	emailTemplate, err := u.repository.GetEmailTemplateByName(workflowRaw.EmailTemplateName)
+	emailTemplate, err := u.repository.GetEmailTemplateByName(ctx, workflowRaw.EmailTemplateName)
 	if err != nil {
 		u.log.With("workflowName", workflowName).Debug("Could not get email template from repo")
 		return nil, err
@@ -46,7 +47,7 @@ func (u *Usecase) GetWorkflowByName(workflowName string) (*domain.GetWorkflowRes
 
 	for _, templateName := range pdfTemplateNames {
 		// Get each PDF template and placeholders
-		pdfTemplate, err := u.repository.GetPDFTemplateByName(templateName)
+		pdfTemplate, err := u.repository.GetPDFTemplateByName(ctx, templateName)
 		if err != nil {
 			u.log.With("workflowName", workflowName).Debug("Could not get pdf template from repo")
 			return nil, err
@@ -66,13 +67,13 @@ func (u *Usecase) GetWorkflowByName(workflowName string) (*domain.GetWorkflowRes
 	return getWorkflowResponse, nil
 }
 
-func (u *Usecase) UseWorkflow(workflowUseRequest *domain.WorkflowUseRequest) error {
+func (u *Usecase) UseWorkflow(ctx context.Context, workflowUseRequest *domain.WorkflowUseRequest) error {
 	// get pdf templates by name
 	var pdfTemplates []domain.Template
 	var pdfTemplatePlaceholders []map[string]string
 	for _, pdfTemplate := range workflowUseRequest.PdfTemplates {
 		pdfTemplatePlaceholders = append(pdfTemplatePlaceholders, pdfTemplate.Placeholders)
-		pdfTemplate, err := u.repository.GetPDFTemplateByName(pdfTemplate.TemplateName)
+		pdfTemplate, err := u.repository.GetPDFTemplateByName(ctx, pdfTemplate.TemplateName)
 		if err != nil {
 			u.log.With("templateName", pdfTemplate.Name).Debug("Could not get pdf template from repo")
 			return err
@@ -109,7 +110,7 @@ func (u *Usecase) UseWorkflow(workflowUseRequest *domain.WorkflowUseRequest) err
 	}
 
 	// get workflow
-	workflowInfo, err := u.GetWorkflowByName(workflowUseRequest.Name)
+	workflowInfo, err := u.GetWorkflowByName(ctx, workflowUseRequest.Name)
 	if err != nil {
 		u.log.With("workflowName", workflowUseRequest.Name).Debug("Could not get workflow from repo")
 		return err
@@ -166,7 +167,7 @@ func (u *Usecase) UseWorkflow(workflowUseRequest *domain.WorkflowUseRequest) err
 	u.log.With("emailRequest", emailRequest).Debug("Email Request")
 
 	// send email
-	err = u.SendTemplatedEmail(emailRequest)
+	err = u.SendTemplatedEmail(ctx, emailRequest)
 	if err != nil {
 		u.log.With("emailRequest", emailRequest).Debug("Could not send email")
 		return err

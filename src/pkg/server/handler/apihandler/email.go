@@ -101,7 +101,7 @@ func (ah *APIHandler) SendTemplatedEmail(w http.ResponseWriter, r *http.Request,
 	}
 
 	// Call Usecase to send email
-	err = ah.Usecase.SendTemplatedEmail(emailRequestDomain)
+	err = ah.Usecase.SendTemplatedEmail(r.Context(), emailRequestDomain)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, err.Error())
 		return
@@ -113,7 +113,7 @@ func (ah *APIHandler) SendTemplatedEmail(w http.ResponseWriter, r *http.Request,
 // Get Template by Name
 // (GET /email/templates/{templateName})
 func (ah *APIHandler) GetTemplateByName(w http.ResponseWriter, r *http.Request, templateName string) {
-	templateDomain, err := ah.Usecase.GetEmailTemplateByName(templateName)
+	templateDomain, err := ah.Usecase.GetEmailTemplateByName(r.Context(), templateName)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, "Error getting template")
 		return
@@ -147,7 +147,7 @@ func (ah *APIHandler) AddNewTemplate(w http.ResponseWriter, r *http.Request, tem
 		IsMJML:      addTemplateRequest.IsMJML,
 	}
 
-	err = ah.Usecase.AddEmailTemplate(templateDomain)
+	err = ah.Usecase.AddEmailTemplate(r.Context(), templateDomain)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, fmt.Sprintf("Adding template with name %v failed", templateName))
 		return
@@ -160,7 +160,7 @@ func (ah *APIHandler) AddNewTemplate(w http.ResponseWriter, r *http.Request, tem
 // Get Template Placeholders
 // (GET /email/templates/{templateName}/placeholders)
 func (ah *APIHandler) GetTemplatePlaceholdersByName(w http.ResponseWriter, r *http.Request, templateName string) {
-	templatePlaceholders, err := ah.Usecase.GetEmailPlaceholders(templateName)
+	templatePlaceholders, err := ah.Usecase.GetEmailPlaceholders(r.Context(), templateName)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, fmt.Sprintf("Getting placeholders for template %s failed", templateName))
 		return
@@ -188,7 +188,7 @@ func (ah *APIHandler) FillTemplate(w http.ResponseWriter, r *http.Request, templ
 		return
 	}
 
-	filledTemplate, err := ah.Usecase.GetFilledTemplateString(templateName, templateFillRequest.Placeholders)
+	filledTemplate, err := ah.Usecase.GetFilledTemplateString(r.Context(), templateName, templateFillRequest.Placeholders)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, "Error filling template")
 		return

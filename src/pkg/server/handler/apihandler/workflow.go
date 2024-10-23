@@ -36,7 +36,7 @@ func (ah *APIHandler) CreateWorkflow(w http.ResponseWriter, r *http.Request, wor
 		TemplatedPDFs:     addWorkflowRequest.TemplatedAttachmentNames,
 	}
 
-	err = ah.Usecase.AddWorkflow(workflowDomain)
+	err = ah.Usecase.AddWorkflow(r.Context(), workflowDomain)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, fmt.Sprintf("Adding workflow with name %v failed", workflowName))
 		return
@@ -49,7 +49,7 @@ func (ah *APIHandler) CreateWorkflow(w http.ResponseWriter, r *http.Request, wor
 // Get a workflow by name
 // (GET /workflow/{workflowName})
 func (ah *APIHandler) GetWorkflowByName(w http.ResponseWriter, r *http.Request, workflowName string) {
-	workflowDomain, err := ah.Usecase.GetWorkflowByName(workflowName)
+	workflowDomain, err := ah.Usecase.GetWorkflowByName(r.Context(), workflowName)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, "Error getting workflow")
 		return
@@ -125,7 +125,7 @@ func (ah *APIHandler) UseWorkflow(w http.ResponseWriter, r *http.Request, workfl
 		}
 	}
 
-	err = ah.Usecase.UseWorkflow(useWorkflowRequestDomain)
+	err = ah.Usecase.UseWorkflow(r.Context(), useWorkflowRequestDomain)
 	if err != nil {
 		ah.log.With("error", err).Debug("Error using workflow")
 		handler.HandleError(w, r, http.StatusInternalServerError, fmt.Sprintf("Using workflow with name %v failed", workflowName))

@@ -1,12 +1,13 @@
 package usecase
 
 import (
+	"context"
 	"fmt"
 	domain "templify/pkg/domain/model"
 )
 
-func (u *Usecase) AddPDFTemplate(templateName string, typstString string) error {
-	err := u.repository.AddPDFTemplate(templateName, typstString)
+func (u *Usecase) AddPDFTemplate(ctx context.Context, template *domain.Template) error {
+	err := u.repository.AddPDFTemplate(ctx, template)
 	if err != nil {
 		fmt.Println("=== Error ===")
 		fmt.Println(err.Error())
@@ -15,8 +16,8 @@ func (u *Usecase) AddPDFTemplate(templateName string, typstString string) error 
 	return nil
 }
 
-func (u *Usecase) GetPDFTemplateByName(templateName string) (*domain.Template, error) {
-	templateDomain, err := u.repository.GetPDFTemplateByName(templateName)
+func (u *Usecase) GetPDFTemplateByName(ctx context.Context, templateName string) (*domain.Template, error) {
+	templateDomain, err := u.repository.GetPDFTemplateByName(ctx, templateName)
 	if err != nil {
 		fmt.Println("=== Error ===")
 		fmt.Println(err.Error())
@@ -25,8 +26,8 @@ func (u *Usecase) GetPDFTemplateByName(templateName string) (*domain.Template, e
 	return templateDomain, nil
 }
 
-func (u *Usecase) GetPDFPlaceholders(templateName string) ([]string, error) {
-	domainTemplate, err := u.repository.GetPDFTemplateByName(templateName)
+func (u *Usecase) GetPDFPlaceholders(ctx context.Context, templateName string) ([]string, error) {
+	domainTemplate, err := u.repository.GetPDFTemplateByName(ctx, templateName)
 	if err != nil {
 		u.log.With("templateName", templateName).Debug("Could not get template from repo")
 		return nil, err
@@ -34,8 +35,8 @@ func (u *Usecase) GetPDFPlaceholders(templateName string) ([]string, error) {
 	return ExtractPlaceholders(domainTemplate.TemplateStr), nil
 }
 
-func (u *Usecase) GeneratePDF(templateName string, values map[string]string) ([]byte, error) {
-	template, err := u.GetPDFTemplateByName(templateName)
+func (u *Usecase) GeneratePDF(ctx context.Context, templateName string, values map[string]string) ([]byte, error) {
+	template, err := u.GetPDFTemplateByName(ctx, templateName)
 	if err != nil {
 		u.log.With(
 			"TemplateName", templateName,

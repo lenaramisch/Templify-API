@@ -75,7 +75,6 @@ require (
 	github.com/ajg/form v1.5.1 // indirect
 	github.com/getkin/kin-openapi v0.127.0
 	github.com/jackc/pgx/v5 v5.7.1
-	github.com/jmoiron/sqlx v1.4.0
 	github.com/minio/minio-go/v7 v7.0.77
 	github.com/oapi-codegen/nethttp-middleware v1.0.2
 	github.com/spf13/viper v1.19.0
