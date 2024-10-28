@@ -16,6 +16,11 @@ import (
 // Send an Email with custom text
 // (POST /email/basic/send)
 func (ah *APIHandler) SendEmail(w http.ResponseWriter, r *http.Request) {
+	requiredClaims := map[string]any{"role": "user"}
+	checkedAuthorization := ah.Authorizer.CheckIfAuthorised(w, r, requiredClaims)
+	if !checkedAuthorization {
+		return
+	}
 	var emailRequestAPI server.EmailSendRequest
 	err := handler.ReadRequestBody(w, r, &emailRequestAPI)
 	if err != nil {
@@ -60,9 +65,15 @@ func (ah *APIHandler) SendEmail(w http.ResponseWriter, r *http.Request) {
 // Send an Email with template
 // (POST /email/templates/{templateName}/send)
 func (ah *APIHandler) SendTemplatedEmail(w http.ResponseWriter, r *http.Request, templateName string) {
+	requiredClaims := map[string]any{"role": "user"}
+	checkedAuthorization := ah.Authorizer.CheckIfAuthorised(w, r, requiredClaims)
+	if !checkedAuthorization {
+		return
+	}
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Reading request body failed", http.StatusInternalServerError)
+		return
 	}
 
 	// Create EmailTemplateSendRequest
@@ -113,6 +124,11 @@ func (ah *APIHandler) SendTemplatedEmail(w http.ResponseWriter, r *http.Request,
 // Get Template by Name
 // (GET /email/templates/{templateName})
 func (ah *APIHandler) GetTemplateByName(w http.ResponseWriter, r *http.Request, templateName string) {
+	requiredClaims := map[string]any{"role": "user"}
+	checkedAuthorization := ah.Authorizer.CheckIfAuthorised(w, r, requiredClaims)
+	if !checkedAuthorization {
+		return
+	}
 	templateDomain, err := ah.Usecase.GetEmailTemplateByName(r.Context(), templateName)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, "Error getting template")
@@ -129,6 +145,11 @@ func (ah *APIHandler) GetTemplateByName(w http.ResponseWriter, r *http.Request, 
 // Add new template
 // (POST /email/templates/{templateName})
 func (ah *APIHandler) AddNewTemplate(w http.ResponseWriter, r *http.Request, templateName string) {
+	requiredClaims := map[string]any{"role": "user"}
+	checkedAuthorization := ah.Authorizer.CheckIfAuthorised(w, r, requiredClaims)
+	if !checkedAuthorization {
+		return
+	}
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusBadRequest, "Reading Request Body failed")
@@ -160,6 +181,11 @@ func (ah *APIHandler) AddNewTemplate(w http.ResponseWriter, r *http.Request, tem
 // Get Template Placeholders
 // (GET /email/templates/{templateName}/placeholders)
 func (ah *APIHandler) GetTemplatePlaceholdersByName(w http.ResponseWriter, r *http.Request, templateName string) {
+	requiredClaims := map[string]any{"role": "user"}
+	checkedAuthorization := ah.Authorizer.CheckIfAuthorised(w, r, requiredClaims)
+	if !checkedAuthorization {
+		return
+	}
 	templatePlaceholders, err := ah.Usecase.GetEmailPlaceholders(r.Context(), templateName)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, fmt.Sprintf("Getting placeholders for template %s failed", templateName))
@@ -176,6 +202,11 @@ func (ah *APIHandler) GetTemplatePlaceholdersByName(w http.ResponseWriter, r *ht
 // Fill placeholders of template
 // (POST /email/templates/{templateName}/fill)
 func (ah *APIHandler) FillTemplate(w http.ResponseWriter, r *http.Request, templateName string) {
+	requiredClaims := map[string]any{"role": "user"}
+	checkedAuthorization := ah.Authorizer.CheckIfAuthorised(w, r, requiredClaims)
+	if !checkedAuthorization {
+		return
+	}
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Reading request body failed", http.StatusInternalServerError)

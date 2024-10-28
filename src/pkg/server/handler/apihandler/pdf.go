@@ -71,6 +71,11 @@ func (ah *APIHandler) AddNewPDFTemplate(w http.ResponseWriter, r *http.Request, 
 // Get PDF template by name
 // (GET /pdf/templates/{templateName})
 func (ah *APIHandler) GetPDFTemplateByName(w http.ResponseWriter, r *http.Request, templateName string) {
+	requiredClaims := map[string]any{"role": "user"}
+	checkedAuthorization := ah.Authorizer.CheckIfAuthorised(w, r, requiredClaims)
+	if !checkedAuthorization {
+		return
+	}
 	if templateName == "" {
 		http.Error(w, "URL Param templateName empty", http.StatusBadRequest)
 		return
@@ -92,6 +97,11 @@ func (ah *APIHandler) GetPDFTemplateByName(w http.ResponseWriter, r *http.Reques
 // Fill placeholders of PDF template
 // (POST /pdf/templates/{templateName}/fill)
 func (ah *APIHandler) FillPDFTemplate(w http.ResponseWriter, r *http.Request, templateName string) {
+	requiredClaims := map[string]any{"role": "user"}
+	checkedAuthorization := ah.Authorizer.CheckIfAuthorised(w, r, requiredClaims)
+	if !checkedAuthorization {
+		return
+	}
 	if templateName == "" {
 		http.Error(w, "URL Param templateName empty", http.StatusBadRequest)
 		return

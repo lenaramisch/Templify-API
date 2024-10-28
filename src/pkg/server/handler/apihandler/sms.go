@@ -15,6 +15,11 @@ import (
 // Send a SMS with custom text
 // (POST /sms/basic/send)
 func (ah *APIHandler) SendBasicSMS(w http.ResponseWriter, r *http.Request) {
+	requiredClaims := map[string]any{"role": "user"}
+	checkedAuthorization := ah.Authorizer.CheckIfAuthorised(w, r, requiredClaims)
+	if !checkedAuthorization {
+		return
+	}
 	var smsRequest server.SMSSendRequest
 
 	if err := handler.ReadRequestBody(w, r, &smsRequest); err != nil {
@@ -38,6 +43,11 @@ func (ah *APIHandler) SendBasicSMS(w http.ResponseWriter, r *http.Request) {
 // Send a SMS with template
 // (POST /sms/templates/{templateName}/send)
 func (ah *APIHandler) SendTemplatedSMS(w http.ResponseWriter, r *http.Request, templateName string) {
+	requiredClaims := map[string]any{"role": "user"}
+	checkedAuthorization := ah.Authorizer.CheckIfAuthorised(w, r, requiredClaims)
+	if !checkedAuthorization {
+		return
+	}
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusBadRequest, "Reading Request Body failed")
@@ -67,6 +77,11 @@ func (ah *APIHandler) SendTemplatedSMS(w http.ResponseWriter, r *http.Request, t
 // Add a new SMS template
 // (POST /sms/templates/{templateName})
 func (ah *APIHandler) AddNewSMSTemplate(w http.ResponseWriter, r *http.Request, templateName string) {
+	requiredClaims := map[string]any{"role": "user"}
+	checkedAuthorization := ah.Authorizer.CheckIfAuthorised(w, r, requiredClaims)
+	if !checkedAuthorization {
+		return
+	}
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusBadRequest, "Reading Request Body failed")
@@ -96,6 +111,11 @@ func (ah *APIHandler) AddNewSMSTemplate(w http.ResponseWriter, r *http.Request, 
 // Fill placeholders of SMS template
 // (POST /sms/templates/{templateName}/fill)
 func (ah *APIHandler) FillSMSTemplate(w http.ResponseWriter, r *http.Request, templateName string) {
+	requiredClaims := map[string]any{"role": "user"}
+	checkedAuthorization := ah.Authorizer.CheckIfAuthorised(w, r, requiredClaims)
+	if !checkedAuthorization {
+		return
+	}
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Reading request body failed", http.StatusInternalServerError)
@@ -122,6 +142,11 @@ func (ah *APIHandler) FillSMSTemplate(w http.ResponseWriter, r *http.Request, te
 // Get SMS template by name
 // (GET /sms/templates/{templateName})
 func (ah *APIHandler) GetSMSTemplateByName(w http.ResponseWriter, r *http.Request, templateName string) {
+	requiredClaims := map[string]any{"role": "user"}
+	checkedAuthorization := ah.Authorizer.CheckIfAuthorised(w, r, requiredClaims)
+	if !checkedAuthorization {
+		return
+	}
 	templateDomain, err := ah.Usecase.GetSMSTemplateByName(r.Context(), templateName)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, "Error getting template")
@@ -138,6 +163,11 @@ func (ah *APIHandler) GetSMSTemplateByName(w http.ResponseWriter, r *http.Reques
 // Get SMS template placeholders by name
 // (GET /sms/templates/{templateName}/placeholders)
 func (ah *APIHandler) GetSMSTemplatePlaceholdersByName(w http.ResponseWriter, r *http.Request, templateName string) {
+	requiredClaims := map[string]any{"role": "user"}
+	checkedAuthorization := ah.Authorizer.CheckIfAuthorised(w, r, requiredClaims)
+	if !checkedAuthorization {
+		return
+	}
 	templatePlaceholders, err := ah.Usecase.GetSMSPlaceholders(r.Context(), templateName)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, fmt.Sprintf("Getting placeholders for template %s failed", templateName))

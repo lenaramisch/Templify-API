@@ -15,6 +15,11 @@ import (
 // Create a new workflow
 // (POST /workflow/{workflowName})
 func (ah *APIHandler) CreateWorkflow(w http.ResponseWriter, r *http.Request, workflowName string) {
+	requiredClaims := map[string]any{"role": "user"}
+	checkedAuthorization := ah.Authorizer.CheckIfAuthorised(w, r, requiredClaims)
+	if !checkedAuthorization {
+		return
+	}
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusBadRequest, "Reading Request Body failed")
@@ -49,6 +54,11 @@ func (ah *APIHandler) CreateWorkflow(w http.ResponseWriter, r *http.Request, wor
 // Get a workflow by name
 // (GET /workflow/{workflowName})
 func (ah *APIHandler) GetWorkflowByName(w http.ResponseWriter, r *http.Request, workflowName string) {
+	requiredClaims := map[string]any{"role": "user"}
+	checkedAuthorization := ah.Authorizer.CheckIfAuthorised(w, r, requiredClaims)
+	if !checkedAuthorization {
+		return
+	}
 	workflowDomain, err := ah.Usecase.GetWorkflowByName(r.Context(), workflowName)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusInternalServerError, "Error getting workflow")
@@ -92,6 +102,11 @@ func (ah *APIHandler) GetWorkflowByName(w http.ResponseWriter, r *http.Request, 
 // Use a workflow by name
 // (POST /workflow/{workflowName}/send)
 func (ah *APIHandler) UseWorkflow(w http.ResponseWriter, r *http.Request, workflowName string) {
+	requiredClaims := map[string]any{"role": "user"}
+	checkedAuthorization := ah.Authorizer.CheckIfAuthorised(w, r, requiredClaims)
+	if !checkedAuthorization {
+		return
+	}
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		handler.HandleError(w, r, http.StatusBadRequest, "Reading Request Body failed")
