@@ -22,14 +22,15 @@ type Config struct {
 	Router *router.Config
 	Server *server.Config
 	// Custom configs below
-	EmailService      string
-	SendgridConfig    *sendgrid.SendgridConfig
-	SMTPServiceConfig *smtpservice.SMTPServiceConfig
-	SMSTwilioConfig   *smsservice.TwilioSMSSenderConfig
-	MJMLConfig        *mjmlservice.MJMLConfig
-	DBConfig          *db.RepositoryConfig
-	TypstConfig       *typstservice.TypstConfig
-	FileManagerConfig *filemanager.FileManagerConfig
+	EnableAuthorisation bool
+	EmailService        string
+	SendgridConfig      *sendgrid.SendgridConfig
+	SMTPServiceConfig   *smtpservice.SMTPServiceConfig
+	SMSTwilioConfig     *smsservice.TwilioSMSSenderConfig
+	MJMLConfig          *mjmlservice.MJMLConfig
+	DBConfig            *db.RepositoryConfig
+	TypstConfig         *typstservice.TypstConfig
+	FileManagerConfig   *filemanager.FileManagerConfig
 }
 
 func SetDefaults() {

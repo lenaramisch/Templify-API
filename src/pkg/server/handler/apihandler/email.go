@@ -61,7 +61,7 @@ func (ah *APIHandler) SendEmail(w http.ResponseWriter, r *http.Request) {
 // (POST /email/templates/{templateName}/send)
 func (ah *APIHandler) SendTemplatedEmail(w http.ResponseWriter, r *http.Request, templateName string) {
 	requiredClaims := map[string]any{"role": "user"}
-	checkedAuthorization := handler.CheckIfAuthorised(w, r, requiredClaims)
+	checkedAuthorization := ah.Authorizer.CheckIfAuthorised(w, r, requiredClaims)
 	if !checkedAuthorization {
 		return
 	}

@@ -11,6 +11,7 @@ import (
 	"templify/pkg/server"
 	generatedAPI "templify/pkg/server/generated"
 	"templify/pkg/server/handler/apihandler"
+	"templify/pkg/server/handler/authorisation"
 	"templify/pkg/service/email/sendgrid"
 	"templify/pkg/service/email/smtpservice"
 	"templify/pkg/service/filemanager"
@@ -54,7 +55,8 @@ func Run(cfg *Config, shutdownChannel chan os.Signal) error {
 	appLogic := usecase.NewUsecase(emailService, smsTwilioService, mjmlService, repository, typstService, filemanagerService, logger)
 
 	// ===== Handlers =====
-	apiHandler := apihandler.NewAPIHandler(appLogic, cfg.Info, logger, cfg.Server.BaseURL)
+	authorizer := authorisation.NewAuthorizer(cfg.EnableAuthorisation, logger)
+	apiHandler := apihandler.NewAPIHandler(appLogic, authorizer, cfg.Info, logger, cfg.Server.BaseURL)
 
 	// ===== Router =====
 	handler := generatedAPI.HandlerFromMux(apiHandler, nil)
