@@ -36,7 +36,11 @@ func NewRepository(config *RepositoryConfig, log *slog.Logger) *Repository {
 		config: config,
 		log:    log,
 	}
-	repo.ConnectToDB()
+	err := repo.ConnectToDB()
+	if err != nil {
+		log.With("error", err).Error("Failed to connect to DB")
+		return nil
+	}
 	repo.queries = gensqlc.New(repo.dbConnection)
 	return repo
 }
