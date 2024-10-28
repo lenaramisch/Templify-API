@@ -60,9 +60,15 @@ func (ah *APIHandler) SendEmail(w http.ResponseWriter, r *http.Request) {
 // Send an Email with template
 // (POST /email/templates/{templateName}/send)
 func (ah *APIHandler) SendTemplatedEmail(w http.ResponseWriter, r *http.Request, templateName string) {
+	requiredClaims := map[string]any{"role": "user"}
+	checkedAuthorization := handler.CheckIfAuthorised(w, r, requiredClaims)
+	if !checkedAuthorization {
+		return
+	}
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Reading request body failed", http.StatusInternalServerError)
+		return
 	}
 
 	// Create EmailTemplateSendRequest

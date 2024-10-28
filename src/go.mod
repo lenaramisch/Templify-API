@@ -74,6 +74,7 @@ require (
 require (
 	github.com/ajg/form v1.5.1 // indirect
 	github.com/getkin/kin-openapi v0.127.0
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/minio/minio-go/v7 v7.0.77
 	github.com/oapi-codegen/nethttp-middleware v1.0.2

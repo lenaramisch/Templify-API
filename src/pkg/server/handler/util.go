@@ -3,11 +3,14 @@ package handler
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-chi/render"
+	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 )
 
@@ -76,4 +79,43 @@ func ReadRequestBody(w http.ResponseWriter, r *http.Request, v any) error {
 func HandleError(w http.ResponseWriter, r *http.Request, statusCode int, message string) {
 	render.Status(r, statusCode)
 	render.PlainText(w, r, message)
+}
+
+func CheckIfAuthorised(w http.ResponseWriter, r *http.Request, requiredClaims map[string]any) bool {
+	authHeader := r.Header.Get("Authorization")
+	if authHeader == "" {
+		HandleError(w, r, http.StatusUnauthorized, "Authorization header missing")
+		return false //unauthorized
+	}
+	tokenString := strings.TrimPrefix(authHeader, "Bearer")
+	if tokenString == authHeader {
+		HandleError(w, r, http.StatusUnauthorized, "Invalid token format, expected Bearer")
+		return false //unauthorized
+	}
+	token, err := VerifyToken(tokenString)
+	if err != nil || !token.Valid {
+		HandleError(w, r, http.StatusUnauthorized, "Invalid token")
+		return false //unauthorized
+	}
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		HandleError(w, r, http.StatusForbidden, "Access denied")
+		return false //unauthorized
+	}
+	for key, value := range requiredClaims {
+		if claims[key] != value {
+			HandleError(w, r, http.StatusForbidden, "Access denied")
+			return false //unauthorized
+		}
+	}
+	return true //authorized
+}
+
+func VerifyToken(tokenString string) (*jwt.Token, error) {
+	return jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return token, nil
+	})
 }
