@@ -129,7 +129,6 @@ func (ah *APIHandler) UseWorkflow(w http.ResponseWriter, r *http.Request, workfl
 		ToName:  useWorkflowRequest.ToName,
 	}
 
-	//TODO How to handle multiple PDF templates?
 	if useWorkflowRequest.PdfTemplates != nil {
 		// range over the pdf templates and map them to the domain model
 		for _, pdfTemplate := range *useWorkflowRequest.PdfTemplates {
