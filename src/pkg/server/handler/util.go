@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	domain "templify/pkg/domain/model"
 	"time"
 
 	"github.com/go-chi/render"
@@ -73,7 +74,30 @@ func ReadRequestBody(w http.ResponseWriter, r *http.Request, v any) error {
 	return err
 }
 
-func HandleError(w http.ResponseWriter, r *http.Request, statusCode int, message string) {
-	render.Status(r, statusCode)
-	render.PlainText(w, r, message)
+func HandleErrors(w http.ResponseWriter, r *http.Request, err error, logmsgs ...string) {
+	if errors.As(err, &domain.ErrorTemplateNotFound{}) {
+		HandleBadRequestError(w, r, err, logmsgs...)
+		return
+	}
+	if errors.As(err, &domain.ErrorRenderingMJMLFailed{}) {
+		HandleInternalServerError(w, r, err, logmsgs...)
+		return
+	}
+	if errors.As(err, &domain.ErrorSendingEmailFailed{}) {
+		HandleInternalServerError(w, r, err, logmsgs...)
+		return
+	}
+	if errors.As(err, &domain.ErrorPlaceholderMissing{}) {
+		HandleBadRequestError(w, r, err, logmsgs...)
+		return
+	}
+	if errors.As(err, &domain.ErrorAddingTemplateFailed{}) {
+		HandleInternalServerError(w, r, err, logmsgs...)
+		return
+	}
+	if errors.As(err, &domain.ErrorTemplateAlreadyExists{}) {
+		HandleBadRequestError(w, r, err, logmsgs...)
+		return
+	}
+	render.Status(r, http.StatusInternalServerError)
 }

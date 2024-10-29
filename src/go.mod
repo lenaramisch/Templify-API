@@ -51,6 +51,7 @@ require (
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
 	github.com/perimeterx/marshmallow v1.1.5 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rs/xid v1.6.0 // indirect
 	github.com/sagikazarmark/locafero v0.6.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
@@ -75,6 +76,7 @@ require (
 	github.com/ajg/form v1.5.1 // indirect
 	github.com/getkin/kin-openapi v0.127.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/jackc/pgx v3.6.2+incompatible
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/minio/minio-go/v7 v7.0.77
 	github.com/oapi-codegen/nethttp-middleware v1.0.2

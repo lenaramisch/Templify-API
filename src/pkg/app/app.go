@@ -56,6 +56,11 @@ func Run(cfg *Config, shutdownChannel chan os.Signal) error {
 
 	// ===== Handlers =====
 	authorizer := authorisation.NewAuthorizer(cfg.EnableAuthorisation, logger)
+	if cfg.EnableAuthorisation {
+		logger.Info("Authorisation enabled")
+	} else {
+		logger.Info("Authorisation disabled")
+	}
 	apiHandler := apihandler.NewAPIHandler(appLogic, authorizer, cfg.Info, logger, cfg.Server.BaseURL)
 
 	// ===== Router =====

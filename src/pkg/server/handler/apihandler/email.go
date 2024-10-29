@@ -2,9 +2,8 @@ package apihandler
 
 import (
 	"encoding/base64"
-	"encoding/json"
+	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	domain "templify/pkg/domain/model"
 	server "templify/pkg/server/generated"
@@ -27,6 +26,7 @@ func (ah *APIHandler) SendEmail(w http.ResponseWriter, r *http.Request) {
 		ah.log.Debug("Error reading request body")
 		return
 	}
+
 	var attachmentInfo []domain.AttachmentInfo
 	// Check if Attachments are present and create AttachmentInfo
 	if emailRequestAPI.Attachments != nil {
@@ -34,7 +34,7 @@ func (ah *APIHandler) SendEmail(w http.ResponseWriter, r *http.Request) {
 			// convert base64 string attachmentContent into []byte
 			bytes, err := base64.StdEncoding.DecodeString(attachment.AttachmentContent)
 			if err != nil {
-				handler.HandleError(w, r, http.StatusBadRequest, "Invalid base64 string")
+				handler.HandleErrors(w, r, errors.New("Invalid base64 string"))
 			}
 
 			attachmentInfo = append(attachmentInfo, domain.AttachmentInfo{
@@ -55,7 +55,7 @@ func (ah *APIHandler) SendEmail(w http.ResponseWriter, r *http.Request) {
 
 	err = ah.Usecase.SendRawEmail(emailRequestDomain)
 	if err != nil {
-		handler.HandleError(w, r, http.StatusInternalServerError, err.Error())
+		handler.HandleErrors(w, r, err)
 		return
 	}
 	render.Status(r, http.StatusOK)
@@ -70,18 +70,9 @@ func (ah *APIHandler) SendTemplatedEmail(w http.ResponseWriter, r *http.Request,
 	if !checkedAuthorization {
 		return
 	}
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, "Reading request body failed", http.StatusInternalServerError)
-		return
-	}
-
-	// Create EmailTemplateSendRequest
 	var emailTemplateSendReq server.EmailTemplateFillSendRequest
-
-	// Read the request body and unmarshal it into emailTemplateSendReq
-	if err := json.Unmarshal(body, &emailTemplateSendReq); err != nil {
-		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
+	err := handler.ReadRequestBody(w, r, &emailTemplateSendReq)
+	if err != nil {
 		return
 	}
 
@@ -91,7 +82,7 @@ func (ah *APIHandler) SendTemplatedEmail(w http.ResponseWriter, r *http.Request,
 		for _, attachment := range *emailTemplateSendReq.Attachments {
 			bytes, err := base64.StdEncoding.DecodeString(attachment.AttachmentContent)
 			if err != nil {
-				handler.HandleError(w, r, http.StatusBadRequest, "Invalid base64 string")
+				handler.HandleErrors(w, r, errors.New("Invalid base64 string"))
 			}
 			attachmentInfo = append(attachmentInfo, domain.AttachmentInfo{
 				FileExtension: attachment.AttachmentExtension,
@@ -114,8 +105,7 @@ func (ah *APIHandler) SendTemplatedEmail(w http.ResponseWriter, r *http.Request,
 	// Call Usecase to send email
 	err = ah.Usecase.SendTemplatedEmail(r.Context(), emailRequestDomain)
 	if err != nil {
-		handler.HandleError(w, r, http.StatusInternalServerError, err.Error())
-		return
+
 	}
 	render.Status(r, http.StatusOK)
 	render.PlainText(w, r, "Email sent successfully")
@@ -131,11 +121,7 @@ func (ah *APIHandler) GetTemplateByName(w http.ResponseWriter, r *http.Request, 
 	}
 	templateDomain, err := ah.Usecase.GetEmailTemplateByName(r.Context(), templateName)
 	if err != nil {
-		handler.HandleError(w, r, http.StatusInternalServerError, "Error getting template")
-		return
-	}
-	if templateDomain.TemplateStr == "" {
-		handler.HandleError(w, r, http.StatusNotFound, fmt.Sprintf("Template with name %s not found", templateName))
+		handler.HandleErrors(w, r, err)
 		return
 	}
 	render.Status(r, http.StatusOK)
@@ -150,15 +136,10 @@ func (ah *APIHandler) AddNewTemplate(w http.ResponseWriter, r *http.Request, tem
 	if !checkedAuthorization {
 		return
 	}
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		handler.HandleError(w, r, http.StatusBadRequest, "Reading Request Body failed")
-		return
-	}
-
 	var addTemplateRequest server.EmailTemplatePostRequest
-	if err := json.Unmarshal(body, &addTemplateRequest); err != nil {
-		handler.HandleError(w, r, http.StatusBadRequest, "Invalid JSON format")
+	err := handler.ReadRequestBody(w, r, &addTemplateRequest)
+	if err != nil {
+		ah.log.Debug("Error reading request body")
 		return
 	}
 
@@ -170,12 +151,11 @@ func (ah *APIHandler) AddNewTemplate(w http.ResponseWriter, r *http.Request, tem
 
 	err = ah.Usecase.AddEmailTemplate(r.Context(), templateDomain)
 	if err != nil {
-		handler.HandleError(w, r, http.StatusInternalServerError, fmt.Sprintf("Adding template with name %v failed", templateName))
+		handler.HandleErrors(w, r, err)
 		return
 	}
-	resultString := fmt.Sprintf("Added template with name %v", templateName)
 	render.Status(r, http.StatusCreated)
-	render.PlainText(w, r, resultString)
+	render.PlainText(w, r, fmt.Sprintf("Added template with name %v", templateName))
 }
 
 // Get Template Placeholders
@@ -188,11 +168,11 @@ func (ah *APIHandler) GetTemplatePlaceholdersByName(w http.ResponseWriter, r *ht
 	}
 	templatePlaceholders, err := ah.Usecase.GetEmailPlaceholders(r.Context(), templateName)
 	if err != nil {
-		handler.HandleError(w, r, http.StatusInternalServerError, fmt.Sprintf("Getting placeholders for template %s failed", templateName))
+		handler.HandleErrors(w, r, err)
 		return
 	}
 	if len(templatePlaceholders) == 0 {
-		handler.HandleError(w, r, http.StatusNotFound, fmt.Sprintf("No placeholders for template %s found", templateName))
+		handler.HandleErrors(w, r, domain.ErrorPlaceholderMissing{MissingPlaceholder: "No placeholders found in template"})
 		return
 	}
 	render.Status(r, http.StatusOK)
@@ -207,22 +187,16 @@ func (ah *APIHandler) FillTemplate(w http.ResponseWriter, r *http.Request, templ
 	if !checkedAuthorization {
 		return
 	}
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, "Reading request body failed", http.StatusInternalServerError)
-	}
 
 	var templateFillRequest server.EmailTemplateFillSendRequest
-
-	if err := json.Unmarshal(body, &templateFillRequest); err != nil {
-		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
+	err := handler.ReadRequestBody(w, r, &templateFillRequest)
+	if err != nil {
 		return
 	}
 
 	filledTemplate, err := ah.Usecase.GetFilledTemplateString(r.Context(), templateName, templateFillRequest.Placeholders)
 	if err != nil {
-		handler.HandleError(w, r, http.StatusInternalServerError, "Error filling template")
-		return
+		handler.HandleErrors(w, r, err)
 	}
 
 	render.Status(r, http.StatusOK)

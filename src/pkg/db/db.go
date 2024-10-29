@@ -9,6 +9,7 @@ import (
 
 	domain "templify/pkg/domain/model"
 
+	"github.com/jackc/pgx"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -85,8 +86,16 @@ func (r *Repository) GetEmailTemplateByName(ctx context.Context, name string) (*
 		Valid:  true,
 	}
 	templateDB, err := r.queries.GetEmailTemplateByName(ctx, pgx_name)
+	// Check if the error is "no rows in result set"
 	if err != nil {
-		r.log.With("error", err).Error("Failed to get email template by name")
+		// Handle the case where the template is not found
+		if err.Error() == pgx.ErrNoRows.Error() {
+			r.log.With("templateName", name).Error("Template not found")
+			return nil, domain.ErrorTemplateNotFound{TemplateName: name}
+		}
+
+		// Handle all other errors
+		r.log.With("error", err, "templateName", name).Error("Failed to get email template by name")
 		return nil, err
 	}
 
@@ -161,6 +170,10 @@ func (r *Repository) AddEmailTemplate(ctx context.Context, template *domain.Temp
 		IsMjml:      pgtype.Bool{Bool: templateDB.IsMJML, Valid: true},
 	})
 	if err != nil {
+		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+			r.log.With("error", err, "templateName", template.Name).Error("Template already exists")
+			return domain.ErrorTemplateAlreadyExists{TemplateName: template.Name}
+		}
 		r.log.With("error", err, "templateName", template.Name).Error("Failed to add email template")
 		return err
 	}

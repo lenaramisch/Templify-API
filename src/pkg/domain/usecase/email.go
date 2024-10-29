@@ -2,15 +2,18 @@ package usecase
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	domain "templify/pkg/domain/model"
 )
 
 func (u *Usecase) AddEmailTemplate(ctx context.Context, template *domain.Template) error {
 	err := u.repository.AddEmailTemplate(ctx, template)
 	if err != nil {
+		if errors.As(err, &domain.ErrorTemplateAlreadyExists{}) {
+			return err
+		}
 		u.log.With("error", err).Error("Error adding email template")
-		return err
+		return domain.ErrorAddingTemplateFailed{Reason: err.Error()}
 	}
 	return nil
 }
@@ -18,8 +21,7 @@ func (u *Usecase) AddEmailTemplate(ctx context.Context, template *domain.Templat
 func (u *Usecase) GetEmailPlaceholders(ctx context.Context, templateName string) ([]string, error) {
 	domainTemplate, err := u.repository.GetEmailTemplateByName(ctx, templateName)
 	if err != nil {
-		u.log.With("templateName", templateName).Debug("Could not get template from repo")
-		return nil, err
+		return nil, domain.ErrorTemplateNotFound{TemplateName: templateName}
 	}
 	return ExtractPlaceholders(domainTemplate.TemplateStr), nil
 }
@@ -27,13 +29,11 @@ func (u *Usecase) GetEmailPlaceholders(ctx context.Context, templateName string)
 func (u *Usecase) GetFilledTemplateString(ctx context.Context, templateName string, values map[string]string) (string, error) {
 	domainTemplate, err := u.repository.GetEmailTemplateByName(ctx, templateName)
 	if err != nil {
-		u.log.Debug("Error getting template by name")
 		return "", err
 	}
 
 	filledTemplateString, err := FillTemplate(domainTemplate.TemplateStr, values)
 	if err != nil {
-		u.log.Debug("Error filling template placeholders")
 		return "", err
 	}
 
@@ -51,15 +51,19 @@ func (u *Usecase) GetFilledTemplateString(ctx context.Context, templateName stri
 }
 
 func (u *Usecase) SendRawEmail(r *domain.EmailRequest) error {
-	return u.emailSender.SendEmail(r)
+	err := u.emailSender.SendEmail(r)
+	if err != nil {
+		u.log.Debug("Error sending email")
+		return domain.ErrorSendingEmailFailed{Reason: err.Error()}
+	}
+	return nil
 }
 
 func (u *Usecase) SendTemplatedEmail(ctx context.Context, r *domain.EmailTemplateSendRequest) error {
 	// Get template by name
 	templateDomain, err := u.GetEmailTemplateByName(ctx, r.TemplateName)
 	if err != nil {
-		u.log.Debug("Error getting template by name")
-		return err
+		return domain.ErrorTemplateNotFound{TemplateName: r.TemplateName}
 	}
 	// Fill placeholders
 	filledTemplate, err := FillTemplate(templateDomain.TemplateStr, r.Placeholders)
@@ -81,7 +85,7 @@ func (u *Usecase) SendTemplatedEmail(ctx context.Context, r *domain.EmailTemplat
 		htmlString, err := u.mjmlService.RenderMJML(filledTemplate)
 		if err != nil {
 			u.log.Debug("Error rendering mjml template")
-			return err
+			return domain.ErrorRenderingMJMLFailed{Reason: err.Error()}
 		}
 		emailRequest.MessageBody = htmlString
 	} else {
@@ -92,7 +96,7 @@ func (u *Usecase) SendTemplatedEmail(ctx context.Context, r *domain.EmailTemplat
 	err = u.emailSender.SendEmail(&emailRequest)
 	if err != nil {
 		u.log.Debug("Error sending email")
-		return err
+		return domain.ErrorSendingEmailFailed{Reason: err.Error()}
 	}
 	return nil
 }
@@ -100,8 +104,6 @@ func (u *Usecase) SendTemplatedEmail(ctx context.Context, r *domain.EmailTemplat
 func (u *Usecase) GetEmailTemplateByName(ctx context.Context, templateName string) (*domain.Template, error) {
 	templateDomain, err := u.repository.GetEmailTemplateByName(ctx, templateName)
 	if err != nil {
-		fmt.Println("=== Error ===")
-		fmt.Println(err.Error())
 		return nil, err
 	}
 	return templateDomain, nil

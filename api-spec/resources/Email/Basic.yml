@@ -11,7 +11,7 @@ post:
         schema: 
           $ref: '../../schemas/_index.yml#/EmailSendRequest'
   responses:
-    '200':
+    '201':
       description: Email sent
     '400':
       description: Bad request

@@ -124,13 +124,14 @@ func LoadConfig(
 		Server:       serverConfig,
 		EmailService: viper.GetString("EMAIL_SERVICE"),
 		// Custom configs below
-		SendgridConfig:    sendgridConfig,
-		SMSTwilioConfig:   smsTwilioConfig,
-		MJMLConfig:        mjmlConfig,
-		DBConfig:          dbConfig,
-		TypstConfig:       typstConfig,
-		FileManagerConfig: filemanagerConfig,
-		SMTPServiceConfig: smtpConfig,
+		EnableAuthorisation: viper.GetBool("ENABLE_AUTHORISATION"),
+		SendgridConfig:      sendgridConfig,
+		SMSTwilioConfig:     smsTwilioConfig,
+		MJMLConfig:          mjmlConfig,
+		DBConfig:            dbConfig,
+		TypstConfig:         typstConfig,
+		FileManagerConfig:   filemanagerConfig,
+		SMTPServiceConfig:   smtpConfig,
 	}
 
 	slog.With(

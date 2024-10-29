@@ -28,7 +28,7 @@ func FillTemplate(templateStr string, placeholderValues map[string]string) (stri
 	}
 	templ, err := template.New("someName").Parse(templateStr)
 	if err != nil {
-		return "", err // domain error?
+		return "", err
 	}
 	buf := &bytes.Buffer{}
 	err = templ.Execute(buf, placeholderValues)

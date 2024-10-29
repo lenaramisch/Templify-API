@@ -17,10 +17,12 @@ tags:
     description: Everything for the SMS sending service
   - name: Email
     description: Everything for the Email sending service
-  - name: Placeholders
-    description: Everything to get the placeholders of a template and fill them with data
-  - name: Template
-    description: Everything to save new email templates or receive existing once
+  - name: PDF
+    description: Everything for the PDF rendering service
+  - name: APIInfo
+    description: General API information
+  - name: Workflow
+    description: Everything for creating and using Workflows
 paths:
   /info/version:
     get:
@@ -138,11 +140,11 @@ paths:
                 code: 404
                 timestamp: '2020-01-01T00:00:00Z'
       security: []
-  /sms:
+  /sms/basic/send:
     post:
       description: Send a SMS with a custom message text by giving the recipients data as well as the message text
       summary: Send a SMS with custom text
-      operationId: sendSMS
+      operationId: sendBasicSMS
       tags:
         - SMS
       requestBody:
@@ -157,51 +159,40 @@ paths:
         '400':
           description: Invalid receiver phone number supplied
       security: []
-  /email:
+  /sms/template/{templateName}/send:
     post:
-      description: Send an Email without attachments or the use of templates by giving the recipients data as well as the message content
-      summary: Send an Email with custom text
-      operationId: sendEmail
+      description: Send a templated SMS with a custom message text by giving the recipients data as well as the placeholder values
+      summary: Send a templated SMS with custom text
+      operationId: sendTemplatedSMS
       tags:
-        - Email
+        - SMS
+      parameters:
+        - name: templateName
+          in: path
+          description: Name of template to fill and send
+          required: true
+          schema:
+            type: string
+          example: exampleTemplate
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EmailSendRequest'
+              $ref: '#/components/schemas/SMSTemplateSendRequest'
       responses:
-        '200':
-          description: Email sent
+        '201':
+          description: SMS send
         '400':
-          description: Bad request
+          description: Invalid receiver phone number supplied
       security: []
-  /email/attachments:
-    post:
-      description: Send an Email with some attached files by giving the recipients data as well as the file
-      summary: Send an Email with attachment
-      operationId: sendEmailWithAttachment
-      tags:
-        - Email
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/EmailSendRequestAttachment'
-      responses:
-        '200':
-          description: Email send
-        '400':
-          description: Bad request
-      security: []
-  /email/templates/{templateName}:
+  /sms/templates/{templateName}:
     get:
-      description: Get a specific template by its name
-      summary: Get Template by Name
-      operationId: getTemplateByName
+      description: Get a specific SMS template by its name
+      summary: Get SMS Template by Name
+      operationId: getSMSTemplateByName
       tags:
-        - Template
+        - SMS
       parameters:
         - name: templateName
           in: path
@@ -216,18 +207,18 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Template'
+                $ref: '#/components/schemas/SMSTemplate'
         '400':
           description: Invalid name supplied
         '404':
           description: Can not find template (template name)
       security: []
     post:
-      description: Add a new template to the db
-      summary: Add new template
-      operationId: addNewTemplate
+      description: Add a new SMS template to the db
+      summary: Add new SMS template
+      operationId: addNewSMSTemplate
       tags:
-        - Template
+        - SMS
       parameters:
         - name: templateName
           in: path
@@ -241,20 +232,202 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TemplatePostRequest'
+              $ref: '#/components/schemas/SMSTemplatePostRequest'
       responses:
         '201':
           description: Added template (name)
         '400':
           description: Invalid name supplied
       security: []
-  /email/templates/{templateName}/placeholders:
+  /sms/templates/{templateName}/placeholders:
+    get:
+      description: Get all placeholders of a specific SMS template that have to be filled with some data
+      summary: Get SMS Template Placeholders
+      operationId: getSMSTemplatePlaceholdersByName
+      tags:
+        - SMS
+      parameters:
+        - name: templateName
+          in: path
+          description: Name of SMS template to return
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SMSPlaceholders'
+        '400':
+          description: Invalid name supplied
+        '404':
+          description: Can not find template (template name)
+      security: []
+  /sms/templates/{templateName}/fill:
     post:
-      description: Fill the placeholders of a specific template. The boolean "shouldBeSent" is telling if the filled template should be sent as email
+      description: Fill the placeholders of a specific SMS template.
+      summary: Fill placeholders of SMS template
+      operationId: fillSMSTemplate
+      tags:
+        - SMS
+      parameters:
+        - name: templateName
+          in: path
+          description: Name of template to fill
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SMSTemplateSendRequest'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/SMSFilledTemplateResponse'
+        '400':
+          description: Invalid name or data supplied
+      security: []
+  /email/basic/send:
+    post:
+      description: Send an Email with or without attachments by giving the recipients data as well as the message content
+      summary: Send an Email with custom text
+      operationId: sendEmail
+      tags:
+        - Email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailSendRequest'
+      responses:
+        '201':
+          description: Email sent
+        '400':
+          description: Bad request
+      security: []
+  /email/templates/{templateName}:
+    get:
+      description: Get a specific template by its name
+      summary: Get Template by Name
+      operationId: getTemplateByName
+      tags:
+        - Email
+      parameters:
+        - name: templateName
+          in: path
+          description: Name of template to return
+          required: true
+          schema:
+            type: string
+          example: exampleTemplate
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailTemplate'
+        '400':
+          description: Invalid name supplied
+        '404':
+          description: Can not find template (template name)
+      security: []
+    post:
+      description: Add a new template to the db
+      summary: Add new template
+      operationId: addNewTemplate
+      tags:
+        - Email
+      parameters:
+        - name: templateName
+          in: path
+          description: Name of template to add
+          required: true
+          schema:
+            type: string
+          example: exampleTemplate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailTemplatePostRequest'
+      responses:
+        '201':
+          description: Added template (name)
+        '400':
+          description: Invalid name supplied
+      security: []
+  /email/templates/{templateName}/send:
+    post:
+      description: Send a templated Email with or without by giving the recipients data as well as the placeholder values
+      summary: Send a templated Email
+      operationId: sendTemplatedEmail
+      tags:
+        - Email
+      parameters:
+        - name: templateName
+          in: path
+          description: Name of template to add
+          required: true
+          schema:
+            type: string
+          example: exampleTemplate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailTemplateFillSendRequest'
+      responses:
+        '201':
+          description: Email sent
+        '400':
+          description: Bad request
+      security: []
+  /email/templates/{templateName}/placeholders:
+    get:
+      description: Get all placeholders of a specific template that have to be filled with some data
+      summary: Get Template Placeholders
+      operationId: getTemplatePlaceholdersByName
+      tags:
+        - Email
+      parameters:
+        - name: templateName
+          in: path
+          description: Name of template to return
+          required: true
+          schema:
+            type: string
+          example: exampleTemplate
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailPlaceholders'
+        '400':
+          description: Invalid name supplied
+        '404':
+          description: Can not find template (template name)
+      security: []
+  /email/templates/{templateName}/fill:
+    post:
+      description: Fill the placeholders of a specific template.
       summary: Fill placeholders of template
       operationId: fillTemplate
       tags:
-        - Placeholders
+        - Email
       parameters:
         - name: templateName
           in: path
@@ -274,16 +447,122 @@ paths:
           content:
             text/plain:
               schema:
-                $ref: '#/components/schemas/FilledTemplateResponse'
+                $ref: '#/components/schemas/FilledEmailTemplateResponse'
         '400':
           description: Invalid name or data supplied
       security: []
+  /file/upload/{fileName}:
     get:
-      description: Get all placeholders of a specific template that have to be filled with some data
-      summary: Get Template Placeholders
-      operationId: getTemplatePlaceholdersByName
+      description: Get a presigned URL to upload a static file for later use
+      summary: Get upload url for a static file
+      operationId: GetUploadFileURL
       tags:
-        - Placeholders
+        - PDF
+      parameters:
+        - name: fileName
+          in: path
+          description: Name of file to upload
+          example: example.pdf
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresignedURL'
+        '400':
+          description: Invalid file or bucket name supplied
+      security: []
+  /file/download/{fileName}:
+    get:
+      description: Get a presigned URL to download a static file
+      summary: Get download url for a static file
+      operationId: GetDownloadFileURL
+      tags:
+        - PDF
+      parameters:
+        - name: fileName
+          in: path
+          description: Name of file to download
+          example: example.pdf
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresignedURL'
+        '400':
+          description: Invalid file or bucket name supplied
+        '404':
+          description: Can not find file (file name)
+      security: []
+  /pdf/templates/{templateName}:
+    get:
+      description: Get a specific PDF template by its name
+      summary: Get PDF Template by Name
+      operationId: getPDFTemplateByName
+      tags:
+        - PDF
+      parameters:
+        - name: templateName
+          in: path
+          description: Name of template to return
+          required: true
+          schema:
+            type: string
+          example: exampleTemplate
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PDFTemplate'
+        '400':
+          description: Invalid name supplied
+        '404':
+          description: Can not find template (template name)
+      security: []
+    post:
+      description: Add a new PDF template to the db. If you want new lines in your template, use '\n' in the string. For placeholders use the syntax '{{.placeholderName}}'.
+      summary: Add new PDF template
+      operationId: addNewPDFTemplate
+      tags:
+        - PDF
+      parameters:
+        - name: templateName
+          in: path
+          description: Name of template to add
+          required: true
+          schema:
+            type: string
+          example: exampleTemplate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PDFTemplatePostRequest'
+      responses:
+        '201':
+          description: Added template (name)
+        '400':
+          description: Invalid name supplied
+      security: []
+  /pdf/templates/{templateName}/placeholders:
+    get:
+      description: Get all placeholders of a specific PDF template that have to be filled with some data
+      summary: Get PDF Template Placeholders
+      operationId: getPDFTemplatePlaceholdersByName
+      tags:
+        - PDF
       parameters:
         - name: templateName
           in: path
@@ -297,19 +576,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Placeholders'
+                $ref: '#/components/schemas/PDFPlaceholders'
         '400':
           description: Invalid name supplied
         '404':
           description: Can not find template (template name)
       security: []
-  /email/templates/{templateName}/placeholders/attachments:
+  /pdf/templates/{templateName}/fill:
     post:
-      description: Send an email with some attached files and the use of a template by giving the recipients data as well as values to fill the templates placeholders and the file
-      summary: Send a templated Email with attachment
-      operationId: sendMJMLEmailWithAttachment
+      description: Fill the placeholders of a specific PDF template
+      summary: Fill placeholders of PDF template
+      operationId: fillPDFTemplate
       tags:
-        - Placeholders
+        - PDF
       parameters:
         - name: templateName
           in: path
@@ -317,15 +596,100 @@ paths:
           required: true
           schema:
             type: string
+          example: exampleTemplate
       requestBody:
         required: true
         content:
-          multipart/form-data:
+          application/json:
             schema:
-              $ref: '#/components/schemas/MJMLSendRequestAttachment'
+              $ref: '#/components/schemas/TemplateFillRequest'
       responses:
         '200':
-          description: Email send
+          description: successful operation
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/PDFFilledTemplateResponse'
+        '400':
+          description: Invalid name or data supplied
+      security: []
+  /workflow/{workflowName}:
+    post:
+      description: Create a new workflow for sending emails with or without static and templated attachments
+      summary: Create a new workflow
+      operationId: createWorkflow
+      tags:
+        - Workflow
+      parameters:
+        - name: workflowName
+          in: path
+          description: Name of workflow to return
+          required: true
+          schema:
+            type: string
+          example: exampleWorkflow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowCreateRequest'
+      responses:
+        '200':
+          description: Workflow created
+        '400':
+          description: Bad request
+      security: []
+    get:
+      description: Get a specific workflow by its name
+      summary: Get Workflow by Name
+      operationId: getWorkflowByName
+      tags:
+        - Workflow
+      parameters:
+        - name: workflowName
+          in: path
+          description: Name of workflow to return
+          required: true
+          schema:
+            type: string
+          example: exampleWorkflow
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetWorkflowResponse'
+        '400':
+          description: Invalid name supplied
+        '404':
+          description: Can not find workflow (workflow name)
+      security: []
+  /workflow/{workflowName}/send:
+    post:
+      description: Use a workflow to send emails with or without static and templated attachments
+      summary: Use workflow
+      operationId: useWorkflow
+      tags:
+        - Workflow
+      parameters:
+        - name: workflowName
+          in: path
+          description: Name of workflow to use
+          required: true
+          schema:
+            type: string
+          example: exampleWorkflow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowSendRequest'
+      responses:
+        '200':
+          description: Workflow used
         '400':
           description: Bad request
       security: []
@@ -424,78 +788,52 @@ components:
       properties:
         receiverPhoneNumber:
           type: string
-          example: '+49123456789'
+          example: '+4915170640522'
         message:
           type: string
           example: Don't forget to buy some milk!
       required:
         - receiverPhoneNumber
         - message
-    EmailSendRequest:
+    Placeholder:
+      type: object
+      additionalProperties:
+        type: string
+      example:
+        Name: Sherlock Holmes
+        Age: '45'
+    SMSTemplateSendRequest:
       type: object
       properties:
-        toEmail:
+        receiverPhoneNumber:
           type: string
-          example: holmes@detective.com
-        toName:
-          type: string
-          example: Sherlock Holmes
-        subject:
-          type: string
-          example: New Case
-        message:
-          type: string
-          example: Find the thief!
+          example: '+4915170640522'
+        placeholders:
+          $ref: '#/components/schemas/Placeholder'
       required:
-        - toEmail
-        - toName
-        - subject
-        - message
-    EmailSendRequestAttachment:
-      type: object
-      properties:
-        file:
-          type: string
-          description: The file that should be send as attachment
-        toEmail:
-          type: string
-          example: holmes@detective.com
-        toName:
-          type: string
-          example: Sherlock Holmes
-        subject:
-          type: string
-          example: New Case
-        message:
-          type: string
-          example: Find the thief!
-      required:
-        - file
-        - toEmail
-        - toName
-        - subject
-        - message
-    Template:
+        - receiverPhoneNumber
+        - placeholders
+    SMSTemplate:
       type: object
       properties:
         name:
           type: string
           example: ExampleName
-        templateMJMLCode:
+        templateString:
           type: string
-          example: <mjml><mj-body><mj-section><mj-column><mj-text font-size="20px" color="#F45E43" font-family="helvetica">Hello World</mj-text></mj-column></mj-section></mj-body></mjml>
+          example: Hello {{.Name}}. You are {{.Age}} years old.
       required:
         - name
-        - templateMJMLCode
-    TemplatePostRequest:
+        - templateString
+    SMSTemplatePostRequest:
       type: object
       properties:
-        templateMJMLCode:
+        templateString:
           type: string
-          example: <mjml><mj-body><mj-section><mj-column><mj-text font-size="20px" color="#F45E43" font-family="helvetica">Hello World </mj-text></mj-column></mj-section></mj-body></mjml>
+          example: Hello {{.Name}}. You are {{.Age}} years old.
       required:
-        - templateMJMLCode
-    Placeholders:
+        - templateString
+    SMSPlaceholders:
       type: object
       properties:
         placeholders:
@@ -522,52 +860,19 @@ components:
                       value: ''
       required:
         - placeholders
-    TemplateFillRequest:
-      type: object
-      properties:
-        shouldBeSent:
-          type: boolean
-          example: true
-        toEmail:
-          type: string
-          example: holmes.sherlock@example.com
-        toName:
-          type: string
-          example: Sherlock Holmes
-        subject:
-          type: string
-          example: TestSubject
+      example:
         placeholders:
-          type: object
-          properties:
-            FirstName:
-              type: string
-              example: Sherlock
-            LastName:
-              type: string
-              example: Holmes
-            Age:
-              type: string
-              example: '45'
-          required:
-            - FirstName
-            - LastName
-            - Age
-      required:
-        - shouldBeSent
-        - toEmail
-        - toName
-        - subject
-        - placeholders
-    FilledTemplateResponse:
+          - data:
+              - key: firstName
+                value: ''
+              - key: lastName
+                value: ''
+    SMSFilledTemplateResponse:
       type: string
-      example: <mjml><mj-body><mj-section><mj-column><mj-text font-size="20px" color="#F45E43" font-family="helvetica">Hello World </mj-text></mj-column></mj-section></mj-body></mjml>
-    MJMLSendRequestAttachment:
+      example: Hello Sherlock Holmes, you are 45 years old.
+    EmailSendRequest:
       type: object
       properties:
-        file:
-          type: string
-          description: The file that should be send as attachment
         toEmail:
           type: string
           example: holmes@detective.com
@@ -577,19 +882,326 @@ components:
         subject:
           type: string
           example: New Case
-        PlaceHolder:
+        message:
           type: string
-          description: Each placeholder key-value pair should be in its own form field
-          example: placeholder value
-        shouldBeSent:
-          type: string
-          description: Determines if the email will be sent (true/false)
-          example: true
+          example: Find the thief!
+        attachments:
+          type: array
+          items:
+            type: object
+            properties:
+              attachmentContent:
+                type: string
+                example: base64 encoded attachment
+              attachmentName:
+                type: string
+                example: attachment
+              attachmentExtension:
+                type: string
+                example: txt
+            required:
+              - attachmentContent
+              - attachmentName
+              - attachmentExtension
       required:
-        - file
         - toEmail
         - toName
         - subject
         - message
-        - PlaceHolder
-        - shouldBeSent
+    EmailTemplate:
+      type: object
+      properties:
+        name:
+          type: string
+          example: ExampleName
+        templateMJMLCode:
+          type: string
+          example: <mjml><mj-body><mj-section><mj-column><mj-text font-size="20px" color="#F45E43" font-family="helvetica">Hello World</mj-text></mj-column></mj-section></mj-body></mjml>
+      required:
+        - name
+        - templateMJMLCode
+    EmailTemplatePostRequest:
+      type: object
+      properties:
+        templateString:
+          type: string
+          example: '<mjml><mj-body><mj-section><mj-column><mj-text>Your Name: {{.Name}}, Age: {{.Age}}</mj-text></mj-column></mj-section></mj-body></mjml>'
+        isMJML:
+          type: boolean
+          example: true
+      required:
+        - templateString
+        - isMJML
+    EmailTemplateFillSendRequest:
+      type: object
+      properties:
+        toEmail:
+          type: string
+          example: holmes@detective.com
+        toName:
+          type: string
+          example: Sherlock Holmes
+        subject:
+          type: string
+          example: New Case
+        attachments:
+          type: array
+          items:
+            type: object
+            properties:
+              attachmentContent:
+                type: string
+                example: base64 encoded attachment
+              attachmentName:
+                type: string
+                example: attachment
+              attachmentExtension:
+                type: string
+                example: txt
+            required:
+              - attachmentContent
+              - attachmentName
+              - attachmentExtension
+        placeholders:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            Name: Sherlock Holmes
+            Age: '45'
+      required:
+        - toEmail
+        - toName
+        - subject
+        - placeholders
+    EmailPlaceholders:
+      type: object
+      properties:
+        placeholders:
+          type: array
+          items:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - key
+                    - value
+                  properties:
+                    key:
+                      type: string
+                    value:
+                      type: string
+                  example:
+                    - key: firstName
+                      value: ''
+                    - key: lastName
+                      value: ''
+      required:
+        - placeholders
+      example:
+        placeholders:
+          - data:
+              - key: firstName
+                value: ''
+              - key: lastName
+                value: ''
+    TemplateFillRequest:
+      type: object
+      properties:
+        placeholders:
+          $ref: '#/components/schemas/Placeholder'
+      required:
+        - placeholders
+    FilledEmailTemplateResponse:
+      type: string
+      example: <mjml><mj-body><mj-section><mj-column><mj-text font-size="20px" color="#F45E43" font-family="helvetica">Hello World </mj-text></mj-column></mj-section></mj-body></mjml>
+    PresignedURL:
+      type: object
+      properties:
+        url:
+          type: string
+          example: example.url/1234567890
+      required:
+        - url
+    PDFTemplate:
+      type: object
+      properties:
+        name:
+          type: string
+          example: ExampleName
+        templateString:
+          type: string
+          example: '= Client Name: {{.Name}}, Age: {{.Age}}'
+      required:
+        - name
+        - templateString
+    PDFTemplatePostRequest:
+      type: object
+      properties:
+        templateString:
+          type: string
+          example: '= Client\nName: {{.Name}}, Age: {{.Age}}'
+      required:
+        - templateString
+    PDFPlaceholders:
+      type: object
+      properties:
+        placeholders:
+          type: array
+          items:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - key
+                    - value
+                  properties:
+                    key:
+                      type: string
+                    value:
+                      type: string
+                  example:
+                    - key: firstName
+                      value: ''
+                    - key: lastName
+                      value: ''
+      required:
+        - placeholders
+      example:
+        placeholders:
+          - data:
+              - key: firstName
+                value: ''
+              - key: lastName
+                value: ''
+    PDFFilledTemplateResponse:
+      type: string
+      example: base64 encoded PDF file
+    TemplateInfo:
+      type: object
+      properties:
+        templateName:
+          type: string
+          example: exampleName
+        placeholders:
+          type: array
+          items:
+            type: string
+          example:
+            - examplePlaceholder1
+            - examplePlaceholder2
+      required:
+        - templateName
+        - placeholders
+    GetWorkflowResponse:
+      type: object
+      properties:
+        name:
+          type: string
+          example: ExampleName
+        emailSubject:
+          type: string
+          example: Example Subject
+        emailTemplate:
+          $ref: '#/components/schemas/TemplateInfo'
+        pdfTemplates:
+          type: array
+          items:
+            $ref: '#/components/schemas/TemplateInfo'
+        staticAttachments:
+          type: array
+          items:
+            type: string
+            example: exampleAttachment
+      required:
+        - name
+        - emailSubject
+        - emailTemplate
+        - pdfTemplates
+        - staticAttachments
+    WorkflowCreateRequest:
+      type: object
+      properties:
+        emailTemplateName:
+          type: string
+          example: exampleTemplate
+        staticAttachmentNames:
+          type: array
+          items:
+            type: string
+            example: example.pdf
+        templatedAttachmentNames:
+          type: array
+          items:
+            type: string
+            example: exampleTemplate
+        emailSubject:
+          type: string
+          example: Registration Confirmation
+      required:
+        - emailTemplateName
+        - staticAttachmentNames
+        - templatedAttachmentNames
+        - emailSubject
+    FillTemplate:
+      type: object
+      description: |
+        A request to fill a template with placeholders.
+      properties:
+        templateName:
+          type: string
+          example: exampleTemplate
+        placeholders:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            Name: Sherlock Holmes
+            Age: '45'
+    WorkflowSendRequest:
+      type: object
+      properties:
+        toEmail:
+          type: string
+          example: example@example.com
+        toName:
+          type: string
+          example: exampleName
+        emailTemplate:
+          $ref: '#/components/schemas/FillTemplate'
+        pdfTemplates:
+          type: array
+          items:
+            $ref: '#/components/schemas/FillTemplate'
+      required:
+        - toEmail
+        - toName
+        - emailTemplate
+    Attachments:
+      type: array
+      items:
+        type: object
+        properties:
+          attachmentContent:
+            type: string
+            example: base64 encoded attachment
+          attachmentName:
+            type: string
+            example: attachment
+          attachmentExtension:
+            type: string
+            example: txt
+        required:
+          - attachmentContent
+          - attachmentName
+          - attachmentExtension
+    EmailTemplateFillRequest:
+      $ref: '#/components/schemas/TemplateFillRequest'
+    PDFTemplateFillRequest:
+      $ref: '#/components/schemas/TemplateFillRequest'

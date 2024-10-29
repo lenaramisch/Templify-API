@@ -467,7 +467,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "description": "Email sent"
           },
           "400": {
@@ -588,7 +588,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "description": "Email sent"
           },
           "400": {
