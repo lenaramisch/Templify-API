@@ -1,9 +1,7 @@
 package apihandler
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	domain "templify/pkg/domain/model"
 	server "templify/pkg/server/generated"
@@ -20,15 +18,10 @@ func (ah *APIHandler) CreateWorkflow(w http.ResponseWriter, r *http.Request, wor
 	if !checkedAuthorization {
 		return
 	}
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		handler.HandleError(w, r, http.StatusBadRequest, "Reading Request Body failed")
-		return
-	}
 
 	var addWorkflowRequest server.WorkflowCreateRequest
-	if err := json.Unmarshal(body, &addWorkflowRequest); err != nil {
-		handler.HandleError(w, r, http.StatusBadRequest, "Invalid JSON format")
+	err := handler.ReadRequestBody(w, r, &addWorkflowRequest)
+	if err != nil {
 		return
 	}
 
@@ -43,12 +36,12 @@ func (ah *APIHandler) CreateWorkflow(w http.ResponseWriter, r *http.Request, wor
 
 	err = ah.Usecase.AddWorkflow(r.Context(), workflowDomain)
 	if err != nil {
-		handler.HandleError(w, r, http.StatusInternalServerError, fmt.Sprintf("Adding workflow with name %v failed", workflowName))
+		handler.HandleErrors(w, r, err)
 		return
 	}
-	resultString := fmt.Sprintf("Added workflow with name %v", workflowName)
+
 	render.Status(r, http.StatusCreated)
-	render.PlainText(w, r, resultString)
+	render.PlainText(w, r, fmt.Sprintf("Added workflow with name %v", workflowName))
 }
 
 // Get a workflow by name
@@ -61,11 +54,7 @@ func (ah *APIHandler) GetWorkflowByName(w http.ResponseWriter, r *http.Request, 
 	}
 	workflowDomain, err := ah.Usecase.GetWorkflowByName(r.Context(), workflowName)
 	if err != nil {
-		handler.HandleError(w, r, http.StatusInternalServerError, "Error getting workflow")
-		return
-	}
-	if workflowDomain.Name == "" {
-		handler.HandleError(w, r, http.StatusNotFound, fmt.Sprintf("Workflow with name %s not found", workflowName))
+		handler.HandleErrors(w, r, err)
 		return
 	}
 
@@ -107,15 +96,10 @@ func (ah *APIHandler) UseWorkflow(w http.ResponseWriter, r *http.Request, workfl
 	if !checkedAuthorization {
 		return
 	}
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		handler.HandleError(w, r, http.StatusBadRequest, "Reading Request Body failed")
-		return
-	}
 
 	var useWorkflowRequest server.WorkflowSendRequest
-	if err := json.Unmarshal(body, &useWorkflowRequest); err != nil {
-		handler.HandleError(w, r, http.StatusBadRequest, "Invalid JSON format")
+	err := handler.ReadRequestBody(w, r, &useWorkflowRequest)
+	if err != nil {
 		return
 	}
 
@@ -141,11 +125,10 @@ func (ah *APIHandler) UseWorkflow(w http.ResponseWriter, r *http.Request, workfl
 
 	err = ah.Usecase.UseWorkflow(r.Context(), useWorkflowRequestDomain)
 	if err != nil {
-		ah.log.With("error", err).Debug("Error using workflow")
-		handler.HandleError(w, r, http.StatusInternalServerError, fmt.Sprintf("Using workflow with name %v failed", workflowName))
+		handler.HandleErrors(w, r, err)
 		return
 	}
-	resultString := fmt.Sprintf("Used workflow with name %v", workflowName)
+
 	render.Status(r, http.StatusCreated)
-	render.PlainText(w, r, resultString)
+	render.PlainText(w, r, fmt.Sprintf("Used workflow with name %v", workflowName))
 }

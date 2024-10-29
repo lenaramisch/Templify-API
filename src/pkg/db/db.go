@@ -86,7 +86,6 @@ func (r *Repository) GetEmailTemplateByName(ctx context.Context, name string) (*
 		Valid:  true,
 	}
 	templateDB, err := r.queries.GetEmailTemplateByName(ctx, pgx_name)
-	// Check if the error is "no rows in result set"
 	if err != nil {
 		// Handle the case where the template is not found
 		if err.Error() == pgx.ErrNoRows.Error() {
@@ -129,7 +128,11 @@ func (r *Repository) AddWorkflow(ctx context.Context, workflow *domain.WorkflowC
 		TemplatedPdfs:     pgtype.Text{String: workflowDB.TemplatedPDFs, Valid: true},
 	})
 	if err != nil {
-		r.log.With("error", err).Error("Failed to add workflow")
+		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+			r.log.With("error", err, "templateName", workflow.Name).Error("Workflow already exists")
+			return domain.ErrorWorkflowAlreadyExists{WorkflowName: workflow.Name}
+		}
+		r.log.With("error", err, "workflowName", workflow.Name).Error("Failed to add workflow")
 		return err
 	}
 	return nil
@@ -142,7 +145,13 @@ func (r *Repository) GetWorkflowByName(ctx context.Context, workflowName string)
 	}
 	workflowDB, err := r.queries.GetWorkflowByName(ctx, pgx_name)
 	if err != nil {
-		r.log.With("error", err).Error("Failed to get workflow by name")
+		if err.Error() == pgx.ErrNoRows.Error() {
+			r.log.With("templateName", workflowName).Error("Template not found")
+			return nil, domain.ErrorWorkflowNotFound{WorkflowName: workflowName}
+		}
+
+		// Handle all other errors
+		r.log.With("error", err, "workflowName", workflowName).Error("Failed to get workflow by name")
 		return nil, err
 	}
 
@@ -191,6 +200,10 @@ func (r *Repository) AddSMSTemplate(ctx context.Context, template *domain.Templa
 		TemplString: pgtype.Text{String: templateDB.TemplString, Valid: true},
 	})
 	if err != nil {
+		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+			r.log.With("error", err, "templateName", template.Name).Error("Template already exists")
+			return domain.ErrorTemplateAlreadyExists{TemplateName: template.Name}
+		}
 		r.log.With("error", err, "templateName", template.Name).Error("Failed to add sms template")
 		return err
 	}
@@ -208,6 +221,10 @@ func (r *Repository) AddPDFTemplate(ctx context.Context, template *domain.Templa
 		TemplString: pgtype.Text{String: templateDB.TemplString, Valid: true},
 	})
 	if err != nil {
+		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+			r.log.With("error", err, "templateName", template.Name).Error("Template already exists")
+			return domain.ErrorTemplateAlreadyExists{TemplateName: template.Name}
+		}
 		r.log.With("error", err, "templateName", template.Name).Error("Failed to add pdf template")
 		return err
 	}
@@ -221,7 +238,13 @@ func (r *Repository) GetPDFTemplateByName(ctx context.Context, name string) (*do
 	}
 	templateDB, err := r.queries.GetPDFTemplateByName(ctx, pgx_name)
 	if err != nil {
-		r.log.With("error", err, "templateName", name).Error("Failed to get PDF template by name")
+		if err.Error() == pgx.ErrNoRows.Error() {
+			r.log.With("templateName", name).Error("Template not found")
+			return nil, domain.ErrorTemplateNotFound{TemplateName: name}
+		}
+
+		// Handle all other errors
+		r.log.With("error", err, "templateName", name).Error("Failed to get pdf template by name")
 		return nil, err
 	}
 
@@ -240,7 +263,14 @@ func (r *Repository) GetSMSTemplateByName(ctx context.Context, name string) (*do
 	}
 	templateDB, err := r.queries.GetSMSTemplateByName(ctx, pgx_name)
 	if err != nil {
-		r.log.With("error", err, "templateName", name).Error("Failed to get SMS template by name")
+		// Handle the case where the template is not found
+		if err.Error() == pgx.ErrNoRows.Error() {
+			r.log.With("templateName", name).Error("Template not found")
+			return nil, domain.ErrorTemplateNotFound{TemplateName: name}
+		}
+
+		// Handle all other errors
+		r.log.With("error", err, "templateName", name).Error("Failed to get sms template by name")
 		return nil, err
 	}
 

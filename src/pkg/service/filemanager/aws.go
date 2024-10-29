@@ -62,8 +62,7 @@ func (fm *FileManagerAWS) GetFileDownloadURL(fileName string) (string, error) {
 		opts.Expires = time.Duration(60 * 60 * 12 * (time.Second))
 	})
 	if err != nil {
-		fm.log.Debug("Couldn't get a presigned request to get %v:%v. Here's why: %v\n",
-			fm.config.BucketName, fileName, slog.Any("error", err))
+		return "", domain.ErrorGettingDownloadURL{Reason: err.Error()}
 	}
 	return request.URL, err
 }
@@ -76,7 +75,7 @@ func (fm *FileManagerAWS) GetFileUploadURL(fileName string) (*domain.FileUploadR
 		options.Expires = time.Duration(60*60*12) * time.Second
 	})
 	if err != nil {
-		fm.log.Debug("Couldn't get a presigned post request to put %v:%v. Here's why: %v\n", fm.config.BucketName, fileName, slog.Any("error", err))
+		return nil, domain.ErrorGettingUploadURL{Reason: err.Error()}
 	}
 
 	return &domain.FileUploadResponse{

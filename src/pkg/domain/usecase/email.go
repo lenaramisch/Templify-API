@@ -13,7 +13,7 @@ func (u *Usecase) AddEmailTemplate(ctx context.Context, template *domain.Templat
 			return err
 		}
 		u.log.With("error", err).Error("Error adding email template")
-		return domain.ErrorAddingTemplateFailed{Reason: err.Error()}
+		return domain.ErrorAddingTemplate{Reason: err.Error()}
 	}
 	return nil
 }
@@ -21,7 +21,7 @@ func (u *Usecase) AddEmailTemplate(ctx context.Context, template *domain.Templat
 func (u *Usecase) GetEmailPlaceholders(ctx context.Context, templateName string) ([]string, error) {
 	domainTemplate, err := u.repository.GetEmailTemplateByName(ctx, templateName)
 	if err != nil {
-		return nil, domain.ErrorTemplateNotFound{TemplateName: templateName}
+		return nil, err
 	}
 	return ExtractPlaceholders(domainTemplate.TemplateStr), nil
 }
@@ -54,7 +54,7 @@ func (u *Usecase) SendRawEmail(r *domain.EmailRequest) error {
 	err := u.emailSender.SendEmail(r)
 	if err != nil {
 		u.log.Debug("Error sending email")
-		return domain.ErrorSendingEmailFailed{Reason: err.Error()}
+		return domain.ErrorSendingEmail{Reason: err.Error()}
 	}
 	return nil
 }
@@ -85,7 +85,7 @@ func (u *Usecase) SendTemplatedEmail(ctx context.Context, r *domain.EmailTemplat
 		htmlString, err := u.mjmlService.RenderMJML(filledTemplate)
 		if err != nil {
 			u.log.Debug("Error rendering mjml template")
-			return domain.ErrorRenderingMJMLFailed{Reason: err.Error()}
+			return domain.ErrorRenderingMJML{Reason: err.Error()}
 		}
 		emailRequest.MessageBody = htmlString
 	} else {
@@ -96,7 +96,7 @@ func (u *Usecase) SendTemplatedEmail(ctx context.Context, r *domain.EmailTemplat
 	err = u.emailSender.SendEmail(&emailRequest)
 	if err != nil {
 		u.log.Debug("Error sending email")
-		return domain.ErrorSendingEmailFailed{Reason: err.Error()}
+		return domain.ErrorSendingEmail{Reason: err.Error()}
 	}
 	return nil
 }

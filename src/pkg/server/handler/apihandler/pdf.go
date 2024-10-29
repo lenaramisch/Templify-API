@@ -1,9 +1,7 @@
 package apihandler
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	domain "templify/pkg/domain/model"
 	server "templify/pkg/server/generated"
@@ -15,18 +13,19 @@ import (
 // Get all placehholders of a PDF template
 // (GET /pdf/templates/{templateName}/placeholders)
 func (ah *APIHandler) GetPDFTemplatePlaceholdersByName(w http.ResponseWriter, r *http.Request, templateName string) {
-	if templateName == "" {
-		http.Error(w, "URL Param templateName empty", http.StatusBadRequest)
+	requiredClaims := map[string]any{"role": "user"}
+	checkedAuthorization := ah.Authorizer.CheckIfAuthorised(w, r, requiredClaims)
+	if !checkedAuthorization {
 		return
 	}
 
 	templatePlaceholders, err := ah.Usecase.GetPDFPlaceholders(r.Context(), templateName)
 	if err != nil {
-		handler.HandleError(w, r, http.StatusInternalServerError, fmt.Sprintf("Getting placeholders for template %s failed", templateName))
+		handler.HandleErrors(w, r, err)
 		return
 	}
 	if len(templatePlaceholders) == 0 {
-		handler.HandleError(w, r, http.StatusNotFound, fmt.Sprintf("No placeholders for template %s found", templateName))
+		handler.HandleErrors(w, r, domain.ErrorPlaceholderMissing{MissingPlaceholder: "No placeholders found in template"})
 		return
 	}
 	render.Status(r, http.StatusOK)
@@ -36,20 +35,15 @@ func (ah *APIHandler) GetPDFTemplatePlaceholdersByName(w http.ResponseWriter, r 
 // Add new PDF template
 // (POST /pdf/templates/{templateName})
 func (ah *APIHandler) AddNewPDFTemplate(w http.ResponseWriter, r *http.Request, templateName string) {
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		handler.HandleError(w, r, http.StatusBadRequest, "Reading Request Body failed")
+	requiredClaims := map[string]any{"role": "user"}
+	checkedAuthorization := ah.Authorizer.CheckIfAuthorised(w, r, requiredClaims)
+	if !checkedAuthorization {
 		return
 	}
 
 	var addTemplateRequest server.PDFTemplatePostRequest
-	if err := json.Unmarshal(body, &addTemplateRequest); err != nil {
-		handler.HandleError(w, r, http.StatusBadRequest, "Invalid JSON format")
-		return
-	}
-
-	if templateName == "" {
-		http.Error(w, "URL Param templateName empty", http.StatusBadRequest)
+	err := handler.ReadRequestBody(w, r, &addTemplateRequest)
+	if err != nil {
 		return
 	}
 
@@ -60,12 +54,11 @@ func (ah *APIHandler) AddNewPDFTemplate(w http.ResponseWriter, r *http.Request, 
 
 	err = ah.Usecase.AddPDFTemplate(r.Context(), templateDomain)
 	if err != nil {
-		handler.HandleError(w, r, http.StatusInternalServerError, fmt.Sprintf("Adding template with name %v failed", templateName))
+		handler.HandleErrors(w, r, err)
 		return
 	}
-	resultString := fmt.Sprintf("Added template with name %v", templateName)
 	render.Status(r, http.StatusCreated)
-	render.PlainText(w, r, resultString)
+	render.PlainText(w, r, fmt.Sprintf("Added template with name %v", templateName))
 }
 
 // Get PDF template by name
@@ -76,18 +69,9 @@ func (ah *APIHandler) GetPDFTemplateByName(w http.ResponseWriter, r *http.Reques
 	if !checkedAuthorization {
 		return
 	}
-	if templateName == "" {
-		http.Error(w, "URL Param templateName empty", http.StatusBadRequest)
-		return
-	}
-	var err error
 	templateDomain, err := ah.Usecase.GetPDFTemplateByName(r.Context(), templateName)
 	if err != nil {
-		handler.HandleError(w, r, http.StatusInternalServerError, "Error getting template")
-		return
-	}
-	if templateDomain.TemplateStr == "" {
-		handler.HandleError(w, r, http.StatusNotFound, fmt.Sprintf("Template with name %s not found", templateName))
+		handler.HandleErrors(w, r, err)
 		return
 	}
 	render.Status(r, http.StatusOK)
@@ -102,32 +86,24 @@ func (ah *APIHandler) FillPDFTemplate(w http.ResponseWriter, r *http.Request, te
 	if !checkedAuthorization {
 		return
 	}
-	if templateName == "" {
-		http.Error(w, "URL Param templateName empty", http.StatusBadRequest)
-		return
-	}
-
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, "Reading request body failed", http.StatusInternalServerError)
-	}
 
 	var pdfFillReq server.TemplateFillRequest
-	if err := json.Unmarshal(body, &pdfFillReq); err != nil {
-		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
+	err := handler.ReadRequestBody(w, r, &pdfFillReq)
+	if err != nil {
 		return
 	}
 
 	pdfBytes, err := ah.Usecase.GeneratePDF(r.Context(), templateName, pdfFillReq.Placeholders)
 	if err != nil {
-		handler.HandleError(w, r, http.StatusInternalServerError, "Error generating PDF")
+		handler.HandleErrors(w, r, err)
+		return
+	}
+
+	_, err = w.Write(pdfBytes)
+	if err != nil {
+		handler.HandleErrors(w, r, err)
 		return
 	}
 
 	render.Status(r, http.StatusOK)
-	_, err = w.Write(pdfBytes)
-	if err != nil {
-		handler.HandleError(w, r, http.StatusInternalServerError, "Error responding with PDF")
-		return
-	}
 }

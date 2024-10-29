@@ -7,10 +7,8 @@ import (
 )
 
 func (u *Usecase) AddWorkflow(ctx context.Context, workflow *domain.WorkflowCreateRequest) error {
-	//add workflow
 	err := u.repository.AddWorkflow(ctx, workflow)
 	if err != nil {
-		u.log.With("workflowName", workflow.Name).Debug("Could not add workflow to repo")
 		return err
 	}
 	return nil
@@ -19,7 +17,6 @@ func (u *Usecase) AddWorkflow(ctx context.Context, workflow *domain.WorkflowCrea
 func (u *Usecase) GetWorkflowByName(ctx context.Context, workflowName string) (*domain.GetWorkflowResponse, error) {
 	workflowRaw, err := u.repository.GetWorkflowByName(ctx, workflowName)
 	if err != nil {
-		u.log.With("workflowName", workflowName).Debug("Could not get workflow from repo")
 		return nil, err
 	}
 	var getWorkflowResponse = &domain.GetWorkflowResponse{}
@@ -75,7 +72,6 @@ func (u *Usecase) UseWorkflow(ctx context.Context, workflowUseRequest *domain.Wo
 		pdfTemplatePlaceholders = append(pdfTemplatePlaceholders, pdfTemplate.Placeholders)
 		pdfTemplate, err := u.repository.GetPDFTemplateByName(ctx, pdfTemplate.TemplateName)
 		if err != nil {
-			u.log.With("templateName", pdfTemplate.Name).Debug("Could not get pdf template from repo")
 			return err
 		}
 		pdfTemplates = append(pdfTemplates, *pdfTemplate)
@@ -87,7 +83,6 @@ func (u *Usecase) UseWorkflow(ctx context.Context, workflowUseRequest *domain.Wo
 	for i, pdfTemplate := range pdfTemplates {
 		filledPdfTemplate, err := FillTemplate(pdfTemplate.TemplateStr, pdfTemplatePlaceholders[i])
 		if err != nil {
-			u.log.With("templateName", pdfTemplate.Name).Debug("Could not fill pdf template")
 			return err
 		}
 		filledPDFTemplates = append(filledPDFTemplates, filledPdfTemplate)
@@ -99,7 +94,6 @@ func (u *Usecase) UseWorkflow(ctx context.Context, workflowUseRequest *domain.Wo
 		filledTemplate := filledPDFTemplates[i]
 		filledPdfFile, err := u.typstService.RenderTypst(filledTemplate)
 		if err != nil {
-			u.log.With("templateName", pdfTemplate.Name).Debug("Could not render pdf template")
 			return err
 		}
 		attachmentData = append(attachmentData, domain.AttachmentInfo{
@@ -112,7 +106,6 @@ func (u *Usecase) UseWorkflow(ctx context.Context, workflowUseRequest *domain.Wo
 	// get workflow
 	workflowInfo, err := u.GetWorkflowByName(ctx, workflowUseRequest.Name)
 	if err != nil {
-		u.log.With("workflowName", workflowUseRequest.Name).Debug("Could not get workflow from repo")
 		return err
 	}
 
@@ -126,8 +119,7 @@ func (u *Usecase) UseWorkflow(ctx context.Context, workflowUseRequest *domain.Wo
 			fileName = splitString[0]
 			extension = splitString[1]
 		} else {
-			u.log.With("attachmentName", attachmentName).Debug("Static file name does not contain an extension")
-			return err
+			return domain.ErrorAttachmentNameInvalid{AttachmentName: attachmentName}
 		}
 		downloadFileRequest := domain.FileDownloadRequest{
 			FileName:  fileName,
@@ -135,7 +127,6 @@ func (u *Usecase) UseWorkflow(ctx context.Context, workflowUseRequest *domain.Wo
 		}
 		file, err := u.filemanagerService.DownloadFile(downloadFileRequest)
 		if err != nil {
-			u.log.With("attachmentName", attachmentName).Debug("Downloading file failed")
 			return err
 		}
 
@@ -169,7 +160,6 @@ func (u *Usecase) UseWorkflow(ctx context.Context, workflowUseRequest *domain.Wo
 	// send email
 	err = u.SendTemplatedEmail(ctx, emailRequest)
 	if err != nil {
-		u.log.With("emailRequest", emailRequest).Debug("Could not send email")
 		return err
 	}
 	return nil

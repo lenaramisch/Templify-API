@@ -12,14 +12,6 @@ get:
         application/json:
           schema:
             $ref: '../../schemas/_index.yml#/Status'
-    '400':
-      description: You somehow managed to mess up the status request
-      content:
-        application/json:
-          schema:
-            $ref: '../../schemas/_index.yml#/Error'
-          example:
-            $ref: '../../examples/_index.yml#/ErrorExample'
 
   # This API has no security
   security: []

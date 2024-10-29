@@ -38,8 +38,7 @@ func (fm *FileManagerMinio) GetFileDownloadURL(fileName string) (string, error) 
 	// get a presigned download URL for the file
 	presignedURL, err := fm.minioClient.PresignedGetObject(context.Background(), fm.config.BucketName, fileName, time.Hour, nil)
 	if err != nil {
-		fm.log.With("Error", err.Error()).Debug("Error getting presigned url")
-		return "", err
+		return "", domain.ErrorGettingDownloadURL{Reason: err.Error()}
 	}
 	return presignedURL.String(), nil
 }
@@ -48,8 +47,7 @@ func (fm *FileManagerMinio) GetFileUploadURL(fileName string) (*domain.FileUploa
 	// get a presigned upload URL for the file
 	presignedURL, err := fm.minioClient.PresignedPutObject(context.Background(), fm.config.BucketName, fileName, time.Hour)
 	if err != nil {
-		fm.log.With("Error", err.Error()).Debug("Error getting presigned url")
-		return nil, err
+		return nil, domain.ErrorGettingUploadURL{Reason: err.Error()}
 	}
 	return &domain.FileUploadResponse{
 		UploadURL: presignedURL.String(),
@@ -83,7 +81,6 @@ func (fm *FileManagerMinio) UploadFile(fileUploadRequest domain.FileUploadReques
 	reader := bytes.NewReader(fileUploadRequest.FileBytes)
 	_, err := fm.minioClient.PutObject(context.Background(), fm.config.BucketName, fileUploadRequest.FileName+"."+fileUploadRequest.Extension, reader, -1, minio.PutObjectOptions{})
 	if err != nil {
-		fm.log.With("Error", err.Error()).Debug("Error uploading file")
 		return err
 	}
 	return nil
@@ -93,13 +90,12 @@ func (fm *FileManagerMinio) DownloadFile(fileDownloadRequest domain.FileDownload
 	object, err := fm.minioClient.GetObject(context.Background(), fm.config.BucketName, fileDownloadRequest.FileName+"."+fileDownloadRequest.Extension, minio.GetObjectOptions{})
 	if err != nil {
 		fm.log.With("Error", err.Error()).Debug("Error downloading file")
-		return nil, err
+		return nil, domain.ErrorDownloadingFile{Reason: err.Error()}
 	}
 	defer object.Close()
 	buf := new(bytes.Buffer)
 	_, err = buf.ReadFrom(object)
 	if err != nil {
-		fm.log.With("Error", err.Error()).Debug("Error reading file")
 		return nil, err
 	}
 	return buf.Bytes(), nil

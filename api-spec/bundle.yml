@@ -44,18 +44,6 @@ paths:
                 details: This is an API.
                 commitHash: 0d1444adb917eacc71321f1281904f71c5e378ca
                 commitDate: '2020-01-01T00:00:00Z'
-        '400':
-          description: You somehow managed to mess up the version request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-              example:
-                errorId: 123e4567-e89b-12d3-a456-426614174000
-                error: The item does not exist
-                ErrorType: Not Found
-                code: 404
-                timestamp: '2020-01-01T00:00:00Z'
       security: []
   /info/status:
     get:
@@ -71,18 +59,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
-        '400':
-          description: You somehow managed to mess up the status request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-              example:
-                errorId: 123e4567-e89b-12d3-a456-426614174000
-                error: The item does not exist
-                ErrorType: Not Found
-                code: 404
-                timestamp: '2020-01-01T00:00:00Z'
       security: []
   /info/openapi.json:
     get:
@@ -99,18 +75,6 @@ paths:
               schema:
                 type: object
               example: {}
-        '400':
-          description: You somehow managed to mess up the oapi json request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-              example:
-                errorId: 123e4567-e89b-12d3-a456-426614174000
-                error: The item does not exist
-                ErrorType: Not Found
-                code: 404
-                timestamp: '2020-01-01T00:00:00Z'
       security: []
   /info/openapi.html:
     get:
@@ -127,18 +91,6 @@ paths:
               schema:
                 type: string
                 example: <html>...</html>
-        '400':
-          description: You somehow managed to mess up the oapi html request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-              example:
-                errorId: 123e4567-e89b-12d3-a456-426614174000
-                error: The item does not exist
-                ErrorType: Not Found
-                code: 404
-                timestamp: '2020-01-01T00:00:00Z'
       security: []
   /sms/basic/send:
     post:
@@ -474,7 +426,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PresignedURL'
         '400':
-          description: Invalid file or bucket name supplied
+          description: Bad Request
       security: []
   /file/download/{fileName}:
     get:
@@ -499,9 +451,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PresignedURL'
         '400':
-          description: Invalid file or bucket name supplied
-        '404':
-          description: Can not find file (file name)
+          description: Bad Request
       security: []
   /pdf/templates/{templateName}:
     get:
@@ -731,50 +681,6 @@ components:
         - details
         - commitHash
         - commitDate
-    ErrorType:
-      type: string
-      description: The error type
-      enum:
-        - Bad Request
-        - Not Found
-        - Not Implemented
-        - Internal Server Error
-      example: Bad Request
-    Error:
-      type: object
-      description: This object holds the error response data.
-      properties:
-        errorId:
-          type: string
-          description: The unique identifier for the error
-          example: 123e4567-e89b-12d3-a456-426614174000
-        error:
-          type: string
-          description: The error message
-          example: The item does not exist
-        ErrorType:
-          $ref: '#/components/schemas/ErrorType'
-        code:
-          type: integer
-          description: The error code
-          example: 404
-        timestamp:
-          type: string
-          format: rfc3339
-          description: The time the error occurred
-          example: '2020-01-01T12:00:00Z'
-      example:
-        errorId: 123e4567-e89b-12d3-a456-426614174000
-        error: The item does not exist
-        ErrorType: Not Found
-        code: 404
-        timestamp: '2020-01-01T00:00:00Z'
-      required:
-        - errorId
-        - error
-        - ErrorType
-        - code
-        - timestamp
     Status:
       type: string
       description: The status of the API
@@ -1201,6 +1107,50 @@ components:
           - attachmentContent
           - attachmentName
           - attachmentExtension
+    ErrorType:
+      type: string
+      description: The error type
+      enum:
+        - Bad Request
+        - Not Found
+        - Not Implemented
+        - Internal Server Error
+      example: Bad Request
+    Error:
+      type: object
+      description: This object holds the error response data.
+      properties:
+        errorId:
+          type: string
+          description: The unique identifier for the error
+          example: 123e4567-e89b-12d3-a456-426614174000
+        error:
+          type: string
+          description: The error message
+          example: The item does not exist
+        ErrorType:
+          $ref: '#/components/schemas/ErrorType'
+        code:
+          type: integer
+          description: The error code
+          example: 404
+        timestamp:
+          type: string
+          format: rfc3339
+          description: The time the error occurred
+          example: '2020-01-01T12:00:00Z'
+      example:
+        errorId: 123e4567-e89b-12d3-a456-426614174000
+        error: The item does not exist
+        ErrorType: Not Found
+        code: 404
+        timestamp: '2020-01-01T00:00:00Z'
+      required:
+        - errorId
+        - error
+        - ErrorType
+        - code
+        - timestamp
     EmailTemplateFillRequest:
       $ref: '#/components/schemas/TemplateFillRequest'
     PDFTemplateFillRequest:

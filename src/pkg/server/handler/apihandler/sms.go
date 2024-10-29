@@ -1,9 +1,7 @@
 package apihandler
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	domain "templify/pkg/domain/model"
 	server "templify/pkg/server/generated"
@@ -20,8 +18,8 @@ func (ah *APIHandler) SendBasicSMS(w http.ResponseWriter, r *http.Request) {
 	if !checkedAuthorization {
 		return
 	}
-	var smsRequest server.SMSSendRequest
 
+	var smsRequest server.SMSSendRequest
 	if err := handler.ReadRequestBody(w, r, &smsRequest); err != nil {
 		return
 	}
@@ -33,7 +31,7 @@ func (ah *APIHandler) SendBasicSMS(w http.ResponseWriter, r *http.Request) {
 
 	err := ah.Usecase.SendSMS(domainSmsRequest)
 	if err != nil {
-		handler.HandleError(w, r, http.StatusInternalServerError, err.Error())
+		handler.HandleErrors(w, r, err)
 		return
 	}
 	render.Status(r, http.StatusOK)
@@ -48,15 +46,9 @@ func (ah *APIHandler) SendTemplatedSMS(w http.ResponseWriter, r *http.Request, t
 	if !checkedAuthorization {
 		return
 	}
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		handler.HandleError(w, r, http.StatusBadRequest, "Reading Request Body failed")
-		return
-	}
-	var smsRequest server.SMSTemplateSendRequest
 
-	if err := json.Unmarshal(body, &smsRequest); err != nil {
-		handler.HandleError(w, r, http.StatusBadRequest, "Invalid JSON format")
+	var smsRequest server.SMSTemplateSendRequest
+	if err := handler.ReadRequestBody(w, r, &smsRequest); err != nil {
 		return
 	}
 
@@ -65,9 +57,9 @@ func (ah *APIHandler) SendTemplatedSMS(w http.ResponseWriter, r *http.Request, t
 		Placeholders:        smsRequest.Placeholders,
 	}
 
-	err = ah.Usecase.SendTemplatedSMS(r.Context(), smsFillRequest, templateName)
+	err := ah.Usecase.SendTemplatedSMS(r.Context(), smsFillRequest, templateName)
 	if err != nil {
-		handler.HandleError(w, r, http.StatusInternalServerError, err.Error())
+		handler.HandleErrors(w, r, err)
 		return
 	}
 	render.Status(r, http.StatusOK)
@@ -82,14 +74,9 @@ func (ah *APIHandler) AddNewSMSTemplate(w http.ResponseWriter, r *http.Request, 
 	if !checkedAuthorization {
 		return
 	}
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		handler.HandleError(w, r, http.StatusBadRequest, "Reading Request Body failed")
-		return
-	}
 	var SMSTempl server.SMSTemplate
-	if err := json.Unmarshal(body, &SMSTempl); err != nil {
-		handler.HandleError(w, r, http.StatusBadRequest, "Invalid JSON format")
+	err := handler.ReadRequestBody(w, r, &SMSTempl)
+	if err != nil {
 		return
 	}
 
@@ -100,7 +87,7 @@ func (ah *APIHandler) AddNewSMSTemplate(w http.ResponseWriter, r *http.Request, 
 
 	err = ah.Usecase.AddSMSTemplate(r.Context(), templateDomain)
 	if err != nil {
-		handler.HandleError(w, r, http.StatusInternalServerError, fmt.Sprintf("Adding SMS template with name %v failed", templateName))
+		handler.HandleErrors(w, r, err)
 		return
 	}
 	resultString := fmt.Sprintf("Added SMS template with name %v", templateName)
@@ -116,22 +103,17 @@ func (ah *APIHandler) FillSMSTemplate(w http.ResponseWriter, r *http.Request, te
 	if !checkedAuthorization {
 		return
 	}
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, "Reading request body failed", http.StatusInternalServerError)
-	}
 
 	var templateFillRequest domain.SMSTemplateFillRequest
-
-	if err := json.Unmarshal(body, &templateFillRequest); err != nil {
-		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
+	err := handler.ReadRequestBody(w, r, &templateFillRequest)
+	if err != nil {
 		return
 	}
 
 	placeholders := templateFillRequest.Placeholders
 	filledTemplate, err := ah.Usecase.GetFilledSMSTemplate(r.Context(), templateName, placeholders)
 	if err != nil {
-		handler.HandleError(w, r, http.StatusInternalServerError, "Error filling template")
+		handler.HandleErrors(w, r, err)
 		return
 	}
 
@@ -149,11 +131,7 @@ func (ah *APIHandler) GetSMSTemplateByName(w http.ResponseWriter, r *http.Reques
 	}
 	templateDomain, err := ah.Usecase.GetSMSTemplateByName(r.Context(), templateName)
 	if err != nil {
-		handler.HandleError(w, r, http.StatusInternalServerError, "Error getting template")
-		return
-	}
-	if templateDomain.TemplateStr == "" {
-		handler.HandleError(w, r, http.StatusNotFound, fmt.Sprintf("Template with name %s not found", templateName))
+		handler.HandleErrors(w, r, err)
 		return
 	}
 	render.Status(r, http.StatusOK)
@@ -170,11 +148,11 @@ func (ah *APIHandler) GetSMSTemplatePlaceholdersByName(w http.ResponseWriter, r 
 	}
 	templatePlaceholders, err := ah.Usecase.GetSMSPlaceholders(r.Context(), templateName)
 	if err != nil {
-		handler.HandleError(w, r, http.StatusInternalServerError, fmt.Sprintf("Getting placeholders for template %s failed", templateName))
+		handler.HandleErrors(w, r, err)
 		return
 	}
 	if len(templatePlaceholders) == 0 {
-		handler.HandleError(w, r, http.StatusNotFound, fmt.Sprintf("No placeholders for template %s found", templateName))
+		handler.HandleErrors(w, r, domain.ErrorPlaceholderMissing{MissingPlaceholder: "No placeholders found in template"})
 		return
 	}
 	render.Status(r, http.StatusOK)

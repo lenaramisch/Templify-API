@@ -20,7 +20,7 @@ get:
           schema:
             $ref: '../../schemas/_index.yml#/PresignedURL'
     '400':
-      description: Invalid file or bucket name supplied
+      description: Bad Request
 
   # This API has no security
   security: []

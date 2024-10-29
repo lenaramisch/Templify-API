@@ -34,7 +34,7 @@ func (ah *APIHandler) SendEmail(w http.ResponseWriter, r *http.Request) {
 			// convert base64 string attachmentContent into []byte
 			bytes, err := base64.StdEncoding.DecodeString(attachment.AttachmentContent)
 			if err != nil {
-				handler.HandleErrors(w, r, errors.New("Invalid base64 string"))
+				handler.HandleErrors(w, r, errors.New("invalid base64 string"))
 			}
 
 			attachmentInfo = append(attachmentInfo, domain.AttachmentInfo{
@@ -82,7 +82,7 @@ func (ah *APIHandler) SendTemplatedEmail(w http.ResponseWriter, r *http.Request,
 		for _, attachment := range *emailTemplateSendReq.Attachments {
 			bytes, err := base64.StdEncoding.DecodeString(attachment.AttachmentContent)
 			if err != nil {
-				handler.HandleErrors(w, r, errors.New("Invalid base64 string"))
+				handler.HandleErrors(w, r, errors.New("invalid base64 string"))
 			}
 			attachmentInfo = append(attachmentInfo, domain.AttachmentInfo{
 				FileExtension: attachment.AttachmentExtension,
@@ -105,7 +105,8 @@ func (ah *APIHandler) SendTemplatedEmail(w http.ResponseWriter, r *http.Request,
 	// Call Usecase to send email
 	err = ah.Usecase.SendTemplatedEmail(r.Context(), emailRequestDomain)
 	if err != nil {
-
+		handler.HandleErrors(w, r, err)
+		return
 	}
 	render.Status(r, http.StatusOK)
 	render.PlainText(w, r, "Email sent successfully")
@@ -139,7 +140,6 @@ func (ah *APIHandler) AddNewTemplate(w http.ResponseWriter, r *http.Request, tem
 	var addTemplateRequest server.EmailTemplatePostRequest
 	err := handler.ReadRequestBody(w, r, &addTemplateRequest)
 	if err != nil {
-		ah.log.Debug("Error reading request body")
 		return
 	}
 

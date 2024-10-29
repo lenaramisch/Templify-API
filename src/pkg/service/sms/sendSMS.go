@@ -53,7 +53,7 @@ func (s *TwilioSMSSender) SendSMS(smsRequest domain.SmsRequest) error {
 	r, err := http.NewRequest("POST", URL, strings.NewReader(SMSData.Encode()))
 	if err != nil {
 		s.log.Warn("Error creating request")
-		return err
+		return domain.ErrorCreatingSMSRequest{Reason: err.Error()}
 	}
 	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
@@ -66,7 +66,7 @@ func (s *TwilioSMSSender) SendSMS(smsRequest domain.SmsRequest) error {
 	resp, err := client.Do(r)
 	if err != nil {
 		s.log.Warn("Error performing request")
-		return err
+		return domain.ErrorPerformingSMSRequest{Reason: err.Error()}
 	}
 	defer resp.Body.Close()
 
@@ -83,8 +83,7 @@ func (s *TwilioSMSSender) SendSMS(smsRequest domain.SmsRequest) error {
 			"statusCode", resp.StatusCode,
 			"response", body,
 		).Warn("Error response status code")
-		return fmt.Errorf("error response status code: %d", resp.StatusCode)
+		return domain.ErrorSendingSMS{StatusCode: resp.StatusCode}
 	}
-
 	return nil
 }

@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strings"
+	domain "templify/pkg/domain/model"
 	ah "templify/pkg/server/handler"
 
 	"github.com/golang-jwt/jwt"
@@ -28,27 +29,27 @@ func (a *Authorizer) CheckIfAuthorised(w http.ResponseWriter, r *http.Request, r
 	}
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
-		ah.HandleError(w, r, http.StatusUnauthorized, "Authorization header missing")
+		ah.HandleErrors(w, r, domain.ErrAuthorizationHeaderMissing)
 		return false //unauthorized
 	}
 	tokenString := strings.TrimPrefix(authHeader, "Bearer")
 	if tokenString == authHeader {
-		ah.HandleError(w, r, http.StatusUnauthorized, "Invalid token format, expected Bearer")
+		ah.HandleErrors(w, r, domain.ErrInvalidTokenFormat)
 		return false //unauthorized
 	}
 	token, err := a.VerifyToken(tokenString)
 	if err != nil || !token.Valid {
-		ah.HandleError(w, r, http.StatusUnauthorized, "Invalid token")
+		ah.HandleErrors(w, r, domain.ErrInvalidToken)
 		return false //unauthorized
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		ah.HandleError(w, r, http.StatusForbidden, "Access denied")
+		ah.HandleErrors(w, r, domain.ErrAccessDenied)
 		return false //unauthorized
 	}
 	for key, value := range requiredClaims {
 		if claims[key] != value {
-			ah.HandleError(w, r, http.StatusForbidden, "Access denied")
+			ah.HandleErrors(w, r, domain.ErrAccessDenied)
 			return false //unauthorized
 		}
 	}

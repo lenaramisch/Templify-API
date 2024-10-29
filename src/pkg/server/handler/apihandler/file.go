@@ -18,7 +18,7 @@ func (ah *APIHandler) GetDownloadFileURL(w http.ResponseWriter, r *http.Request,
 	}
 	downloadURL, err := ah.Usecase.GetFileDownloadURL(fileName)
 	if err != nil {
-		handler.HandleInternalServerError(w, r, err, "Error getting download URL")
+		handler.HandleErrors(w, r, err)
 		return
 	}
 
@@ -36,7 +36,7 @@ func (ah *APIHandler) GetUploadFileURL(w http.ResponseWriter, r *http.Request, f
 	}
 	uploadURL, err := ah.Usecase.GetFileUploadURL(fileName)
 	if err != nil {
-		handler.HandleInternalServerError(w, r, err, "Error getting upload URL")
+		handler.HandleErrors(w, r, err)
 		return
 	}
 

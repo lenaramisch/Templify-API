@@ -8,7 +8,6 @@ import (
 	domain "templify/pkg/domain/model"
 	"time"
 
-	"github.com/go-chi/render"
 	"github.com/google/uuid"
 )
 
@@ -19,6 +18,23 @@ type ErrorPayload struct {
 	Error     string `json:"error"`
 	ErrorType string `json:"errorType"`
 	Timestamp string `json:"timestamp"`
+}
+
+func RespondWithJSON(w http.ResponseWriter, r *http.Request, status int, v any) {
+	w.WriteHeader(status)
+	w.Header().Set("Content-Type", "application/json")
+	err := json.NewEncoder(w).Encode(v)
+	if err != nil {
+		HandleInternalServerError(w, r, err, "Failed to encode response")
+	}
+}
+
+func ReadRequestBody(w http.ResponseWriter, r *http.Request, v any) error {
+	err := json.NewDecoder(r.Body).Decode(v)
+	if err != nil {
+		HandleBadRequestError(w, r, err, "Failed to parse request body")
+	}
+	return err
 }
 
 // HandleInternalServerError is a convenient method to log and handle internal server errors.
@@ -57,47 +73,85 @@ func HandleBadRequestError(w http.ResponseWriter, r *http.Request, err error, lo
 	RespondWithJSON(w, r, http.StatusBadRequest, apiError)
 }
 
-func RespondWithJSON(w http.ResponseWriter, r *http.Request, status int, v any) {
-	w.WriteHeader(status)
-	w.Header().Set("Content-Type", "application/json")
-	err := json.NewEncoder(w).Encode(v)
-	if err != nil {
-		HandleInternalServerError(w, r, err, "Failed to encode response")
+func HandleUnauthorizedError(w http.ResponseWriter, r *http.Request, err error, logMsg ...string) {
+	if err == nil {
+		err = errors.New("no error information supplied")
 	}
+	uniqueErrID := uuid.New().String()
+	apiError := ErrorPayload{
+		ErrorID:   uniqueErrID,
+		Code:      401,
+		Error:     err.Error(),
+		ErrorType: "Unauthorized",
+		Timestamp: time.Now().Format(time.RFC3339),
+	}
+
+	slog.With("error", err.Error()).With("logMessages", logMsg).Warn("Unauthorized Error")
+	RespondWithJSON(w, r, http.StatusUnauthorized, apiError)
 }
 
-func ReadRequestBody(w http.ResponseWriter, r *http.Request, v any) error {
-	err := json.NewDecoder(r.Body).Decode(v)
-	if err != nil {
-		HandleBadRequestError(w, r, err, "Failed to parse request body")
+func HandleForbiddenError(w http.ResponseWriter, r *http.Request, err error, logMsg ...string) {
+	if err == nil {
+		err = errors.New("no error information supplied")
 	}
-	return err
+	uniqueErrID := uuid.New().String()
+	apiError := ErrorPayload{
+		ErrorID:   uniqueErrID,
+		Code:      403,
+		Error:     err.Error(),
+		ErrorType: "Forbidden",
+		Timestamp: time.Now().Format(time.RFC3339),
+	}
+
+	slog.With("error", err.Error()).With("logMessages", logMsg).Warn("Forbidden Error")
+	RespondWithJSON(w, r, http.StatusForbidden, apiError)
 }
 
-func HandleErrors(w http.ResponseWriter, r *http.Request, err error, logmsgs ...string) {
-	if errors.As(err, &domain.ErrorTemplateNotFound{}) {
-		HandleBadRequestError(w, r, err, logmsgs...)
+func HandleNotFoundError(w http.ResponseWriter, r *http.Request, err error, logMsg ...string) {
+	if err == nil {
+		err = errors.New("no error information supplied")
+	}
+	uniqueErrID := uuid.New().String()
+	apiError := ErrorPayload{
+		ErrorID:   uniqueErrID,
+		Code:      404,
+		Error:     err.Error(),
+		ErrorType: "NotFound",
+		Timestamp: time.Now().Format(time.RFC3339),
+	}
+
+	slog.With("error", err.Error()).With("logMessages", logMsg).Warn("Not Found Error")
+	RespondWithJSON(w, r, http.StatusNotFound, apiError)
+}
+
+func HandleErrors(w http.ResponseWriter, r *http.Request, err error) {
+	// HandleNotFoundError
+	if errors.As(err, &domain.ErrorTemplateNotFound{}) ||
+		errors.As(err, &domain.ErrorWorkflowNotFound{}) {
+		HandleNotFoundError(w, r, err)
 		return
 	}
-	if errors.As(err, &domain.ErrorRenderingMJMLFailed{}) {
-		HandleInternalServerError(w, r, err, logmsgs...)
+	// HandleBadRequestError
+	if errors.As(err, &domain.ErrorPlaceholderMissing{}) ||
+		errors.As(err, &domain.ErrorTemplateAlreadyExists{}) ||
+		errors.As(err, &domain.ErrorGettingUploadURL{}) ||
+		errors.As(err, &domain.ErrorWorkflowAlreadyExists{}) ||
+		errors.As(err, &domain.ErrorAttachmentNameInvalid{}) {
+		HandleBadRequestError(w, r, err)
 		return
 	}
-	if errors.As(err, &domain.ErrorSendingEmailFailed{}) {
-		HandleInternalServerError(w, r, err, logmsgs...)
+	// HandleUnauthorizedError
+	if errors.Is(err, domain.ErrAuthorizationHeaderMissing) ||
+		errors.Is(err, domain.ErrInvalidTokenFormat) ||
+		errors.Is(err, domain.ErrInvalidToken) {
+		HandleUnauthorizedError(w, r, err)
 		return
 	}
-	if errors.As(err, &domain.ErrorPlaceholderMissing{}) {
-		HandleBadRequestError(w, r, err, logmsgs...)
+	// HandleForbiddenError
+	if errors.Is(err, domain.ErrAccessDenied) {
+		HandleForbiddenError(w, r, err)
 		return
 	}
-	if errors.As(err, &domain.ErrorAddingTemplateFailed{}) {
-		HandleInternalServerError(w, r, err, logmsgs...)
-		return
-	}
-	if errors.As(err, &domain.ErrorTemplateAlreadyExists{}) {
-		HandleBadRequestError(w, r, err, logmsgs...)
-		return
-	}
-	render.Status(r, http.StatusInternalServerError)
+	// HandleInternalServerError
+	HandleInternalServerError(w, r, err)
 }
