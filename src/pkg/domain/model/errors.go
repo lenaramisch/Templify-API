@@ -146,3 +146,11 @@ type ErrorDownloadingFile struct {
 func (e ErrorDownloadingFile) Error() string {
 	return fmt.Sprintf("downloading file failed: %s", e.Reason)
 }
+
+type ErrorFileAlreadyExists struct {
+	FileName string
+}
+
+func (e ErrorFileAlreadyExists) Error() string {
+	return fmt.Sprintf("file already exists: %s", e.FileName)
+}

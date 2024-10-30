@@ -136,6 +136,7 @@ func HandleErrors(w http.ResponseWriter, r *http.Request, err error) {
 		errors.As(err, &domain.ErrorTemplateAlreadyExists{}) ||
 		errors.As(err, &domain.ErrorGettingUploadURL{}) ||
 		errors.As(err, &domain.ErrorWorkflowAlreadyExists{}) ||
+		errors.As(err, &domain.ErrorFileAlreadyExists{}) ||
 		errors.As(err, &domain.ErrorAttachmentNameInvalid{}) {
 		HandleBadRequestError(w, r, err)
 		return

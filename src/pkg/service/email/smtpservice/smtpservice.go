@@ -9,7 +9,6 @@ import (
 	domain "templify/pkg/domain/model"
 )
 
-// TODO - Fill config with the correct SMTP service details
 type SMTPServiceConfig struct {
 	Host      string
 	Port      int

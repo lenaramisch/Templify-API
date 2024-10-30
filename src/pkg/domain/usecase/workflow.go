@@ -109,7 +109,6 @@ func (u *Usecase) UseWorkflow(ctx context.Context, workflowUseRequest *domain.Wo
 		return err
 	}
 
-	//TODO how to get static attachments from minio for workflow?
 	var staticAttachments []domain.StaticFile
 	for _, attachmentName := range workflowInfo.StaticAttachments {
 		// split file extrension from name

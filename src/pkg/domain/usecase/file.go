@@ -1,9 +1,15 @@
 package usecase
 
-import domain "templify/pkg/domain/model"
+import (
+	domain "templify/pkg/domain/model"
+)
 
 func (u *Usecase) GetFileUploadURL(fileName string) (*domain.FileUploadResponse, error) {
-	//TODO check if file already exists
+	// Check if file already exists with GetFileDownloadURL
+	_, err := u.filemanagerService.GetFileDownloadURL(fileName)
+	if err == nil {
+		return nil, domain.ErrorFileAlreadyExists{FileName: fileName}
+	}
 	return u.filemanagerService.GetFileUploadURL(fileName)
 }
 
